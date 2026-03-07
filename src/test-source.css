@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@source not url("./index.css");
+
+@theme {
+  --color-surface: #1e1e1e;
+  --color-content: #ffffff;
+}
