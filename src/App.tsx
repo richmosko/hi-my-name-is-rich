@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
+import About from './pages/About';
 import PostsList from './pages/PostsList';
 import PostDetail from './pages/PostDetail';
 
@@ -10,6 +11,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
+          <Route path="about" element={<About />} />
           <Route
             path="posts"
             element={<PostsList title="All Posts" />}
@@ -25,6 +27,22 @@ export default function App() {
           <Route
             path="goals"
             element={<PostsList title="Goals" category="goals" />}
+          />
+          <Route
+            path="projects"
+            element={<PostsList title="Projects" category="projects" />}
+          />
+          <Route
+            path="musings"
+            element={<PostsList title="Musings" category="musings" />}
+          />
+          <Route
+            path="cool-shit"
+            element={<PostsList title="Cool Shit" category="cool-shit" />}
+          />
+          <Route
+            path="food"
+            element={<PostsList title="Food" category="food" />}
           />
           <Route path="post/:slug" element={<PostDetail />} />
         </Route>

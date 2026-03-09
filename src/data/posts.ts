@@ -26,8 +26,10 @@ Digital declutter refers to the process of intentionally reducing unnecessary di
 Start by auditing your digital habits. Track how you spend time on your devices. Identify apps, websites, or habits that consume excessive time without providing value. Then tame your notifications, unsubscribe from noise, and set digital boundaries.`,
     date: '2025-11-29',
     readTime: '4 min read',
-    categories: ['posts', 'design'],
+    categories: ['design'],
     featured: true,
+    image: '/images/posts/anime-car-city.jpg',
+    authorId: 'rich',
   },
   {
     id: '2',
@@ -55,6 +57,8 @@ Pack light, wear comfortable shoes, and bring a good camera. The light here is m
     readTime: '6 min read',
     categories: ['travel'],
     featured: false,
+    image: '/images/posts/coastal-landscape-fantasy-style.jpg',
+    authorId: 'rich',
   },
   {
     id: '3',
@@ -80,8 +84,10 @@ A design system is more than a component library. It's a shared language that in
 Start small. Audit your existing UI for inconsistencies, identify the most-used components, and begin documenting them. Build your token system first — it becomes the foundation for everything else.`,
     date: '2025-09-22',
     readTime: '5 min read',
-    categories: ['design', 'posts'],
+    categories: ['design'],
     featured: false,
+    image: '/images/posts/digital-art-with-urban-landscape-architecture.jpg',
+    authorId: 'rich',
   },
   {
     id: '4',
@@ -108,7 +114,9 @@ Start small. Audit your existing UI for inconsistencies, identify the most-used 
 The key insight is that goals need to be living documents. What made sense in January doesn't always make sense in July. Adaptability isn't failure — it's wisdom.`,
     date: '2025-07-01',
     readTime: '3 min read',
-    categories: ['goals', 'posts'],
+    categories: ['goals'],
     featured: false,
+    image: '/images/posts/pathway-through-rolling-hills-colorful-sky.jpg',
+    authorId: 'rich',
   },
 ];

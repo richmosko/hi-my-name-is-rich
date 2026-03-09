@@ -4,10 +4,15 @@ import { projects } from '../data/projects';
 
 const navItems = [
   { label: 'Home', path: '/' },
+  { label: 'About', path: '/about' },
   { label: 'Posts', path: '/posts' },
   { label: 'Travel', path: '/travel' },
   { label: 'Design', path: '/design' },
   { label: 'Goals', path: '/goals' },
+  { label: 'Projects', path: '/projects' },
+  { label: 'Musings', path: '/musings' },
+  { label: 'Cool Shit', path: '/cool-shit' },
+  { label: 'Food', path: '/food' },
 ];
 
 export default function Sidebar() {
@@ -47,21 +52,22 @@ export default function Sidebar() {
 
   return (
     <div ref={sidebarRef} className="fixed left-0 top-0 z-50 h-full">
-      {/* 3-dot trigger button — always visible */}
+      {/* Hamburger trigger button — always visible */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed left-5 top-5 z-50 flex flex-col items-center justify-center
-                   gap-[5px] w-10 h-10 rounded-lg
-                   hover:bg-surface-secondary transition-colors duration-200 cursor-pointer"
+        className="hamburger-btn fixed left-5 top-4 z-50 flex flex-col items-center justify-end
+                   gap-[6.25px] w-9 h-9 rounded-lg
+                   cursor-pointer"
         aria-label={isOpen ? 'Close menu' : 'Open menu'}
       >
-        <span className="block w-[5px] h-[5px] rounded-full bg-content-secondary" />
-        <span className="block w-[5px] h-[5px] rounded-full bg-content-secondary" />
-        <span className="block w-[5px] h-[5px] rounded-full bg-content-secondary" />
+        <span className="hamburger-bar block w-[18px] h-[2.5px] rounded-full bg-[#A0A0A0]" />
+        <span className="hamburger-bar block w-[18px] h-[2.5px] rounded-full bg-[#A0A0A0]" />
+        <span className="hamburger-bar block w-[18px] h-[2.5px] rounded-full bg-[#A0A0A0]" />
       </button>
 
-      {/* Backdrop overlay */}
+      {/* Backdrop overlay — click to close */}
       <div
+        onClick={() => setIsOpen(false)}
         className={`fixed inset-0 bg-black/40 transition-opacity duration-300
                     ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         aria-hidden="true"
@@ -69,7 +75,7 @@ export default function Sidebar() {
 
       {/* Sidebar panel */}
       <nav
-        className={`fixed left-0 top-0 h-full w-64 bg-surface-sidebar border-r border-edge
+        className={`fixed left-0 top-0 h-full w-64 bg-white border-r border-edge shadow-lg
                     flex flex-col pt-20 pb-8 px-6
                     transition-transform duration-300 ease-in-out
                     ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
@@ -84,8 +90,8 @@ export default function Sidebar() {
                   `block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150
                    ${
                      isActive
-                       ? 'bg-surface-secondary text-content'
-                       : 'text-content-secondary hover:text-content hover:bg-surface-secondary/50'
+                       ? 'text-content'
+                       : 'text-[#A0A0A0] hover:text-[#202020]'
                    }`
                 }
               >
@@ -97,22 +103,22 @@ export default function Sidebar() {
 
         {/* Projects section */}
         <div className="mt-8 pt-6 border-t border-edge">
-          <p className="px-3 text-xs font-semibold uppercase tracking-wider text-content-muted mb-3">
+          <p className="px-3 text-xs font-semibold uppercase tracking-wider text-[#202020] mb-3">
             Projects
           </p>
           <ul className="flex flex-col gap-1">
             {projects.map((project) => (
               <li key={project.id}>
                 <div
-                  className="block px-3 py-2 rounded-lg text-sm text-content-secondary
-                             hover:text-content hover:bg-surface-secondary/50
+                  className="block px-3 py-2 rounded-lg text-sm text-[#A0A0A0]
+                             hover:text-[#202020]
                              transition-colors duration-150"
                 >
                   <span className="flex items-center gap-2">
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
                         project.status === 'active'
-                          ? 'bg-green-400'
+                          ? 'bg-green-500'
                           : 'bg-content-muted'
                       }`}
                     />

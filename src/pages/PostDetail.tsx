@@ -1,13 +1,23 @@
 import { useParams, Link } from 'react-router-dom';
 import { posts } from '../data/posts';
-import type { Category } from '../types';
+import { authors } from '../data/authors';
+import { categoryColors, categoryConfig } from '../data/categories';
 
-const categoryColors: Record<Category, string> = {
-  posts: 'bg-accent/20 text-accent',
-  travel: 'bg-emerald-500/20 text-emerald-400',
-  design: 'bg-purple-500/20 text-purple-400',
-  goals: 'bg-amber-500/20 text-amber-400',
-};
+const DEFAULT_IMAGE = '/images/posts/northern-lights-snowy-mountains.jpg';
+
+function renderInlineText(text: string) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, j) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return (
+        <strong key={j} className="text-content font-semibold">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    return part;
+  });
+}
 
 export default function PostDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -26,109 +36,135 @@ export default function PostDetail() {
     );
   }
 
-  return (
-    <article className="flex flex-col gap-8">
-      {/* Back link */}
-      <Link
-        to="/posts"
-        className="text-sm text-content-muted hover:text-accent transition-colors inline-flex items-center gap-1"
-      >
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>
-        Back to posts
-      </Link>
+  const author = authors[post.authorId];
+  const heroImage = post.image || DEFAULT_IMAGE;
 
-      {/* Header */}
-      <header className="flex flex-col gap-4">
-        <div className="flex flex-wrap gap-2">
-          {post.categories.map((cat) => (
-            <span
-              key={cat}
-              className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColors[cat]}`}
-            >
-              {cat.charAt(0).toUpperCase() + cat.slice(1)}
-            </span>
-          ))}
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-content leading-tight">
-          {post.title}
-        </h1>
-        <div className="flex items-center gap-3 text-sm text-content-muted">
-          <time dateTime={post.date}>
+  return (
+    <article className="flex flex-col gap-8 items-center">
+      {/* Header — above the image, at text width */}
+      <header className="w-full max-w-[640px] flex flex-col gap-6">
+        <Link
+          to="/posts"
+          className="text-sm text-content-muted hover:text-accent transition-colors inline-flex items-center gap-1"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Back to posts
+        </Link>
+
+        {/* Author profile + date row */}
+        <div className="flex items-center gap-4">
+          {author && (
+            <div className="flex items-center gap-3">
+              <img
+                src={author.avatar}
+                alt={author.name}
+                className="w-[48px] h-[48px] rounded-full object-cover"
+              />
+              <span className="text-base font-medium text-content">
+                {author.name}
+              </span>
+            </div>
+          )}
+          <time
+            dateTime={post.date}
+            className="text-sm font-medium text-content-muted"
+          >
             {new Date(post.date).toLocaleDateString('en-US', {
-              month: 'long',
+              month: 'short',
               day: 'numeric',
               year: 'numeric',
             })}
           </time>
-          <span>&middot;</span>
-          <span>{post.readTime}</span>
+        </div>
+
+        {/* Title */}
+        <h1 className="text-4xl font-bold text-content leading-tight">
+          {post.title}
+        </h1>
+
+        {/* Read time + categories bar */}
+        <div className="flex items-center justify-between bg-[#f4f4f4] rounded-xl px-3 py-2.5">
+          <span className="text-sm font-medium text-content-muted">
+            {post.readTime}
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {post.categories.map((cat) => (
+              <span
+                key={cat}
+                className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColors[cat]}`}
+              >
+                {categoryConfig[cat].label}
+              </span>
+            ))}
+          </div>
         </div>
       </header>
 
-      {/* Content */}
-      <div className="prose-custom flex flex-col gap-4 text-content-secondary leading-relaxed">
-        {post.content.split('\n\n').map((paragraph, i) => {
-          if (paragraph.startsWith('## ')) {
+      {/* Article content — image + text body */}
+      <div className="w-full flex flex-col gap-10 items-center">
+        {/* Article image — full content width, 560px */}
+        <div className="w-full h-[560px] rounded-xl overflow-hidden">
+          <img
+            src={heroImage}
+            alt={post.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Article text — centered at 640px */}
+        <div className="w-full max-w-[640px] flex flex-col gap-4 prose-custom text-content-secondary leading-relaxed">
+          {post.content.split('\n\n').map((paragraph, i) => {
+            if (paragraph.startsWith('## ')) {
+              return (
+                <h2
+                  key={i}
+                  className="text-xl font-semibold text-content mt-6"
+                >
+                  {paragraph.replace('## ', '')}
+                </h2>
+              );
+            }
+            if (paragraph.startsWith('### ')) {
+              return (
+                <h3
+                  key={i}
+                  className="text-lg font-semibold text-content mt-4"
+                >
+                  {paragraph.replace('### ', '')}
+                </h3>
+              );
+            }
+            if (paragraph.startsWith('- ')) {
+              const items = paragraph.split('\n');
+              return (
+                <ul key={i} className="list-disc list-inside space-y-1">
+                  {items.map((item, j) => (
+                    <li key={j} className="text-content-secondary">
+                      {renderInlineText(item.replace(/^- /, ''))}
+                    </li>
+                  ))}
+                </ul>
+              );
+            }
             return (
-              <h2
-                key={i}
-                className="text-xl font-semibold text-content mt-6"
-              >
-                {paragraph.replace('## ', '')}
-              </h2>
+              <p key={i}>
+                {renderInlineText(paragraph)}
+              </p>
             );
-          }
-          if (paragraph.startsWith('### ')) {
-            return (
-              <h3
-                key={i}
-                className="text-lg font-semibold text-content mt-4"
-              >
-                {paragraph.replace('### ', '')}
-              </h3>
-            );
-          }
-          if (paragraph.startsWith('- ')) {
-            const items = paragraph.split('\n');
-            return (
-              <ul key={i} className="list-disc list-inside space-y-1">
-                {items.map((item, j) => (
-                  <li key={j} className="text-content-secondary">
-                    {item.replace('- ', '')}
-                  </li>
-                ))}
-              </ul>
-            );
-          }
-          // Handle bold text
-          const parts = paragraph.split(/(\*\*[^*]+\*\*)/g);
-          return (
-            <p key={i}>
-              {parts.map((part, j) => {
-                if (part.startsWith('**') && part.endsWith('**')) {
-                  return (
-                    <strong key={j} className="text-content font-semibold">
-                      {part.slice(2, -2)}
-                    </strong>
-                  );
-                }
-                return part;
-              })}
-            </p>
-          );
-        })}
+          })}
+        </div>
       </div>
     </article>
   );

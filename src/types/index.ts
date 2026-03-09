@@ -1,4 +1,10 @@
-export type Category = 'posts' | 'travel' | 'design' | 'goals';
+export type Category = 'travel' | 'design' | 'goals' | 'projects' | 'musings' | 'cool-shit' | 'food';
+
+export interface Author {
+  id: string;
+  name: string;
+  avatar: string;
+}
 
 export interface BlogPost {
   id: string;
@@ -11,6 +17,7 @@ export interface BlogPost {
   categories: Category[];
   featured?: boolean;
   image?: string;
+  authorId: string;
 }
 
 export interface Project {

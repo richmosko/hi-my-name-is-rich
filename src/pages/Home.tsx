@@ -1,79 +1,67 @@
+import { Link } from 'react-router-dom';
+import { posts } from '../data/posts';
+import PostCard from '../components/PostCard';
+
 export default function Home() {
+  const latestPosts = posts.slice(0, 4);
+
   return (
-    <div className="flex flex-col gap-12">
-      {/* About section */}
-      <section className="flex flex-col gap-6">
-        <h2 className="text-3xl font-bold text-content leading-tight">
-          About
-        </h2>
-        <div className="flex flex-col gap-4 text-content-secondary leading-relaxed">
-          <p>
-            Welcome to my corner of the internet. I'm Rich — a curious mind
-            fascinated by design, technology, travel, and the intersection of
-            all three.
+    <div className="flex flex-col gap-16">
+      {/* Hero section */}
+      <section className="flex items-start gap-10">
+        {/* Text — left side */}
+        <div className="flex-1 flex flex-col gap-6">
+          <h1 className="text-4xl font-bold text-content leading-tight">
+            Hi, my name is Rich.
+          </h1>
+          <p className="text-xl font-light text-content-secondary leading-relaxed">
+            Former <span className="text-2xl font-normal">Hardware Designer</span>,
+            part-time <span className="text-2xl font-normal">Adventurer</span>,
+            and full-time <span className="text-2xl font-normal">Loafer</span> and{' '}
+            <span className="text-2xl font-normal">Fudgel</span>. This is a place
+            for me to share what I'm learning, making, and thinking about.
           </p>
-          <p>
-            This site is a living collection of my thoughts, adventures, and
-            projects. Think of it as a digital garden — some ideas are fully
-            formed essays, others are seedlings still taking shape. I write
-            about the things I'm learning, the places I'm exploring, and the
-            goals I'm chasing.
+          <p className="text-xl font-light text-content-secondary leading-relaxed">
+            I am by no means an expert... at pretty much anything. But I am a
+            naturally <span className="text-2xl font-normal">curious</span>, and
+            find myself with a lot of time to ponder and learn the meaning of
+            things around me. This project is meant to be a{' '}
+            <span className="text-2xl font-normal">learning</span> and{' '}
+            <span className="text-2xl font-normal">growing</span> experience for
+            me. It's pretty much not useful to anyone whatsoever 😂... but if
+            you've stumbled here by accident:{' '}
+            <span className="text-2xl font-semibold">Welcome Friend!</span>{' '}
+            Hopefully I'm able to share a bit of positivity and joy.
           </p>
-          <p>
-            Whether it's dissecting a design system, documenting a hike
-            through the mountains, or reflecting on personal growth, you'll
-            find it here. Pull up a chair and stay awhile.
-          </p>
-        </div>
-      </section>
-
-      {/* What you'll find here */}
-      <section className="flex flex-col gap-6">
-        <h3 className="text-xl font-semibold text-content">
-          What you'll find here
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {[
-            {
-              title: 'Posts',
-              desc: 'Long-form writing on technology, productivity, and life.',
-              color: 'bg-accent/10 border-accent/20',
-            },
-            {
-              title: 'Travel',
-              desc: 'Stories and photos from places near and far.',
-              color: 'bg-emerald-500/10 border-emerald-500/20',
-            },
-            {
-              title: 'Design',
-              desc: 'Thoughts on visual design, systems, and craft.',
-              color: 'bg-purple-500/10 border-purple-500/20',
-            },
-            {
-              title: 'Goals',
-              desc: 'Reflections on personal growth and ambition.',
-              color: 'bg-amber-500/10 border-amber-500/20',
-            },
-          ].map((item) => (
-            <div
-              key={item.title}
-              className={`p-5 rounded-xl border ${item.color} transition-colors`}
+          <div className="pt-2">
+            <Link
+              to="/about"
+              className="text-sm font-medium text-[#A0A0A0] hover:text-[#202020] transition-colors duration-150"
             >
-              <h4 className="text-sm font-semibold text-content mb-1">
-                {item.title}
-              </h4>
-              <p className="text-sm text-content-secondary">{item.desc}</p>
-            </div>
-          ))}
+              More about me &rarr;
+            </Link>
+          </div>
+        </div>
+
+        {/* Profile image — right side, fixed width per Figma */}
+        <div className="shrink-0 w-[414px]">
+          <img
+            src="/profile.jpeg"
+            alt="Rich Mosko"
+            className="w-full aspect-square rounded-2xl object-cover shadow-sm"
+          />
         </div>
       </section>
 
-      {/* Placeholder for future mind-map / background image */}
-      <section className="flex flex-col gap-4">
-        <div className="rounded-xl border border-dashed border-edge bg-surface-secondary/50 p-12 text-center">
-          <p className="text-content-muted text-sm">
-            Visual mind-map &amp; background image coming soon...
-          </p>
+      {/* Latest Posts grid */}
+      <section className="flex flex-col gap-10">
+        <h2 className="text-3xl font-semibold text-content text-center">
+          Latest Posts
+        </h2>
+        <div className="grid grid-cols-2 gap-x-14 gap-y-12">
+          {latestPosts.map((post) => (
+            <PostCard key={post.id} post={post} />
+          ))}
         </div>
       </section>
     </div>
