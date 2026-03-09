@@ -44,7 +44,7 @@ export default function Home() {
         </div>
 
         {/* Profile image — right side, fixed width per Figma */}
-        <div className="shrink-0 w-[414px]">
+        <div className="w-[40%] max-w-[414px]">
           <img
             src="/profile.jpeg"
             alt="Rich Mosko"
