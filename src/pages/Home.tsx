@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { posts } from '../data/posts';
+import { posts } from '../lib/posts';
 import PostCard from '../components/PostCard';
 
 export default function Home() {

@@ -1,0 +1,28 @@
+---
+title: "Exploring the Amalfi Coast: A Visual Journey"
+excerpt: "The Amalfi Coast is one of those places that seems almost too beautiful to be real. Clinging to the cliffs of southern Italy, each village tells its own story."
+date: "2025-10-15"
+readTime: "6 min read"
+categories:
+  - travel
+featured: false
+image: "/images/posts/coastal-landscape-fantasy-style.jpg"
+authorId: "rich"
+---
+
+The Amalfi Coast is one of those places that seems almost too beautiful to be real. Clinging to the cliffs of southern Italy, each village tells its own story through narrow winding streets, colorful buildings, and the endless blue of the Mediterranean.
+
+## Getting There
+
+The best way to experience the coast is by car or boat. Flying into Naples and driving south along the SS163 coastal road offers some of the most breathtaking views you'll ever encounter.
+
+## Must-Visit Towns
+
+- **Positano** — The jewel of the coast, with its cascading pastel buildings
+- **Ravello** — A hilltop paradise with stunning villa gardens
+- **Amalfi** — The historic heart of the coast
+- **Atrani** — A tiny, authentic village often missed by tourists
+
+## Travel Tips
+
+Pack light, wear comfortable shoes, and bring a good camera. The light here is magical, especially during golden hour.
