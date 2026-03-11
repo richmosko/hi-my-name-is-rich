@@ -27,7 +27,7 @@ export default function About() {
       {/* Hero image — full 1250 width, 280px tall */}
       <div className="w-full h-[280px] rounded-xl overflow-hidden">
         <img
-          src="/images/posts/northern-lights-snowy-mountains.jpg"
+          src="/images/stock/northern-lights-snowy-mountains.jpg"
           alt="Northern lights over snowy mountains"
           className="w-full h-full object-cover"
         />

@@ -5,7 +5,7 @@ import { categoryColors, categoryConfig } from '../data/categories';
 import PostCard from '../components/PostCard';
 import type { BlogPost, Category } from '../types';
 
-const DEFAULT_IMAGE = '/images/posts/northern-lights-snowy-mountains.jpg';
+const DEFAULT_IMAGE = '/images/stock/northern-lights-snowy-mountains.jpg';
 
 function MiniPostCard({ post }: { post: BlogPost }) {
   const image = post.image || DEFAULT_IMAGE;

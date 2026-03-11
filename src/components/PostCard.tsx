@@ -3,7 +3,7 @@ import { authors } from '../data/authors';
 import { categoryColors, categoryConfig } from '../data/categories';
 import type { BlogPost } from '../types';
 
-const DEFAULT_IMAGE = '/images/posts/northern-lights-snowy-mountains.jpg';
+const DEFAULT_IMAGE = '/images/stock/northern-lights-snowy-mountains.jpg';
 
 interface PostCardProps {
   post: BlogPost;

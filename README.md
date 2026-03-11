@@ -100,7 +100,7 @@ src/
   mdx.d.ts              # TypeScript declarations for .mdx imports
 public/
   images/
-    posts/              # Post hero images
+    stock/              # Stock/default hero images (not tied to specific posts)
     galleries/          # Image galleries (subdirectory per gallery)
 scripts/
   new-post.mjs          # Scaffold a new blog post
@@ -134,7 +134,7 @@ categories:
   - travel
   - design
 featured: true
-image: "/images/posts/my-hero-image.jpg"
+image: "/images/stock/my-hero-image.jpg"
 authorId: "rich"
 ---
 ```

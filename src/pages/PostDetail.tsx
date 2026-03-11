@@ -4,7 +4,7 @@ import { authors } from '../data/authors';
 import { categoryColors, categoryConfig } from '../data/categories';
 import { mdxComponents } from '../components/MdxComponents';
 
-const DEFAULT_IMAGE = '/images/posts/northern-lights-snowy-mountains.jpg';
+const DEFAULT_IMAGE = '/images/stock/northern-lights-snowy-mountains.jpg';
 
 export default function PostDetail() {
   const { slug } = useParams<{ slug: string }>();
