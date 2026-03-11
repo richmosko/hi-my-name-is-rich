@@ -19,7 +19,7 @@ const slug = title
   .replace(/[^a-z0-9]+/g, '-')
   .replace(/^-|-$/g, '');
 
-const filePath = join(POSTS_DIR, `${slug}.md`);
+const filePath = join(POSTS_DIR, `${slug}.mdx`);
 
 if (existsSync(filePath)) {
   console.error(`Post already exists: ${filePath}`);

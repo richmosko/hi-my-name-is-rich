@@ -6,12 +6,14 @@ export interface Author {
   avatar: string;
 }
 
+import type { MDXComponents } from 'mdx/types';
+
 export interface BlogPost {
   id: string;
   title: string;
   slug: string;
   excerpt: string;
-  content: string;
+  content: React.ComponentType<{ components?: MDXComponents }>;
   date: string;
   readTime: string;
   categories: Category[];
