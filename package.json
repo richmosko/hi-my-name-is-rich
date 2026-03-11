@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "new-post": "node scripts/new-post.mjs"
+    "new-post": "node scripts/new-post.mjs",
+    "generate-galleries": "node scripts/generate-gallery-manifest.mjs"
   },
   "dependencies": {
     "@mdx-js/react": "^3.1.1",

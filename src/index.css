@@ -50,3 +50,12 @@ body {
 ::-webkit-scrollbar-track { background: var(--color-surface); }
 ::-webkit-scrollbar-thumb { background: var(--color-edge); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-content-muted); }
+
+/* Hide scrollbar for gallery carousel */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
