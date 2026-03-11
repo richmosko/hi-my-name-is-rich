@@ -3,7 +3,9 @@ import { posts } from '../lib/posts';
 import PostCard from '../components/PostCard';
 
 export default function Home() {
-  const latestPosts = posts.slice(0, 4);
+  const featuredPosts = posts.filter((p) => p.featured);
+  const featuredIds = new Set(featuredPosts.map((p) => p.id));
+  const latestPosts = posts.filter((p) => !featuredIds.has(p.id)).slice(0, 4);
 
   return (
     <div className="flex flex-col gap-16">
@@ -52,6 +54,20 @@ export default function Home() {
           />
         </div>
       </section>
+
+      {/* Featured Posts grid */}
+      {featuredPosts.length > 0 && (
+        <section className="flex flex-col gap-10">
+          <h2 className="text-3xl font-semibold text-content text-center">
+            Featured Posts
+          </h2>
+          <div className="grid grid-cols-2 gap-x-14 gap-y-12">
+            {featuredPosts.map((post) => (
+              <PostCard key={post.id} post={post} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Latest Posts grid */}
       <section className="flex flex-col gap-10">
