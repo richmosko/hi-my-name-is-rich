@@ -21,12 +21,12 @@ export default function Home() {
             part-time <span className="text-lg sm:text-2xl font-normal">Adventurer</span>,
             and full-time <span className="text-lg sm:text-2xl font-normal">Loafer</span> and{' '}
             <span className="text-lg sm:text-2xl font-normal">Fudgel</span>. This is a place
-            for me to share what I'm learning, making, and thinking about.
+            for me to share what I'm learning, building, and thinking about.
           </p>
           <p className="text-base sm:text-xl font-light text-content-secondary leading-relaxed">
             I am by no means an expert... at pretty much anything. But I am a
             naturally <span className="text-lg sm:text-2xl font-normal">curious</span>, and
-            find myself with a lot of time to ponder and learn the meaning of
+            find myself with a lot of time to ponder the meaning of
             things around me. This project is meant to be a{' '}
             <span className="text-lg sm:text-2xl font-normal">learning</span> and{' '}
             <span className="text-lg sm:text-2xl font-normal">growing</span> experience for
