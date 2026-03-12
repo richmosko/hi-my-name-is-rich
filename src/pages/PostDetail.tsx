@@ -78,7 +78,7 @@ export default function PostDetail() {
         </div>
 
         {/* Title */}
-        <h1 className="text-4xl font-bold text-content leading-tight">
+        <h1 className="text-2xl sm:text-4xl font-bold text-content leading-tight">
           {post.title}
         </h1>
 
@@ -103,7 +103,7 @@ export default function PostDetail() {
       {/* Article content — image + text body */}
       <div className="w-full flex flex-col gap-10 items-center">
         {/* Article image — full content width, 560px */}
-        <div className="w-full h-[560px] rounded-xl overflow-hidden">
+        <div className="w-full h-[250px] sm:h-[400px] lg:h-[560px] rounded-xl overflow-hidden">
           <img
             src={heroImage}
             alt={post.title}

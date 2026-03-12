@@ -8,7 +8,7 @@ export default function Layout() {
     <div className="min-h-screen flex flex-col bg-surface">
       <Sidebar />
       <TopBar />
-      <main className="flex-1 w-full max-w-[1440px] pl-[95px] pr-[95px] py-12">
+      <main className="flex-1 w-full max-w-[1440px] px-5 sm:px-10 lg:px-[95px] py-8 sm:py-12">
         <Outlet />
       </main>
       <Footer />

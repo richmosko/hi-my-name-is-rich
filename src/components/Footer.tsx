@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
     <footer className="w-full border-t border-edge bg-surface">
-      <div className="max-w-[1440px] pl-[95px] pr-[95px] py-10">
+      <div className="max-w-[1440px] px-5 sm:px-10 lg:px-[95px] py-10">
         <div className="flex items-center justify-between">
           {/* Left — avatar + name */}
           <div className="flex items-center gap-3">

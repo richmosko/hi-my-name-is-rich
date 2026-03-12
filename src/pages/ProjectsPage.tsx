@@ -134,7 +134,7 @@ function ProjectCard({ project }: { project: Project }) {
 
   return (
     <div
-      className={`rounded-2xl border p-8 flex flex-col gap-5 ${
+      className={`rounded-2xl border p-5 sm:p-8 flex flex-col gap-4 sm:gap-5 ${
         isCompleted
           ? 'border-edge/60 bg-surface-secondary/40'
           : 'border-edge bg-white'
@@ -143,9 +143,9 @@ function ProjectCard({ project }: { project: Project }) {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <h3
-              className={`text-xl font-semibold ${
+              className={`text-lg sm:text-xl font-semibold ${
                 isCompleted ? 'text-content-muted' : 'text-content'
               }`}
             >
@@ -172,7 +172,7 @@ function ProjectCard({ project }: { project: Project }) {
 
         {/* Percentage */}
         <span
-          className={`text-2xl font-bold tabular-nums ${
+          className={`text-xl sm:text-2xl font-bold tabular-nums shrink-0 ${
             percent === 100 ? 'text-emerald-600' : 'text-accent'
           }`}
         >
@@ -227,10 +227,10 @@ export default function ProjectsPage() {
   const completedProjects = projects.filter((p) => p.status === 'completed');
 
   return (
-    <div className="flex flex-col gap-12">
+    <div className="flex flex-col gap-8 sm:gap-12">
       {/* Page header */}
       <div>
-        <h1 className="text-3xl font-bold text-content">Projects</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-content">Projects</h1>
         <p className="text-content-secondary mt-2 text-sm">
           What I&rsquo;m building, tinkering with, and have shipped.
         </p>

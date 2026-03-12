@@ -14,10 +14,10 @@ function MiniPostCard({ post }: { post: BlogPost }) {
   return (
     <Link
       to={`/post/${post.slug}`}
-      className="group flex gap-5 items-start"
+      className="group flex gap-4 sm:gap-5 items-start"
     >
-      {/* Mini thumbnail — fixed height 100px, 6:4 aspect */}
-      <div className="shrink-0 h-[100px] aspect-[6/4] overflow-hidden rounded-lg">
+      {/* Mini thumbnail — fixed height, 6:4 aspect */}
+      <div className="shrink-0 h-[80px] sm:h-[100px] aspect-[6/4] overflow-hidden rounded-lg">
         <img
           src={image}
           alt={post.title}
@@ -27,7 +27,7 @@ function MiniPostCard({ post }: { post: BlogPost }) {
 
       {/* Info — confined to the height of the mini thumbnail */}
       <div className="flex-1 flex flex-col justify-between self-stretch min-w-0">
-        <h3 className="text-lg font-medium text-content leading-snug group-hover:text-accent transition-colors line-clamp-2">
+        <h3 className="text-base sm:text-lg font-medium text-content leading-snug group-hover:text-accent transition-colors line-clamp-2">
           {post.title}
         </h3>
 
@@ -88,7 +88,7 @@ export default function PostsList({ category, title }: PostsListProps) {
   return (
     <div className="flex flex-col gap-10">
       <div>
-        <h2 className="text-3xl font-bold text-content">{title}</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold text-content">{title}</h2>
         <p className="text-content-secondary mt-2 text-sm">
           {filteredPosts.length} post{filteredPosts.length !== 1 ? 's' : ''}
         </p>

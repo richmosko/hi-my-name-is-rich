@@ -29,7 +29,7 @@ export default function PostCard({ post }: PostCardProps) {
 
       {/* Title → badges → author + date */}
       <div className="flex flex-col gap-2 w-full">
-        <h3 className="text-xl font-medium text-content leading-snug group-hover:text-accent transition-colors">
+        <h3 className="text-lg sm:text-xl font-medium text-content leading-snug group-hover:text-accent transition-colors">
           {post.title}
         </h3>
 
