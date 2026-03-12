@@ -17,13 +17,15 @@ const navItems = [
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [prevPathname, setPrevPathname] = useState('');
   const sidebarRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
 
-  // Close sidebar on route change
-  useEffect(() => {
+  // Close sidebar on route change (render-time state adjustment)
+  if (location.pathname !== prevPathname) {
+    setPrevPathname(location.pathname);
     setIsOpen(false);
-  }, [location.pathname]);
+  }
 
   // Close on click outside
   useEffect(() => {

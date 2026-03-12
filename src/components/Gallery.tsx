@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import Lightbox from './Lightbox';
 
 interface GalleryImage {
@@ -13,8 +13,16 @@ interface GalleryProps {
 }
 
 export default function Gallery({ path, images: imagesProp }: GalleryProps) {
-  const [images, setImages] = useState<GalleryImage[]>([]);
-  const [loading, setLoading] = useState(false);
+  // Derive images from prop directly (no effect needed)
+  const resolvedPropImages = useMemo(() => {
+    if (!imagesProp) return null;
+    return imagesProp.map((img) =>
+      typeof img === 'string' ? { src: img } : img,
+    );
+  }, [imagesProp]);
+
+  const [fetchedImages, setFetchedImages] = useState<GalleryImage[]>([]);
+  const [loading, setLoading] = useState(() => !!path && !imagesProp);
   const [error, setError] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -22,36 +30,32 @@ export default function Gallery({ path, images: imagesProp }: GalleryProps) {
   const [canScrollRight, setCanScrollRight] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Resolve images from prop (immediate)
-  useEffect(() => {
-    if (!imagesProp) return;
-    const resolved = imagesProp.map((img) =>
-      typeof img === 'string' ? { src: img } : img,
-    );
-    setImages(resolved);
-  }, [imagesProp]);
+  const images = resolvedPropImages ?? fetchedImages;
 
   // Fetch manifest from path
   useEffect(() => {
     if (!path || imagesProp) return;
-    setLoading(true);
+    let cancelled = false;
     fetch(`${path}/manifest.json`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to load manifest');
         return res.json();
       })
       .then((data: { images: Array<{ src: string; alt?: string; caption?: string }> }) => {
+        if (cancelled) return;
         const resolved = data.images.map((img) => ({
           ...img,
           src: `${path}/${img.src}`,
         }));
-        setImages(resolved);
+        setFetchedImages(resolved);
         setLoading(false);
       })
       .catch(() => {
+        if (cancelled) return;
         setError(true);
         setLoading(false);
       });
+    return () => { cancelled = true; };
   }, [path, imagesProp]);
 
   // Track scroll position for arrow visibility + active dot
