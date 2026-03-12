@@ -1,4 +1,4 @@
-export type Category = 'travel' | 'design' | 'goals' | 'projects' | 'musings' | 'cool-shit' | 'food';
+export type Category = 'travel' | 'design' | 'finance' | 'projects' | 'musings' | 'cool-shit' | 'food';
 
 export interface Author {
   id: string;
@@ -22,10 +22,29 @@ export interface BlogPost {
   authorId: string;
 }
 
+export interface ProjectTask {
+  id: string;
+  title: string;
+  completed: boolean;
+  group?: string;
+}
+
 export interface Project {
   id: string;
   name: string;
   description: string;
   url?: string;
-  status: 'active' | 'completed' | 'archived';
+  image?: string;
+  status: 'active' | 'completed';
+  startDate?: string;
+  completedDate?: string;
+  tasks: ProjectTask[];
+  content?: React.ComponentType<{ components?: MDXComponents }>;
+}
+
+/** Derived completion percentage (0–100) */
+export function getProjectCompletion(project: Project): number {
+  if (project.tasks.length === 0) return 0;
+  const done = project.tasks.filter((t) => t.completed).length;
+  return Math.round((done / project.tasks.length) * 100);
 }

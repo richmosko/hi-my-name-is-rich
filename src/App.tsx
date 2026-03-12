@@ -3,6 +3,7 @@ import Layout from './components/Layout';
 import Home from './pages/Home';
 import About from './pages/About';
 import PostsList from './pages/PostsList';
+import ProjectsPage from './pages/ProjectsPage';
 import PostDetail from './pages/PostDetail';
 
 export default function App() {
@@ -25,12 +26,12 @@ export default function App() {
             element={<PostsList title="Design" category="design" />}
           />
           <Route
-            path="goals"
-            element={<PostsList title="Goals" category="goals" />}
+            path="finance"
+            element={<PostsList title="Finance" category="finance" />}
           />
           <Route
             path="projects"
-            element={<PostsList title="Projects" category="projects" />}
+            element={<ProjectsPage />}
           />
           <Route
             path="musings"

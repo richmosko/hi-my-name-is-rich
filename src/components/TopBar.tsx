@@ -6,7 +6,7 @@ const routeLabels: Record<string, string> = {
   '/posts': 'Posts',
   '/travel': 'Travel',
   '/design': 'Design',
-  '/goals': 'Goals',
+  '/finance': 'Finance',
 };
 
 export default function TopBar() {

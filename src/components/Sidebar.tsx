@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { projects } from '../data/projects';
+import { projects } from '../lib/projects';
+import { getProjectCompletion } from '../types';
 
 const navItems = [
   { label: 'Home', path: '/' },
@@ -8,8 +9,7 @@ const navItems = [
   { label: 'Posts', path: '/posts' },
   { label: 'Travel', path: '/travel' },
   { label: 'Design', path: '/design' },
-  { label: 'Goals', path: '/goals' },
-  { label: 'Projects', path: '/projects' },
+  { label: 'Finance', path: '/finance' },
   { label: 'Musings', path: '/musings' },
   { label: 'Cool Shit', path: '/cool-shit' },
   { label: 'Food', path: '/food' },
@@ -101,35 +101,54 @@ export default function Sidebar() {
           ))}
         </ul>
 
-        {/* Projects section */}
+        {/* Projects section — active projects with progress */}
         <div className="mt-8 pt-6 border-t border-edge">
-          <p className="px-3 text-xs font-semibold uppercase tracking-wider text-[#202020] mb-3">
-            Projects
-          </p>
+          <NavLink
+            to="/projects"
+            className={({ isActive }) =>
+              `flex items-center justify-between px-3 mb-3 group ${
+                isActive ? '' : ''
+              }`
+            }
+          >
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#202020] group-hover:text-accent transition-colors">
+              Projects
+            </span>
+            <span className="text-xs text-[#A0A0A0] group-hover:text-accent transition-colors">
+              &rarr;
+            </span>
+          </NavLink>
           <ul className="flex flex-col gap-1">
-            {projects.map((project) => (
-              <li key={project.id}>
-                <div
-                  className="block px-3 py-2 rounded-lg text-sm text-[#A0A0A0]
-                             hover:text-[#202020]
-                             transition-colors duration-150"
-                >
-                  <span className="flex items-center gap-2">
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        project.status === 'active'
-                          ? 'bg-green-500'
-                          : 'bg-content-muted'
-                      }`}
-                    />
-                    {project.name}
-                  </span>
-                  <span className="block text-xs text-content-muted mt-0.5 pl-3.5">
-                    {project.description}
-                  </span>
-                </div>
-              </li>
-            ))}
+            {projects
+              .filter((p) => p.status === 'active')
+              .map((project) => {
+                const percent = getProjectCompletion(project);
+                return (
+                  <li key={project.id}>
+                    <NavLink
+                      to="/projects"
+                      className="block px-3 py-2 rounded-lg hover:bg-surface-secondary
+                                 transition-colors duration-150"
+                    >
+                      <span className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-content truncate">
+                          {project.name}
+                        </span>
+                        <span className="text-xs font-medium text-content-muted tabular-nums ml-2">
+                          {percent}%
+                        </span>
+                      </span>
+                      {/* Mini progress bar */}
+                      <span className="block mt-1.5 w-full h-1 rounded-full bg-surface-secondary overflow-hidden">
+                        <span
+                          className="block h-full rounded-full bg-accent transition-all duration-500"
+                          style={{ width: `${percent}%` }}
+                        />
+                      </span>
+                    </NavLink>
+                  </li>
+                );
+              })}
           </ul>
         </div>
 

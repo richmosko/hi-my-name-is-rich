@@ -20,9 +20,9 @@ export const categoryConfig: Record<Category, CategoryConfig> = {
     colors: 'bg-purple-500/10 border-purple-500/20',
     badgeColors: 'bg-purple-500/10 text-purple-700',
   },
-  goals: {
-    label: 'Goals',
-    description: 'Reflections on personal growth and ambition.',
+  finance: {
+    label: 'Finance',
+    description: 'Thoughts on money, investing, and financial independence.',
     colors: 'bg-amber-500/10 border-amber-500/20',
     badgeColors: 'bg-amber-500/10 text-amber-700',
   },
