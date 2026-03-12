@@ -82,10 +82,10 @@ export const mdxComponents: MDXComponents = {
   },
   pre: (props) => <pre className="my-2" {...props} />,
   hr: (props) => <hr className="border-t border-edge my-6" {...props} />,
-  a: ({ href, ...props }) => (
+  a: ({ href, className, ...props }) => (
     <a
       href={href}
-      className="text-accent hover:text-accent-hover underline"
+      className={`text-accent hover:text-accent-hover underline ${className || ''}`}
       target={href?.startsWith('http') ? '_blank' : undefined}
       rel={href?.startsWith('http') ? 'noopener noreferrer' : undefined}
       {...props}
