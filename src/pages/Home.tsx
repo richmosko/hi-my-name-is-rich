@@ -55,14 +55,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Posts grid */}
+      {/* Featured Posts — two side-by-side */}
       {featuredPosts.length > 0 && (
-        <section className="flex flex-col gap-8 sm:gap-10">
-          <h2 className="text-2xl sm:text-3xl font-semibold text-content text-center">
-            Featured Posts
-          </h2>
+        <section>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-x-14 sm:gap-y-12">
-            {featuredPosts.map((post) => (
+            {featuredPosts.slice(0, 2).map((post) => (
               <PostCard key={post.id} post={post} />
             ))}
           </div>

@@ -7,19 +7,33 @@ const DEFAULT_IMAGE = '/images/stock/northern-lights-snowy-mountains.jpg';
 
 interface PostCardProps {
   post: BlogPost;
+  variant?: 'default' | 'large' | 'compact';
 }
 
-export default function PostCard({ post }: PostCardProps) {
+export default function PostCard({ post, variant = 'default' }: PostCardProps) {
   const image = post.image || DEFAULT_IMAGE;
   const author = authors[post.authorId];
+
+  const isLarge = variant === 'large';
+  const isCompact = variant === 'compact';
 
   return (
     <Link
       to={`/post/${post.slug}`}
-      className="group flex flex-col gap-4 items-start"
+      className={`group flex flex-col items-start ${
+        isLarge ? 'lg:h-full gap-4' : isCompact ? 'gap-2' : 'gap-4'
+      }`}
     >
-      {/* 6:4 thumbnail */}
-      <div className="w-full aspect-[6/4] overflow-hidden rounded-xl">
+      {/* Thumbnail */}
+      <div
+        className={`w-full overflow-hidden rounded-xl ${
+          isLarge
+            ? 'aspect-[6/4] lg:aspect-auto lg:flex-1 lg:min-h-0'
+            : isCompact
+              ? 'aspect-[16/9]'
+              : 'aspect-[6/4]'
+        }`}
+      >
         <img
           src={image}
           alt={post.title}
@@ -28,8 +42,12 @@ export default function PostCard({ post }: PostCardProps) {
       </div>
 
       {/* Title → badges → author + date */}
-      <div className="flex flex-col gap-2 w-full">
-        <h3 className="text-lg sm:text-xl font-medium text-content leading-snug group-hover:text-accent transition-colors">
+      <div className="flex flex-col gap-2 w-full shrink-0">
+        <h3
+          className={`font-medium text-content leading-snug group-hover:text-accent transition-colors ${
+            isLarge ? 'text-xl sm:text-2xl' : isCompact ? 'text-sm sm:text-base' : 'text-lg sm:text-xl'
+          }`}
+        >
           {post.title}
         </h3>
 
