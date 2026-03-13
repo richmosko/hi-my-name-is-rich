@@ -27,7 +27,7 @@ export default function Home() {
             I am by no means an expert... at pretty much anything. But I am a
             naturally <span className="text-lg sm:text-2xl font-normal">curious</span>, and
             find myself with a lot of time to ponder the meaning of
-            things around me. This project is meant to be a{' '}
+            things. This project is meant to be a{' '}
             <span className="text-lg sm:text-2xl font-normal">learning</span> and{' '}
             <span className="text-lg sm:text-2xl font-normal">growing</span> experience for
             me. It's pretty much not useful to anyone whatsoever 😂... but if
