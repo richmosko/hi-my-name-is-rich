@@ -12,6 +12,7 @@ interface MdxModule {
     featured?: boolean;
     image?: string;
     authorId: string;
+    tags?: string[];
   };
 }
 
@@ -37,6 +38,7 @@ function parsePost(filePath: string, mod: MdxModule): BlogPost {
     featured: frontmatter.featured ?? false,
     image: frontmatter.image || undefined,
     authorId: frontmatter.authorId,
+    tags: frontmatter.tags ?? [],
     content: Content,
   };
 }

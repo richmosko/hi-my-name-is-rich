@@ -20,6 +20,7 @@ export interface BlogPost {
   featured?: boolean;
   image?: string;
   authorId: string;
+  tags?: string[];
 }
 
 export interface ProjectTask {

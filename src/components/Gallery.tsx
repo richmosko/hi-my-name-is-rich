@@ -10,9 +10,11 @@ interface GalleryImage {
 interface GalleryProps {
   path?: string;
   images?: GalleryImage[] | string[];
+  aspectRatio?: string;
+  fullWidth?: boolean;
 }
 
-export default function Gallery({ path, images: imagesProp }: GalleryProps) {
+export default function Gallery({ path, images: imagesProp, aspectRatio = '4/3', fullWidth = true }: GalleryProps) {
   // Derive images from prop directly (no effect needed)
   const resolvedPropImages = useMemo(() => {
     if (!imagesProp) return null;
@@ -112,7 +114,7 @@ export default function Gallery({ path, images: imagesProp }: GalleryProps) {
   if (images.length === 0) return null;
 
   return (
-    <div className="relative my-4">
+    <div className={`relative my-4 ${fullWidth ? 'w-screen left-1/2 -translate-x-1/2 max-w-[950px]' : ''}`}>
       {/* Scroll container */}
       <div
         ref={scrollRef}
@@ -127,7 +129,8 @@ export default function Gallery({ path, images: imagesProp }: GalleryProps) {
               src={img.src}
               alt={img.alt || ''}
               loading={i < 2 ? 'eager' : 'lazy'}
-              className="w-full h-64 object-cover transition-transform duration-300 hover:scale-[1.02]"
+              style={{ aspectRatio }}
+              className="w-full object-cover transition-transform duration-300 hover:scale-[1.02]"
               onClick={() => setLightboxIndex(i)}
             />
           </div>

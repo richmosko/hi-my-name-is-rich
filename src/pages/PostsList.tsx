@@ -31,7 +31,7 @@ function MiniPostCard({ post }: { post: BlogPost }) {
           {post.title}
         </h3>
 
-        {/* Category badges — left justified */}
+        {/* Category badges + tags — left justified */}
         <div className="flex flex-wrap gap-1.5">
           {post.categories.map((cat) => (
             <span
@@ -39,6 +39,14 @@ function MiniPostCard({ post }: { post: BlogPost }) {
               className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColors[cat]}`}
             >
               {categoryConfig[cat].label}
+            </span>
+          ))}
+          {post.tags?.map((tag) => (
+            <span
+              key={tag}
+              className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600"
+            >
+              {tag}
             </span>
           ))}
         </div>

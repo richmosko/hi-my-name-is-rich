@@ -4,7 +4,6 @@ import { authors } from '../data/authors';
 import { categoryColors, categoryConfig } from '../data/categories';
 import { mdxComponents } from '../components/MdxComponents';
 
-const DEFAULT_IMAGE = '/images/stock/northern-lights-snowy-mountains.jpg';
 
 export default function PostDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -24,7 +23,7 @@ export default function PostDetail() {
   }
 
   const author = authors[post.authorId];
-  const heroImage = post.image || DEFAULT_IMAGE;
+  const heroImage = post.image || '';
   const PostContent = post.content;
 
   return (
@@ -96,6 +95,14 @@ export default function PostDetail() {
                 {categoryConfig[cat].label}
               </span>
             ))}
+            {post.tags?.map((tag) => (
+              <span
+                key={tag}
+                className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600"
+              >
+                {tag}
+              </span>
+            ))}
           </div>
         </div>
       </header>
@@ -103,13 +110,15 @@ export default function PostDetail() {
       {/* Article content — image + text body */}
       <div className="w-full flex flex-col gap-10 items-center">
         {/* Article image — full content width, 560px */}
-        <div className="w-full h-[250px] sm:h-[400px] lg:h-[560px] rounded-xl overflow-hidden">
-          <img
-            src={heroImage}
-            alt={post.title}
-            className="w-full h-full object-cover"
-          />
-        </div>
+        {heroImage && (
+          <div className="w-full h-[250px] sm:h-[400px] lg:h-[560px] rounded-xl overflow-hidden">
+            <img
+              src={heroImage}
+              alt={post.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
 
         {/* Article text — centered at 640px */}
         <div className="w-full max-w-[640px] flex flex-col gap-4 prose-custom text-content-secondary leading-relaxed">

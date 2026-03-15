@@ -41,7 +41,7 @@ readTime: "X min read"
 categories:
   - musings
 featured: false
-image: ""
+image: "/images/stock/northern-lights-snowy-mountains.jpg"
 authorId: "rich"
 ---
 

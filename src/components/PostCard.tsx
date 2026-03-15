@@ -3,15 +3,13 @@ import { authors } from '../data/authors';
 import { categoryColors, categoryConfig } from '../data/categories';
 import type { BlogPost } from '../types';
 
-const DEFAULT_IMAGE = '/images/stock/northern-lights-snowy-mountains.jpg';
-
 interface PostCardProps {
   post: BlogPost;
   variant?: 'default' | 'large' | 'compact';
 }
 
 export default function PostCard({ post, variant = 'default' }: PostCardProps) {
-  const image = post.image || DEFAULT_IMAGE;
+  const image = post.image || '';
   const author = authors[post.authorId];
 
   const isLarge = variant === 'large';
@@ -25,21 +23,23 @@ export default function PostCard({ post, variant = 'default' }: PostCardProps) {
       }`}
     >
       {/* Thumbnail */}
-      <div
-        className={`w-full overflow-hidden rounded-xl ${
-          isLarge
-            ? 'aspect-[6/4] lg:aspect-auto lg:flex-1 lg:min-h-0'
-            : isCompact
-              ? 'aspect-[16/9]'
-              : 'aspect-[6/4]'
-        }`}
-      >
-        <img
-          src={image}
-          alt={post.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-      </div>
+      {image && (
+        <div
+          className={`w-full overflow-hidden rounded-xl ${
+            isLarge
+              ? 'aspect-[6/4] lg:aspect-auto lg:flex-1 lg:min-h-0'
+              : isCompact
+                ? 'aspect-[16/9]'
+                : 'aspect-[6/4]'
+          }`}
+        >
+          <img
+            src={image}
+            alt={post.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        </div>
+      )}
 
       {/* Title → badges → author + date */}
       <div className="flex flex-col gap-2 w-full shrink-0">
@@ -51,7 +51,7 @@ export default function PostCard({ post, variant = 'default' }: PostCardProps) {
           {post.title}
         </h3>
 
-        {/* Category badges — left justified */}
+        {/* Category badges + tags — left justified */}
         <div className="flex flex-wrap gap-1.5">
           {post.categories.map((cat) => (
             <span
@@ -59,6 +59,14 @@ export default function PostCard({ post, variant = 'default' }: PostCardProps) {
               className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColors[cat]}`}
             >
               {categoryConfig[cat].label}
+            </span>
+          ))}
+          {post.tags?.map((tag) => (
+            <span
+              key={tag}
+              className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600"
+            >
+              {tag}
             </span>
           ))}
         </div>
