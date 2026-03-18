@@ -1,5 +1,6 @@
 {
   "newFileLocation": "root",
   "alwaysUpdateLinks": true,
-  "showUnsupportedFiles": true
+  "showUnsupportedFiles": true,
+  "attachmentFolderPath": "~/Projects/hi-my-name-is-rich/public"
 }

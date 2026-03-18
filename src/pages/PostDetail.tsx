@@ -109,9 +109,12 @@ export default function PostDetail() {
 
       {/* Article content — image + text body */}
       <div className="w-full flex flex-col gap-10 items-center">
-        {/* Article image — full content width, 560px */}
+        {/* Article image — full content width, aspect ratio from frontmatter or 16/9 default */}
         {heroImage && (
-          <div className="w-full h-[250px] sm:h-[400px] lg:h-[560px] rounded-xl overflow-hidden">
+          <div
+            className="w-full rounded-xl overflow-hidden"
+            style={{ aspectRatio: post.imageAspectRatio || '16/9' }}
+          >
             <img
               src={heroImage}
               alt={post.title}
