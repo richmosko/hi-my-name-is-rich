@@ -7,7 +7,7 @@ interface MdxModule {
     title: string;
     excerpt: string;
     date: string;
-    readTime: string;
+    readTime?: string;
     categories: Category[];
     featured?: boolean;
     image?: string;
@@ -34,7 +34,7 @@ function parsePost(filePath: string, mod: MdxModule): BlogPost {
     title: frontmatter.title,
     excerpt: frontmatter.excerpt,
     date: frontmatter.date,
-    readTime: frontmatter.readTime,
+    readTime: frontmatter.readTime ?? '1 min read',
     categories: frontmatter.categories,
     featured: frontmatter.featured ?? false,
     image: frontmatter.image || undefined,
