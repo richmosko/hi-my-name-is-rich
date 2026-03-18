@@ -48,7 +48,7 @@ export default function Home() {
         {/* Profile image — right side on desktop, top on mobile */}
         <div className="w-[60%] sm:w-[40%] max-w-[414px]">
           <img
-            src="/profile.jpeg"
+            src="/images/profiles/profile-rich.jpeg"
             alt="Rich Mosko"
             className="w-full aspect-square rounded-2xl object-cover shadow-sm"
           />

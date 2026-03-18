@@ -11,6 +11,7 @@ interface MdxModule {
     categories: Category[];
     featured?: boolean;
     image?: string;
+    imageAspectRatio?: string;
     authorId: string;
     tags?: string[];
   };
@@ -37,6 +38,7 @@ function parsePost(filePath: string, mod: MdxModule): BlogPost {
     categories: frontmatter.categories,
     featured: frontmatter.featured ?? false,
     image: frontmatter.image || undefined,
+    imageAspectRatio: frontmatter.imageAspectRatio,
     authorId: frontmatter.authorId,
     tags: frontmatter.tags ?? [],
     content: Content,

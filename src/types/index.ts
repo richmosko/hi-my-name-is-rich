@@ -19,6 +19,7 @@ export interface BlogPost {
   categories: Category[];
   featured?: boolean;
   image?: string;
+  imageAspectRatio?: string;
   authorId: string;
   tags?: string[];
 }

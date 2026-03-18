@@ -4,6 +4,11 @@ export const authors: Record<string, Author> = {
   rich: {
     id: 'rich',
     name: 'Rich Mosko',
-    avatar: '/profile.jpeg',
+    avatar: '/images/profiles/profile-rich.jpeg',
+  },
+  keith: {
+    id: 'keith',
+    name: 'Keith Holleman',
+    avatar: '/images/profiles/profile-keith.jpeg',
   },
 };
