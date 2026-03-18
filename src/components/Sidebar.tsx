@@ -6,7 +6,9 @@ import { getProjectCompletion } from '../types';
 const navItems = [
   { label: 'Home', path: '/' },
   { label: 'About', path: '/about' },
-  { label: 'Posts', path: '/posts' },
+];
+
+const categoryItems = [
   { label: 'Travel', path: '/travel' },
   { label: 'Design', path: '/design' },
   { label: 'Finance', path: '/finance' },
@@ -103,6 +105,44 @@ export default function Sidebar() {
           ))}
         </ul>
 
+        {/* Posts section — with category sub-links */}
+        <div className="mt-8 pt-6 border-t border-edge">
+          <NavLink
+            to="/posts"
+            className={({ isActive }) =>
+              `flex items-center justify-between px-3 mb-3 group ${
+                isActive ? '' : ''
+              }`
+            }
+          >
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#202020] group-hover:text-accent transition-colors">
+              Posts
+            </span>
+            <span className="text-xs text-[#A0A0A0] group-hover:text-accent transition-colors">
+              &rarr;
+            </span>
+          </NavLink>
+          <ul className="flex flex-col gap-1 pl-2">
+            {categoryItems.map((item) => (
+              <li key={item.path}>
+                <NavLink
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `block px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150
+                     ${
+                       isActive
+                         ? 'text-content'
+                         : 'text-[#A0A0A0] hover:text-[#202020]'
+                     }`
+                  }
+                >
+                  {item.label}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+
         {/* Projects section — active projects with progress */}
         <div className="mt-8 pt-6 border-t border-edge">
           <NavLink
@@ -120,7 +160,7 @@ export default function Sidebar() {
               &rarr;
             </span>
           </NavLink>
-          <ul className="flex flex-col gap-1">
+          <ul className="flex flex-col gap-1 pl-2">
             {projects
               .filter((p) => p.status === 'active')
               .map((project) => {
