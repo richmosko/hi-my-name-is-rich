@@ -37,7 +37,7 @@ const template = `---
 title: "${title}"
 excerpt: ""
 date: "${today}"
-readTime: "X min read"
+readTime: "1 min read"
 categories:
   - musings
 featured: false

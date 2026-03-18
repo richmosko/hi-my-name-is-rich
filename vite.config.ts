@@ -23,6 +23,7 @@ export default defineConfig({
             pageResolver: (name: string) => [
               name
                 .trim()
+                .replace(/\.mdx?$/, '') // strip .md/.mdx so Obsidian-style links work
                 .toLowerCase()
                 .replace(/\s+/g, '-')
                 .replace(/[^a-z0-9-]/g, ''),
