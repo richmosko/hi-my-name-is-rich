@@ -6,7 +6,7 @@ export default function Footer() {
           {/* Left — avatar + name */}
           <div className="flex items-center gap-3">
             <img
-              src="/profile.jpeg"
+              src="/images/profiles/profile-rich.jpeg"
               alt="Rich Mosko"
               className="w-8 h-8 rounded-full object-cover"
             />
