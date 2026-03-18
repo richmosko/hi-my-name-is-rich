@@ -10,6 +10,7 @@ import Lightbox from '../components/Lightbox';
 export default function PostDetail() {
   const { slug } = useParams<{ slug: string }>();
   const post = posts.find((p) => p.slug === slug);
+  const [heroLightbox, setHeroLightbox] = useState(false);
 
   if (!post) {
     return (
@@ -24,7 +25,6 @@ export default function PostDetail() {
     );
   }
 
-  const [heroLightbox, setHeroLightbox] = useState(false);
   const author = authors[post.authorId];
   const heroImage = post.image || '';
   const PostContent = post.content;

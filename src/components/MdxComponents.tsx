@@ -1,35 +1,8 @@
-import { useState } from 'react';
 import type { MDXComponents } from 'mdx/types';
 import YouTube from './YouTube';
 import Gallery from './Gallery';
 import Video from './Video';
-import Lightbox from './Lightbox';
-
-function LightboxImage(props: React.ImgHTMLAttributes<HTMLImageElement>) {
-  const [open, setOpen] = useState(false);
-  const { src, alt, ...rest } = props;
-  if (!src) return <img {...props} />;
-  return (
-    <>
-      <img
-        src={src}
-        alt={alt}
-        className="cursor-pointer hover:opacity-90 transition-opacity rounded-lg"
-        onClick={() => setOpen(true)}
-        {...rest}
-      />
-      {open && (
-        <Lightbox
-          images={[{ src, alt: alt || '', caption: alt || '' }]}
-          currentIndex={0}
-          onClose={() => setOpen(false)}
-          onPrev={() => {}}
-          onNext={() => {}}
-        />
-      )}
-    </>
-  );
-}
+import LightboxImage from './LightboxImage';
 
 /** Shared component overrides for MDX content rendering */
 export const mdxComponents: MDXComponents = {
