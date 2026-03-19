@@ -5,6 +5,18 @@ import remarkFrontmatter from 'remark-frontmatter'
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter'
 import remarkGfm from 'remark-gfm'
 import remarkWikiLink from 'remark-wiki-link'
+import fs from 'node:fs'
+import path from 'node:path'
+
+// Build a set of project slugs at config time so wiki-links can resolve to /project/
+const projectDir = path.resolve(__dirname, 'src/content/projects')
+const projectSlugs = new Set(
+  fs.existsSync(projectDir)
+    ? fs.readdirSync(projectDir)
+        .filter((f: string) => f.endsWith('.mdx'))
+        .map((f: string) => f.replace(/\.mdx$/, ''))
+    : []
+)
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -28,8 +40,9 @@ export default defineConfig({
                 .replace(/\s+/g, '-')
                 .replace(/[^a-z0-9-]/g, ''),
             ],
-            // Map resolved slug to blog post route
-            hrefTemplate: (slug: string) => `/post/${slug}`,
+            // Route to /project/ for project slugs, /post/ for everything else
+            hrefTemplate: (slug: string) =>
+              projectSlugs.has(slug) ? `/project/${slug}` : `/post/${slug}`,
             // Style class for wikilinks (picked up by MdxComponents <a>)
             wikiLinkClassName: 'internal',
           },
