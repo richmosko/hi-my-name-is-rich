@@ -4,6 +4,7 @@
 import { execSync } from 'child_process';
 
 const tasks = [
+  { name: 'Validate frontmatter', cmd: 'node scripts/validate-frontmatter.mjs' },
   { name: 'Update read times', cmd: 'node scripts/update-read-times.mjs' },
   { name: 'Build search index', cmd: 'node scripts/build-search-index.mjs' },
   { name: 'Generate gallery manifests', cmd: 'node scripts/generate-gallery-manifest.mjs' },

@@ -103,9 +103,9 @@ export default function PostDetail() {
             {post.categories.map((cat) => (
               <span
                 key={cat}
-                className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColors[cat]}`}
+                className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColors[cat] ?? 'bg-gray-100 text-gray-600'}`}
               >
-                {categoryConfig[cat].label}
+                {categoryConfig[cat]?.label ?? cat}
               </span>
             ))}
             {post.tags?.map((tag) => (
