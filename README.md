@@ -27,7 +27,7 @@ A personal blog and portfolio site built with React, TypeScript, Vite, and Tailw
 | `/musings` | Musings | Posts filtered by category |
 | `/cool-shit` | Cool Shit | Posts filtered by category |
 | `/food` | Food | Posts filtered by category |
-| `/post/:slug` | Post Detail | Full post content with hero image, metadata, tags, and MDX body |
+| `/post/:slug` | Post Detail | Full post content with hero image, metadata, tags, MDX body, and Previous/Next navigation |
 
 ## Layout
 
@@ -39,17 +39,25 @@ A personal blog and portfolio site built with React, TypeScript, Vite, and Tailw
 - **Content width**: Posts and projects use centered 640px max-width for readability, with hero images at 1250px
 - **Profile image**: Responsive scaling at 40% of viewport width, capped at 414px
 
-## Search & Tag Filtering
+## Search, Category & Tag Filtering
 
 - **Search icon** in the top-right corner opens a slide-in panel from the right
 - **Full-text search** across post titles, excerpts, tags, and full post content via a build-time search index
 - **Word-boundary matching** to avoid substring false positives (e.g., "cuba" won't match "scuba")
-- **Tag pills** on the post list page with a collapsible "Filter by Tag" section
+- **Category filter**: collapsible "Filter by Category" section on the All Posts page with color-coded category pills matching each category's theme color
+- **Tag filter**: collapsible "Filter by Tag" section with tag pills
+- **Side-by-side filters**: category and tag filters sit inline next to each other with stable minimum widths
 - **Clickable tags** in post cards toggle that tag as a filter
-- **URL search params** (`?q=...&tag=...`) for shareable/composable search and filter state
-- **Category scoping**: search and tags work within the current category (e.g., `/travel?tag=Spain`)
+- **URL search params** (`?q=...&tag=...&cat=...`) for shareable/composable search, category, and filter state
+- **Category scoping**: on category-specific pages (e.g., `/travel`), the category filter is hidden since the page is already scoped; search and tags still work within that category
 - Search results page shows "Search Results:" header with clear button and post count
 - Rebuild the search index after adding/editing posts: `npm run build-search-index`
+
+## Post Navigation
+
+- **Previous/Next links** appear at the bottom of every post, navigating by date order (oldest to newest)
+- **Tiebreaker**: posts with the same date are sorted alphabetically by slug for deterministic ordering
+- Links are styled as `← Previous Post` and `Next Post →` with a top border separator
 
 ## Design System
 
@@ -133,6 +141,7 @@ src/
     TopBar.tsx          # Sticky header with breadcrumbs + glass morphism
     Sidebar.tsx         # Slide-out nav with projects progress section
     SearchOverlay.tsx   # Right slide-in search panel with live results
+    CategoryFilter.tsx  # Collapsible category pill filter with theme colors
     TagFilter.tsx       # Collapsible tag pill filter
     Footer.tsx          # Avatar + social links
     PostCard.tsx        # Post thumbnail card (6:4 aspect, hover effects)
@@ -156,8 +165,8 @@ src/
   pages/
     Home.tsx            # Hero + Featured Posts (3-across) + Latest Posts
     About.tsx           # Bio, interests, category cards with lightbox
-    PostsList.tsx       # Tag filter + search-filtered post list (640px centered)
-    PostDetail.tsx      # Full post view with hero image, lightbox, MDX rendering
+    PostsList.tsx       # Category + tag filters, search-filtered post list (640px centered)
+    PostDetail.tsx      # Full post view with hero image, lightbox, MDX rendering, prev/next nav
     ProjectsPage.tsx    # Project cards with expand/collapse (640px centered, 1250px hero)
     ProjectDetail.tsx   # Individual project page with MDX content and tasks
   types/

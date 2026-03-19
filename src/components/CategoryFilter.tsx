@@ -1,18 +1,19 @@
 import { useState } from 'react';
+import { categoryConfig } from '../data/categories';
+import type { Category } from '../types';
 
-interface TagFilterProps {
-  tags: string[];
-  activeTags: string[];
-  onToggle: (tag: string) => void;
+interface CategoryFilterProps {
+  categories: Category[];
+  activeCategories: Category[];
+  onToggle: (category: Category) => void;
 }
 
-export default function TagFilter({ tags, activeTags, onToggle }: TagFilterProps) {
+export default function CategoryFilter({ categories, activeCategories, onToggle }: CategoryFilterProps) {
   const [expanded, setExpanded] = useState(false);
 
-  if (tags.length === 0) return null;
+  if (categories.length === 0) return null;
 
-  // Auto-expand if any tags are active
-  const isOpen = expanded || activeTags.length > 0;
+  const isOpen = expanded || activeCategories.length > 0;
 
   return (
     <div className="min-w-fit flex flex-col gap-2">
@@ -20,10 +21,10 @@ export default function TagFilter({ tags, activeTags, onToggle }: TagFilterProps
         onClick={() => setExpanded(!isOpen)}
         className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-content-muted hover:text-content transition-colors whitespace-nowrap"
       >
-        <span>Filter by Tag</span>
-        {activeTags.length > 0 && (
+        <span>Filter by Category</span>
+        {activeCategories.length > 0 && (
           <span className="px-1.5 py-0.5 rounded-full bg-accent text-white text-[10px] font-bold normal-case tracking-normal">
-            {activeTags.length}
+            {activeCategories.length}
           </span>
         )}
         <svg
@@ -39,20 +40,20 @@ export default function TagFilter({ tags, activeTags, onToggle }: TagFilterProps
 
       {isOpen && (
         <div className="flex flex-wrap gap-2">
-          {tags.map((tag) => {
-            const isActive = activeTags.includes(tag);
+          {categories.map((cat) => {
+            const isActive = activeCategories.includes(cat);
             return (
               <button
-                key={tag}
-                onClick={() => onToggle(tag)}
+                key={cat}
+                onClick={() => onToggle(cat)}
                 aria-pressed={isActive}
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                   isActive
                     ? 'bg-accent text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : categoryConfig[cat].badgeColors + ' hover:opacity-80'
                 }`}
               >
-                {tag}
+                {categoryConfig[cat].label}
               </button>
             );
           })}

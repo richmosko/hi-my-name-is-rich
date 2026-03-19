@@ -12,6 +12,15 @@ export default function PostDetail() {
   const post = posts.find((p) => p.slug === slug);
   const [heroLightbox, setHeroLightbox] = useState(false);
 
+  // Previous/Next navigation — all posts sorted oldest-first by date, slug as tiebreaker
+  const sortedPosts = [...posts].sort((a, b) => {
+    const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
+    return diff !== 0 ? diff : a.slug.localeCompare(b.slug);
+  });
+  const postIndex = sortedPosts.findIndex((p) => p.slug === slug);
+  const prevPost = postIndex > 0 ? sortedPosts[postIndex - 1] : null;
+  const nextPost = postIndex >= 0 && postIndex < sortedPosts.length - 1 ? sortedPosts[postIndex + 1] : null;
+
   if (!post) {
     return (
       <div className="text-center py-20">
@@ -142,6 +151,32 @@ export default function PostDetail() {
         <div className="w-full max-w-[640px] flex flex-col gap-4 prose-custom text-content-secondary leading-relaxed">
           <PostContent components={mdxComponents} />
         </div>
+
+        {/* Previous / Next navigation */}
+        {(prevPost || nextPost) && (
+          <nav className="w-full max-w-[640px] flex justify-between items-center border-t border-gray-200 pt-6 mt-4">
+            {prevPost ? (
+              <Link
+                to={`/post/${prevPost.slug}`}
+                className="text-sm text-accent hover:text-accent-hover transition-colors"
+              >
+                &larr; Previous Post
+              </Link>
+            ) : (
+              <span />
+            )}
+            {nextPost ? (
+              <Link
+                to={`/post/${nextPost.slug}`}
+                className="text-sm text-accent hover:text-accent-hover transition-colors"
+              >
+                Next Post &rarr;
+              </Link>
+            ) : (
+              <span />
+            )}
+          </nav>
+        )}
       </div>
     </article>
   );
