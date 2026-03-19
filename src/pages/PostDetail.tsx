@@ -5,6 +5,7 @@ import { authors } from '../data/authors';
 import { categoryColors, categoryConfig } from '../data/categories';
 import { mdxComponents } from '../components/MdxComponents';
 import Lightbox from '../components/Lightbox';
+import Comments from '../components/Comments';
 
 
 export default function PostDetail() {
@@ -177,6 +178,9 @@ export default function PostDetail() {
             )}
           </nav>
         )}
+
+        {/* Comments */}
+        <Comments pageId={post.slug} />
       </div>
     </article>
   );
