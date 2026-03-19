@@ -57,7 +57,10 @@ export default function Home() {
 
       {/* Featured Posts — three across */}
       {featuredPosts.length > 0 && (
-        <section>
+        <section className="flex flex-col gap-8 sm:gap-10">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-content text-center">
+            Featured Posts
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
             {featuredPosts.slice(0, 3).map((post) => (
               <PostCard key={post.id} post={post} />

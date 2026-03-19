@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "new-post": "node scripts/new-post.mjs",
     "generate-galleries": "node scripts/generate-gallery-manifest.mjs",
-    "update-read-times": "node scripts/update-read-times.mjs"
+    "update-read-times": "node scripts/update-read-times.mjs",
+    "build-search-index": "node scripts/build-search-index.mjs"
   },
   "dependencies": {
     "@mdx-js/react": "^3.1.1",
