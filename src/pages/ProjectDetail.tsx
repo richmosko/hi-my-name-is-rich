@@ -2,6 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { projects } from '../lib/projects';
 import { getProjectCompletion } from '../types';
 import { mdxComponents } from '../components/MdxComponents';
+import { parseLocalDate } from '../lib/dateUtils';
 import type { ProjectTask } from '../types';
 
 function ProgressBar({ percent }: { percent: number }) {
@@ -198,7 +199,7 @@ export default function ProjectDetail() {
             {project.startDate && (
               <span>
                 Started{' '}
-                {new Date(project.startDate).toLocaleDateString('en-US', {
+                {parseLocalDate(project.startDate).toLocaleDateString('en-US', {
                   month: 'short',
                   day: 'numeric',
                   year: 'numeric',
@@ -208,7 +209,7 @@ export default function ProjectDetail() {
             {project.completedDate && (
               <span>
                 Completed{' '}
-                {new Date(project.completedDate).toLocaleDateString('en-US', {
+                {parseLocalDate(project.completedDate).toLocaleDateString('en-US', {
                   month: 'short',
                   day: 'numeric',
                   year: 'numeric',

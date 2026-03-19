@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { projects } from '../lib/projects';
 import { getProjectCompletion } from '../types';
+import { parseLocalDate } from '../lib/dateUtils';
 import type { Project, ProjectTask } from '../types';
 
 function ProgressBar({ percent }: { percent: number }) {
@@ -207,7 +208,7 @@ function ProjectCard({ project }: { project: Project }) {
           {project.startDate && (
             <span>
               Started{' '}
-              {new Date(project.startDate).toLocaleDateString('en-US', {
+              {parseLocalDate(project.startDate).toLocaleDateString('en-US', {
                 month: 'short',
                 day: 'numeric',
                 year: 'numeric',
@@ -217,7 +218,7 @@ function ProjectCard({ project }: { project: Project }) {
           {project.completedDate && (
             <span>
               Completed{' '}
-              {new Date(project.completedDate).toLocaleDateString('en-US', {
+              {parseLocalDate(project.completedDate).toLocaleDateString('en-US', {
                 month: 'short',
                 day: 'numeric',
                 year: 'numeric',

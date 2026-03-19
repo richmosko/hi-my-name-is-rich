@@ -14,6 +14,7 @@
     "update-read-times": "node scripts/update-read-times.mjs",
     "build-search-index": "node scripts/build-search-index.mjs",
     "precommit": "node scripts/precommit.mjs",
+    "list-featured": "node scripts/list-featured.mjs",
     "help": "node scripts/help.mjs"
   },
   "dependencies": {

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { authors } from '../data/authors';
 import { categoryColors, categoryConfig } from '../data/categories';
+import { parseLocalDate } from '../lib/dateUtils';
 import type { BlogPost } from '../types';
 
 interface PostCardProps {
@@ -92,7 +93,7 @@ export default function PostCard({ post, variant = 'default' }: PostCardProps) {
             dateTime={post.date}
             className="text-sm font-medium text-accent"
           >
-            {new Date(post.date).toLocaleDateString('en-US', {
+            {parseLocalDate(post.date).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
               year: 'numeric',
