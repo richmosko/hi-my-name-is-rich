@@ -24,8 +24,7 @@ dist-ssr
 *.sw?
 
 # Obsidian markdown configuration files
-**/.obsidian/workspace.json
-**/.obsidian/workspaces.json
+**/.obsidian
 
 # AI working directories
 .claude

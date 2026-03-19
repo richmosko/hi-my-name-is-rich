@@ -3,6 +3,7 @@ import { posts, searchPosts } from '../lib/posts';
 import { authors } from '../data/authors';
 import { categoryColors, categoryConfig } from '../data/categories';
 import TagFilter from '../components/TagFilter';
+import CategoryFilter from '../components/CategoryFilter';
 import type { BlogPost, Category } from '../types';
 
 function getCategoryDescription(category?: Category): string | undefined {
@@ -106,12 +107,15 @@ export default function PostsList({ category, title }: PostsListProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
   const activeTags = searchParams.getAll('tag');
+  const activeCategories = searchParams.getAll('cat') as Category[];
   const description = getCategoryDescription(category);
 
-  // Stage 1: category filter
+  // Stage 1: category filter (from route prop or from user-selected filter)
   const categoryPosts = category
     ? posts.filter((p) => p.categories.includes(category))
-    : posts;
+    : activeCategories.length > 0
+      ? posts.filter((p) => activeCategories.some((c) => p.categories.includes(c)))
+      : posts;
 
   // Stage 2: search + tag filter
   const filteredPosts = searchPosts(categoryPosts, query, activeTags);
@@ -120,6 +124,11 @@ export default function PostsList({ category, title }: PostsListProps) {
   const tagSet = new Set<string>();
   categoryPosts.forEach((p) => p.tags?.forEach((t) => tagSet.add(t)));
   const availableTags = Array.from(tagSet).sort();
+
+  // Derive all unique categories from all posts (only for "All Posts" view)
+  const catSet = new Set<Category>();
+  posts.forEach((p) => p.categories.forEach((c) => catSet.add(c)));
+  const availableCategories = Array.from(catSet).sort() as Category[];
 
   function handleTagToggle(tag: string) {
     setSearchParams((prev) => {
@@ -131,6 +140,21 @@ export default function PostsList({ category, title }: PostsListProps) {
       } else {
         tags.forEach((t) => next.append('tag', t));
         next.append('tag', tag);
+      }
+      return next;
+    });
+  }
+
+  function handleCategoryToggle(cat: Category) {
+    setSearchParams((prev) => {
+      const cats = prev.getAll('cat');
+      const next = new URLSearchParams(prev);
+      next.delete('cat');
+      if (cats.includes(cat)) {
+        cats.filter((c) => c !== cat).forEach((c) => next.append('cat', c));
+      } else {
+        cats.forEach((c) => next.append('cat', c));
+        next.append('cat', cat);
       }
       return next;
     });
@@ -175,14 +199,23 @@ export default function PostsList({ category, title }: PostsListProps) {
         />
       </div>
 
-      {/* Tag filter */}
-      {availableTags.length > 0 && (
-        <div className="w-full max-w-[640px]">
-          <TagFilter
-            tags={availableTags}
-            activeTags={activeTags}
-            onToggle={handleTagToggle}
-          />
+      {/* Category + Tag filters */}
+      {((!category && availableCategories.length > 0) || availableTags.length > 0) && (
+        <div className="w-full max-w-[640px] flex gap-8">
+          {!category && availableCategories.length > 0 && (
+            <CategoryFilter
+              categories={availableCategories}
+              activeCategories={activeCategories}
+              onToggle={handleCategoryToggle}
+            />
+          )}
+          {availableTags.length > 0 && (
+            <TagFilter
+              tags={availableTags}
+              activeTags={activeTags}
+              onToggle={handleTagToggle}
+            />
+          )}
         </div>
       )}
 
