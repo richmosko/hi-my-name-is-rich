@@ -9,32 +9,47 @@ A personal blog and portfolio site built with React, TypeScript, Vite, and Tailw
 - **MDX** via `@mdx-js/rollup` — `.mdx` files compiled at build time
 - **React Router 7** for client-side routing
 - **remark-gfm** for GitHub Flavored Markdown (tables, strikethrough, task lists)
+- **remark-wiki-link** for Obsidian-compatible `[[wikilink]]` syntax
 - **Montserrat** font (300–700, normal + italic) via Google Fonts
 
 ## Pages & Routes
 
 | Route | Page | Description |
 |-------|------|-------------|
-| `/` | Home | Hero section with profile intro, Featured Posts, and Latest Posts grid |
-| `/about` | About | Author bio, interests, and category card grid |
-| `/posts` | All Posts | Featured post hero + mini-card list of all posts |
-| `/travel` | Travel | Posts filtered by category |
-| `/design` | Design | Posts filtered by category |
-| `/finance` | Finance | Posts filtered by category |
-| `/projects` | Projects | Dedicated project tracker with progress bars and task lists |
+| `/` | Home | Hero section with profile intro, Featured Posts (3-across), and Latest Posts grid |
+| `/about` | About | Author bio, interests, and category card grid with lightbox on hero image |
+| `/posts` | All Posts | Hero image, tag filter, search-filtered post list at 640px centered width |
+| `/travel` | Travel | Posts filtered by category with category description |
+| `/design` | Design | Posts filtered by category with category description |
+| `/finance` | Finance | Posts filtered by category with category description |
+| `/projects` | Projects | Project cards with expand/collapse, hero image, centered 640px layout |
+| `/project/:id` | Project Detail | Full project page with hero image, MDX content, tasks, and progress |
 | `/musings` | Musings | Posts filtered by category |
 | `/cool-shit` | Cool Shit | Posts filtered by category |
 | `/food` | Food | Posts filtered by category |
-| `/post/:slug` | Post Detail | Full post content with hero image, metadata, and MDX body |
+| `/post/:slug` | Post Detail | Full post content with hero image, metadata, tags, and MDX body |
 
 ## Layout
 
 - **Max width**: 1440px with 95px horizontal padding (matching Figma spec)
 - **TopBar**: Sticky header with glass morphism effect, home icon, site title, and breadcrumb navigation
-- **Sidebar**: Slide-out mobile navigation (264px wide) with hamburger trigger, backdrop overlay, Escape key to close, and auto-close on route change. Includes nav links for all pages/categories plus a projects section showing active projects with completion percentages and mini progress bars
+- **Sidebar** (left): Slide-out mobile navigation (264px wide) with hamburger trigger, backdrop overlay, Escape key to close, and auto-close on route change. Includes nav links, category sub-links (indented), and active projects with completion percentages and mini progress bars
+- **Search Panel** (right): Slide-in search panel with full-text search, live results dropdown, and "View all results" link
 - **Footer**: Profile avatar, name, and social links (Instagram, GitHub, LinkedIn) with auto-updating copyright year
-- **Post content**: Centered at 640px max-width for readability
+- **Content width**: Posts and projects use centered 640px max-width for readability, with hero images at 1250px
 - **Profile image**: Responsive scaling at 40% of viewport width, capped at 414px
+
+## Search & Tag Filtering
+
+- **Search icon** in the top-right corner opens a slide-in panel from the right
+- **Full-text search** across post titles, excerpts, tags, and full post content via a build-time search index
+- **Word-boundary matching** to avoid substring false positives (e.g., "cuba" won't match "scuba")
+- **Tag pills** on the post list page with a collapsible "Filter by Tag" section
+- **Clickable tags** in post cards toggle that tag as a filter
+- **URL search params** (`?q=...&tag=...`) for shareable/composable search and filter state
+- **Category scoping**: search and tags work within the current category (e.g., `/travel?tag=Spain`)
+- Search results page shows "Search Results:" header with clear button and post count
+- Rebuild the search index after adding/editing posts: `npm run build-search-index`
 
 ## Design System
 
@@ -76,6 +91,10 @@ Projects are tracked via MDX files in `src/content/projects/`. Each file defines
 ---
 name: "My Project"
 description: "One-line summary"
+excerpt: "Longer summary shown on the projects list page"
+image: "/images/stock/my-project-hero.jpg"
+imageAspectRatio: "16/9"
+url: "https://github.com/user/project"
 status: active          # or 'completed'
 startDate: 2026-03-01
 completedDate: 2026-06-15  # only for completed projects
@@ -96,12 +115,14 @@ Optional rich MDX body content here — supports markdown, React components, gal
 
 ### How It Works
 
+- **Individual project pages** at `/project/:id` with full MDX content, hero image, and task list
+- **Projects list** (`/projects`) shows cards with expand/collapse for excerpt and tasks
 - **Completion %** is derived automatically from `completed` tasks vs total tasks
 - **Task groups** are optional — add `group:` to organize tasks under headings with per-group sub-counts
-- **Sidebar** shows only active projects with mini progress bars and completion percentages
-- **Projects page** (`/projects`) shows all projects: active first with full task checklists, then completed projects in a muted style
-- **MDX body** renders below the task list as a rich description (supports all MDX components)
-- **Data access**: `src/lib/projects.ts` mirrors the posts pattern using `import.meta.glob`
+- **Sidebar** shows only active projects with mini progress bars, linking to individual project pages
+- **Hero images** display at 1250px width on project detail pages
+- **External URL** shown as "Visit Project" link when set (hidden if `"#"`)
+- **MDX body** renders on the detail page (supports all MDX components)
 
 ## Project Structure
 
@@ -111,11 +132,15 @@ src/
     Layout.tsx          # Main layout (1440px max, 95px padding, Outlet)
     TopBar.tsx          # Sticky header with breadcrumbs + glass morphism
     Sidebar.tsx         # Slide-out nav with projects progress section
+    SearchOverlay.tsx   # Right slide-in search panel with live results
+    TagFilter.tsx       # Collapsible tag pill filter
     Footer.tsx          # Avatar + social links
     PostCard.tsx        # Post thumbnail card (6:4 aspect, hover effects)
     MdxComponents.tsx   # MDX overrides + custom component registration
+    LightboxImage.tsx   # Clickable image with lightbox overlay
     YouTube.tsx         # YouTube embed component
-    Gallery.tsx         # Image carousel component
+    Gallery.tsx         # Image carousel with aspectRatio and fullWidth props
+    Video.tsx           # Video player with poster/seek-frame support
     Lightbox.tsx        # Full-screen image viewer
   content/
     posts/              # Blog posts as .mdx files
@@ -123,27 +148,35 @@ src/
     projects/           # Project definitions as .mdx files
   data/
     authors.ts          # Author profiles (id, name, avatar)
-    categories.ts       # Category definitions, labels, colors
+    categories.ts       # Category definitions, labels, colors, descriptions
   lib/
     posts.ts            # Data access layer — loads all post .mdx via import.meta.glob
     projects.ts         # Data access layer — loads all project .mdx via import.meta.glob
+    search-index.json   # Full-text search index (generated by build-search-index script)
   pages/
-    Home.tsx            # Hero + Featured Posts + Latest Posts
-    About.tsx           # Bio, interests, category cards
-    PostsList.tsx       # Featured post + filtered post list
-    PostDetail.tsx      # Full post view with MDX rendering
-    ProjectsPage.tsx    # Project tracker with progress bars and grouped task lists
+    Home.tsx            # Hero + Featured Posts (3-across) + Latest Posts
+    About.tsx           # Bio, interests, category cards with lightbox
+    PostsList.tsx       # Tag filter + search-filtered post list (640px centered)
+    PostDetail.tsx      # Full post view with hero image, lightbox, MDX rendering
+    ProjectsPage.tsx    # Project cards with expand/collapse (640px centered, 1250px hero)
+    ProjectDetail.tsx   # Individual project page with MDX content and tasks
   types/
     index.ts            # BlogPost, Author, Category, Project, ProjectTask interfaces
   index.css             # Tailwind @theme tokens + custom utilities
   mdx.d.ts              # TypeScript declarations for .mdx imports
 public/
   images/
-    stock/              # Stock/default hero images (not tied to specific posts)
-    galleries/          # Image galleries (subdirectory per gallery)
+    stock/              # Stock/default hero images
+    albums/             # Photo albums (subdirectory per album with manifest.json)
+    profiles/           # Author profile images
 scripts/
   new-post.mjs          # Scaffold a new blog post
+  new-project.mjs       # Scaffold a new project
+  update-read-times.mjs # Recalculate readTime for all posts
+  build-search-index.mjs # Build full-text search index
   generate-gallery-manifest.mjs  # Generate manifest.json for galleries
+  precommit.mjs         # Run all pre-commit tasks
+  help.mjs              # Show available commands
 ```
 
 ## Getting Started
@@ -151,9 +184,12 @@ scripts/
 ```bash
 npm install
 npm run dev
+npm run help    # see all available commands
 ```
 
-## Creating a New Post
+## Creating Content
+
+### New Blog Post
 
 ```bash
 npm run new-post -- "My Post Title"
@@ -161,7 +197,7 @@ npm run new-post -- "My Post Title"
 
 Creates `src/content/posts/my-post-title.mdx` with frontmatter pre-filled. Edit in any text editor or open `src/content/posts/` as an Obsidian vault (config is included with MDX plugin support).
 
-### Frontmatter Format
+#### Post Frontmatter
 
 ```yaml
 ---
@@ -171,36 +207,33 @@ date: "2026-03-11"
 readTime: "5 min read"
 categories:
   - travel
-  - design
 featured: true
 image: "/images/stock/my-hero-image.jpg"
+imageAspectRatio: "16/9"
 authorId: "rich"
+tags:
+  - Spain
+  - Road-Trip
 ---
 ```
 
-Posts are sorted by date (newest first). The `slug` and `id` are derived from the filename. If no `image` is specified, a default hero image is used.
+Posts are sorted by date (newest first). The `slug` and `id` are derived from the filename. If `image` is empty (`""`), no hero image is shown. The `imageAspectRatio` defaults to `16/9`.
 
-## Creating a New Project
+#### Linking Between Posts
 
-Create a file in `src/content/projects/` (e.g., `my-project.mdx`):
-
-```yaml
----
-name: "My Project"
-description: "What this project is about"
-status: active
-startDate: 2026-03-11
-tasks:
-  - title: "Research phase"
-    completed: true
-  - title: "Build prototype"
-    completed: false
----
-
-Optional description with full MDX support.
+```mdx
+[[other-post-slug|Display Text]]           # Wikilink (works in Obsidian too)
+[[other-post-slug.mdx|Display Text]]       # With .mdx extension (also works)
+[Display Text](/posts/other-post-slug)      # Standard markdown link
 ```
 
-To mark a task done, flip `completed: false` to `completed: true`. To complete a project, change `status: active` to `status: completed` and add `completedDate`.
+### New Project
+
+```bash
+npm run new-project -- "My Project Name"
+```
+
+Creates `src/content/projects/my-project-name.mdx` with all frontmatter fields.
 
 ## MDX Components
 
@@ -218,7 +251,8 @@ Responsive 16:9 iframe using YouTube's privacy-enhanced mode (`youtube-nocookie.
 ### Image Gallery
 
 ```mdx
-<Gallery path="/images/galleries/my-trip" />
+<Gallery path="/images/albums/my-trip" />
+<Gallery path="/images/albums/my-trip" aspectRatio="4/3" />
 ```
 
 Horizontal scroll carousel loaded from a `manifest.json` in the specified directory:
@@ -226,32 +260,30 @@ Horizontal scroll carousel loaded from a `manifest.json` in the specified direct
 - **Scroll-snap** for clean stops between images
 - **Arrow buttons** on desktop, **swipe** on mobile
 - **Dot indicators** showing current position
-- **Lightbox** — click any image for full-screen view with keyboard nav (← → Escape), touch swipe, image counter, and captions
+- **Lightbox** — click any image for full-screen view with keyboard nav, touch swipe, and captions
+- **Custom aspect ratio** via `aspectRatio` prop (default: `4/3`)
+- **Video support** — `.mp4` files in the manifest play inline with controls
+- Gallery width extends to 950px for a wider viewing experience
 
 #### Setting Up a Gallery
 
-1. Create a directory under `public/images/` (e.g., `public/images/galleries/amalfi-trip/`)
-2. Add images (`.jpg`, `.jpeg`, `.png`, `.webp`)
-3. Generate the manifest:
+1. Create a directory under `public/images/albums/` (e.g., `public/images/albums/RTW-London/`)
+2. Add images (`.jpg`, `.jpeg`, `.png`, `.webp`) and videos (`.mp4`)
+3. Generate the manifest: `npm run generate-galleries`
+4. Optionally edit the generated `manifest.json` to add alt text and captions
+5. Use `<Gallery path="/images/albums/RTW-London" />` in any post
 
-```bash
-npm run generate-galleries
+### Video
+
+```mdx
+<Video src="/images/albums/RTW-Caribbean/Buena_Vista.mp4" caption="Buena Vista Social Club" />
 ```
 
-4. Optionally edit the generated `manifest.json` to add alt text and captions:
+HTML5 video player with controls, optional caption, and automatic first-frame poster via `#t=1` seek.
 
-```json
-{
-  "images": [
-    { "src": "01.jpg", "alt": "Sunset over Positano", "caption": "Day 1" },
-    { "src": "02.jpg", "alt": "Blue grotto interior" }
-  ]
-}
-```
+### Image Lightbox
 
-5. Use `<Gallery path="/images/galleries/amalfi-trip" />` in any post.
-
-The generator preserves existing `alt` and `caption` values when re-run after adding new images.
+All inline images in posts automatically support lightbox — click any image to view it full-screen. Hero images on post detail and about pages also support lightbox.
 
 ### Inline HTML/JSX
 
@@ -276,26 +308,41 @@ All standard markdown plus GFM extensions:
 - Blockquotes (including nested)
 - Fenced code blocks with dark theme styling
 - Inline code
+- Tables with column alignment (`:---`, `:---:`, `---:`)
 - Horizontal rules
 - Links (external auto-open in new tab)
 - Footnotes
 
 ## Scripts
 
+Run `npm run help` to see all commands, or reference the table below:
+
 | Command | Description |
 |---------|-------------|
+| `npm run help` | Show all available commands |
 | `npm run dev` | Start dev server on port 5173 |
 | `npm run build` | Type-check and build for production |
 | `npm run preview` | Preview production build locally |
 | `npm run lint` | Run ESLint |
 | `npm run new-post -- "Title"` | Scaffold a new `.mdx` post |
-| `npm run generate-galleries` | Generate `manifest.json` for all image directories under `public/images/` |
-| `npm run generate-galleries -- path/to/dir` | Generate manifests starting from a specific directory |
+| `npm run new-project -- "Name"` | Scaffold a new `.mdx` project |
+| `npm run update-read-times` | Recalculate readTime for all posts based on word count |
+| `npm run build-search-index` | Rebuild full-text search index from all post content |
+| `npm run generate-galleries` | Generate `manifest.json` for all image/video directories |
+| `npm run precommit` | Run all pre-commit tasks (read times, search index, galleries, lint) |
+
+## CI/CD
+
+GitHub Actions CI runs on pushes to `main` and on pull requests:
+- ESLint
+- TypeScript type-check + Vite production build
 
 ## Architecture Notes
 
 - **Data access layers**: `src/lib/posts.ts` and `src/lib/projects.ts` are the single seams for all content loading. They use `import.meta.glob` to eagerly import `.mdx` files at build time. To migrate to a headless CMS later, only these files need to change — all consumers import from `lib/`.
-- **MDX component overrides**: All markdown element styling (headings, code blocks, lists, blockquotes, etc.) is centralized in `src/components/MdxComponents.tsx`. Custom components like `YouTube` and `Gallery` are also registered there — no imports needed in post files.
-- **Content as code**: Posts and projects live in the repo as `.mdx` files. Creating, editing, and publishing is just a git commit. The Obsidian vault config in `src/content/posts/.obsidian/` lets you use Obsidian as a WYSIWYG editor with live preview.
+- **MDX component overrides**: All markdown element styling (headings, code blocks, lists, blockquotes, etc.) is centralized in `src/components/MdxComponents.tsx`. Custom components like `YouTube`, `Gallery`, and `Video` are also registered there — no imports needed in post files.
+- **Content as code**: Posts and projects live in the repo as `.mdx` files. Creating, editing, and publishing is just a git commit. The Obsidian vault config in `src/content/posts/.obsidian/` lets you use Obsidian as a WYSIWYG editor with live preview. Wikilinks work in both Obsidian and the blog (with or without `.mdx` extension).
+- **Full-text search**: A build-time script extracts plain text from all MDX posts into `search-index.json`. The search function uses word-boundary regex matching on the index to avoid substring false positives, plus substring matching on titles/excerpts/tags.
 - **Gallery manifests**: Since Vite can't list directory contents at runtime, each gallery uses a `manifest.json` that maps filenames to metadata. The `generate-galleries` script automates creation and preserves hand-edited alt text and captions.
-- **Project tracking**: Projects use the same MDX + frontmatter pattern as posts. Completion percentages are derived at render time from task data. Tasks optionally support grouping for hierarchical organization.
+- **Project tracking**: Projects use the same MDX + frontmatter pattern as posts. Completion percentages are derived at render time from task data. Tasks optionally support grouping for hierarchical organization. Individual project detail pages mirror the post detail pattern.
+- **Pre-commit workflow**: `npm run precommit` ensures read times, search index, gallery manifests, and lint are all up to date before committing.
