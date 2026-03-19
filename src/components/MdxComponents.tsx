@@ -1,11 +1,15 @@
 import type { MDXComponents } from 'mdx/types';
 import YouTube from './YouTube';
 import Gallery from './Gallery';
+import Video from './Video';
+import LightboxImage from './LightboxImage';
 
 /** Shared component overrides for MDX content rendering */
 export const mdxComponents: MDXComponents = {
   YouTube,
   Gallery,
+  Video,
+  img: LightboxImage,
   h1: (props) => (
     <h1 className="text-2xl font-bold text-content mt-8" {...props} />
   ),

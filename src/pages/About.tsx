@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { authors } from '../data/authors';
 import { categoryConfig } from '../data/categories';
 import type { Category } from '../types';
+import Lightbox from '../components/Lightbox';
 
 export default function About() {
+  const [heroLightbox, setHeroLightbox] = useState(false);
   const author = authors['rich'];
 
   // Show all defined categories so new ones appear automatically
@@ -25,13 +28,25 @@ export default function About() {
       </header>
 
       {/* Hero image — full 1250 width, 280px tall */}
-      <div className="w-full h-[180px] sm:h-[280px] rounded-xl overflow-hidden">
+      <div
+        className="w-full h-[180px] sm:h-[280px] rounded-xl overflow-hidden cursor-pointer"
+        onClick={() => setHeroLightbox(true)}
+      >
         <img
           src="/images/stock/northern-lights-snowy-mountains.jpg"
           alt="Northern lights over snowy mountains"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover hover:opacity-90 transition-opacity"
         />
       </div>
+      {heroLightbox && (
+        <Lightbox
+          images={[{ src: '/images/stock/northern-lights-snowy-mountains.jpg', alt: 'Northern lights over snowy mountains' }]}
+          currentIndex={0}
+          onClose={() => setHeroLightbox(false)}
+          onPrev={() => {}}
+          onNext={() => {}}
+        />
+      )}
 
       {/* About text — centered at 640px */}
       <div className="w-full max-w-[640px] flex flex-col gap-4 text-content-secondary leading-relaxed">

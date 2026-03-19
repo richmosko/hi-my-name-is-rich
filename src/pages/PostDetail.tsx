@@ -1,13 +1,16 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { posts } from '../lib/posts';
 import { authors } from '../data/authors';
 import { categoryColors, categoryConfig } from '../data/categories';
 import { mdxComponents } from '../components/MdxComponents';
+import Lightbox from '../components/Lightbox';
 
 
 export default function PostDetail() {
   const { slug } = useParams<{ slug: string }>();
   const post = posts.find((p) => p.slug === slug);
+  const [heroLightbox, setHeroLightbox] = useState(false);
 
   if (!post) {
     return (
@@ -111,16 +114,28 @@ export default function PostDetail() {
       <div className="w-full flex flex-col gap-10 items-center">
         {/* Article image — full content width, aspect ratio from frontmatter or 16/9 default */}
         {heroImage && (
-          <div
-            className="w-full rounded-xl overflow-hidden"
-            style={{ aspectRatio: post.imageAspectRatio || '16/9' }}
-          >
-            <img
-              src={heroImage}
-              alt={post.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
+          <>
+            <div
+              className="w-full rounded-xl overflow-hidden cursor-pointer"
+              style={{ aspectRatio: post.imageAspectRatio || '16/9' }}
+              onClick={() => setHeroLightbox(true)}
+            >
+              <img
+                src={heroImage}
+                alt={post.title}
+                className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+              />
+            </div>
+            {heroLightbox && (
+              <Lightbox
+                images={[{ src: heroImage, alt: post.title }]}
+                currentIndex={0}
+                onClose={() => setHeroLightbox(false)}
+                onPrev={() => {}}
+                onNext={() => {}}
+              />
+            )}
+          </>
         )}
 
         {/* Article text — centered at 640px */}
