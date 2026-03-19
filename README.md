@@ -132,6 +132,17 @@ Optional rich MDX body content here — supports markdown, React components, gal
 - **External URL** shown as "Visit Project" link when set (hidden if `"#"`)
 - **MDX body** renders on the detail page (supports all MDX components)
 
+## Comments (Remark42)
+
+Posts include a comments section powered by [Remark42](https://remark42.com/), a self-hosted comment engine.
+
+- **Self-hosted** — no third-party tracking, you own all comment data
+- **Auth** via GitHub, Google, or anonymous (configurable)
+- **Moderation** — admin panel, comment approval, spam scoring, user/IP blocking, word filters
+- **Env-driven** — set `VITE_REMARK42_HOST` to enable; without it, a dev placeholder is shown
+- **Per-post threads** — each post's slug is used as the unique page ID
+- See [`REMARK42-SETUP.md`](./REMARK42-SETUP.md) for full deployment instructions
+
 ## Project Structure
 
 ```
@@ -151,6 +162,7 @@ src/
     Gallery.tsx         # Image carousel with aspectRatio and fullWidth props
     Video.tsx           # Video player with poster/seek-frame support
     Lightbox.tsx        # Full-screen image viewer
+    Comments.tsx        # Remark42 comment widget (env-driven)
   content/
     posts/              # Blog posts as .mdx files
       .obsidian/        # Obsidian vault config for editing posts
