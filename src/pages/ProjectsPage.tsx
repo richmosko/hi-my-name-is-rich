@@ -1,7 +1,7 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { projects } from '../lib/projects';
 import { getProjectCompletion } from '../types';
-import { mdxComponents } from '../components/MdxComponents';
 import type { Project, ProjectTask } from '../types';
 
 function ProgressBar({ percent }: { percent: number }) {
@@ -132,8 +132,7 @@ function ProjectCard({ project }: { project: Project }) {
   const [expanded, setExpanded] = useState(false);
   const percent = getProjectCompletion(project);
   const isCompleted = project.status === 'completed';
-  const ProjectContent = project.content;
-  const hasDetails = ProjectContent || project.tasks.length > 0;
+  const hasDetails = project.excerpt || project.tasks.length > 0;
 
   return (
     <div
@@ -148,13 +147,15 @@ function ProjectCard({ project }: { project: Project }) {
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-            <h3
-              className={`text-lg sm:text-xl font-semibold ${
+            <Link
+              to={`/project/${project.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className={`text-lg sm:text-xl font-semibold hover:text-accent transition-colors ${
                 isCompleted ? 'text-content-muted' : 'text-content'
               }`}
             >
               {project.name}
-            </h3>
+            </Link>
             <span
               className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-medium ${
                 isCompleted
@@ -229,10 +230,10 @@ function ProjectCard({ project }: { project: Project }) {
       {/* Expandable details */}
       {expanded && (
         <>
-          {/* MDX body content */}
-          {ProjectContent && (
+          {/* Excerpt */}
+          {project.excerpt && (
             <div className="pt-2 border-t border-edge/50 text-sm text-content-secondary leading-relaxed">
-              <ProjectContent components={mdxComponents} />
+              {project.excerpt}
             </div>
           )}
 
