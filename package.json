@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "new-post": "node scripts/new-post.mjs",
+    "new-project": "node scripts/new-project.mjs",
     "generate-galleries": "node scripts/generate-gallery-manifest.mjs",
     "update-read-times": "node scripts/update-read-times.mjs",
     "build-search-index": "node scripts/build-search-index.mjs",
