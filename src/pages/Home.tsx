@@ -4,8 +4,7 @@ import PostCard from '../components/PostCard';
 
 export default function Home() {
   const featuredPosts = posts.filter((p) => p.featured);
-  const featuredIds = new Set(featuredPosts.map((p) => p.id));
-  const latestPosts = posts.filter((p) => !featuredIds.has(p.id)).slice(0, 4);
+  const latestPosts = posts.slice(0, 4);
 
   return (
     <div className="flex flex-col gap-10 sm:gap-16">

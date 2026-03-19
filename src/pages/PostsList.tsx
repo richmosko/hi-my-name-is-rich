@@ -2,6 +2,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { posts, searchPosts } from '../lib/posts';
 import { authors } from '../data/authors';
 import { categoryColors, categoryConfig } from '../data/categories';
+import { parseLocalDate } from '../lib/dateUtils';
 import TagFilter from '../components/TagFilter';
 import CategoryFilter from '../components/CategoryFilter';
 import type { BlogPost, Category } from '../types';
@@ -86,7 +87,7 @@ function MiniPostCard({
             dateTime={post.date}
             className="text-sm font-medium text-accent"
           >
-            {new Date(post.date).toLocaleDateString('en-US', {
+            {parseLocalDate(post.date).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
               year: 'numeric',

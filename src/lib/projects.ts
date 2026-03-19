@@ -1,5 +1,6 @@
 import type { Project, ProjectTask } from '../types';
 import type { MDXComponents } from 'mdx/types';
+import { parseLocalDate } from './dateUtils';
 
 // MDX module shape: each .mdx file exports frontmatter + a default React component
 interface ProjectMdxModule {
@@ -63,7 +64,7 @@ const allProjects: Project[] = Object.entries(projectModules)
     // Within same status, sort by most recent date
     const dateA = a.completedDate || a.startDate || '';
     const dateB = b.completedDate || b.startDate || '';
-    return new Date(dateB).getTime() - new Date(dateA).getTime();
+    return parseLocalDate(dateB).getTime() - parseLocalDate(dateA).getTime();
   });
 
 /** Get all projects */

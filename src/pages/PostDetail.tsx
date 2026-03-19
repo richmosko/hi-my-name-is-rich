@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { posts } from '../lib/posts';
 import { authors } from '../data/authors';
 import { categoryColors, categoryConfig } from '../data/categories';
+import { parseLocalDate } from '../lib/dateUtils';
 import { mdxComponents } from '../components/MdxComponents';
 import Lightbox from '../components/Lightbox';
 import Comments from '../components/Comments';
@@ -15,7 +16,7 @@ export default function PostDetail() {
 
   // Previous/Next navigation — all posts sorted oldest-first by date, slug as tiebreaker
   const sortedPosts = [...posts].sort((a, b) => {
-    const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
+    const diff = parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime();
     return diff !== 0 ? diff : a.slug.localeCompare(b.slug);
   });
   const postIndex = sortedPosts.findIndex((p) => p.slug === slug);
@@ -81,7 +82,7 @@ export default function PostDetail() {
             dateTime={post.date}
             className="text-sm font-medium text-content-muted"
           >
-            {new Date(post.date).toLocaleDateString('en-US', {
+            {parseLocalDate(post.date).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
               year: 'numeric',

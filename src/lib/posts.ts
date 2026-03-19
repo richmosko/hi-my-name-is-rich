@@ -1,4 +1,5 @@
 import type { BlogPost, Category } from '../types';
+import { parseLocalDate } from './dateUtils';
 
 // MDX module shape: each .mdx file exports frontmatter + a default React component
 interface MdxModule {
@@ -52,7 +53,7 @@ function parsePost(filePath: string, mod: MdxModule): BlogPost {
 // Parse all posts once, sorted newest-first
 const allPosts: BlogPost[] = Object.entries(postModules)
   .map(([path, mod]) => parsePost(path, mod))
-  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  .sort((a, b) => parseLocalDate(b.date).getTime() - parseLocalDate(a.date).getTime());
 
 /** Get all posts, sorted newest-first */
 export function getAllPosts(): BlogPost[] {

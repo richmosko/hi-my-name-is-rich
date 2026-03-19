@@ -197,6 +197,8 @@ scripts/
   build-search-index.mjs # Build full-text search index
   generate-gallery-manifest.mjs  # Generate manifest.json for galleries
   precommit.mjs         # Run all pre-commit tasks
+  validate-frontmatter.mjs # Check for unknown categories and YAML issues
+  list-featured.mjs     # List all posts marked as featured
   help.mjs              # Show available commands
 ```
 
@@ -238,15 +240,38 @@ tags:
 ---
 ```
 
-Posts are sorted by date (newest first). The `slug` and `id` are derived from the filename. If `image` is empty (`""`), no hero image is shown. The `imageAspectRatio` defaults to `16/9`.
+Posts are sorted by date (newest first), with slug as alphabetical tiebreaker. The `slug` and `id` are derived from the filename. If `image` is empty (`""`), no hero image is shown. The `imageAspectRatio` defaults to `16/9`.
 
-#### Linking Between Posts
+#### Date Formats
+
+All dates are parsed as **local time** (not UTC) to avoid off-by-one day display bugs:
+
+| Format | Example | Notes |
+|--------|---------|-------|
+| Date only | `2026-03-01` | Local midnight |
+| T-separated | `2026-03-01T06:10:00` | Local time |
+| Space-separated | `2026-03-01 06:10:00` | Also supported |
+| UTC | `2026-03-01T06:10:00Z` | Converted to viewer's timezone |
+
+#### Featured Posts
+
+Posts with `featured: true` appear in the Featured section on the home page (top 3 by date). List all featured posts:
+
+```bash
+npm run list-featured
+```
+
+#### Linking Between Posts and Projects
 
 ```mdx
-[[other-post-slug|Display Text]]           # Wikilink (works in Obsidian too)
+[[other-post-slug|Display Text]]           # Wikilink to a post (works in Obsidian too)
 [[other-post-slug.mdx|Display Text]]       # With .mdx extension (also works)
-[Display Text](/posts/other-post-slug)      # Standard markdown link
+[[project-slug|Display Text]]              # Wikilink to a project (auto-detected)
+[Display Text](/posts/other-post-slug)      # Standard markdown link to a post
+[Display Text](/project/project-slug)       # Standard markdown link to a project
 ```
+
+Wiki-links automatically resolve to `/project/` for project slugs and `/posts/` for everything else.
 
 ### New Project
 
