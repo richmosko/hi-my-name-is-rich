@@ -7,8 +7,10 @@ interface ProjectMdxModule {
   frontmatter: {
     name: string;
     description: string;
+    excerpt?: string;
     url?: string;
     image?: string;
+    imageAspectRatio?: string;
     status: 'active' | 'completed';
     startDate?: string;
     completedDate?: string;
@@ -40,8 +42,10 @@ function parseProject(filePath: string, mod: ProjectMdxModule): Project {
     id,
     name: frontmatter.name,
     description: frontmatter.description,
+    excerpt: frontmatter.excerpt,
     url: frontmatter.url,
-    image: frontmatter.image,
+    image: frontmatter.image || undefined,
+    imageAspectRatio: frontmatter.imageAspectRatio,
     status: frontmatter.status,
     startDate: frontmatter.startDate,
     completedDate: frontmatter.completedDate,

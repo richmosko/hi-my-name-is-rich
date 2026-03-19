@@ -168,7 +168,7 @@ export default function Sidebar() {
                 return (
                   <li key={project.id}>
                     <NavLink
-                      to="/projects"
+                      to={`/project/${project.id}`}
                       className="block px-3 py-2 rounded-lg hover:bg-surface-secondary
                                  transition-colors duration-150"
                     >

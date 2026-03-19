@@ -35,8 +35,10 @@ export interface Project {
   id: string;
   name: string;
   description: string;
+  excerpt?: string;
   url?: string;
   image?: string;
+  imageAspectRatio?: string;
   status: 'active' | 'completed';
   startDate?: string;
   completedDate?: string;

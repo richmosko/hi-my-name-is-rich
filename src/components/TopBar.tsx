@@ -12,9 +12,10 @@ const routeLabels: Record<string, string> = {
 export default function TopBar() {
   const { pathname } = useLocation();
 
-  // Match /post/:slug to "Posts"
+  // Match /post/:slug to "Posts" and /project/:id to "Projects"
   const isPostDetail = pathname.startsWith('/post/');
-  const currentLabel = isPostDetail ? 'Posts' : (routeLabels[pathname] ?? '');
+  const isProjectDetail = pathname.startsWith('/project/');
+  const currentLabel = isPostDetail ? 'Posts' : isProjectDetail ? 'Projects' : (routeLabels[pathname] ?? '');
 
   return (
     <header className="sticky top-0 z-40 w-full bg-surface/80 backdrop-blur-md border-b border-edge">

@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import About from './pages/About';
 import PostsList from './pages/PostsList';
 import ProjectsPage from './pages/ProjectsPage';
+import ProjectDetail from './pages/ProjectDetail';
 import PostDetail from './pages/PostDetail';
 
 export default function App() {
@@ -45,6 +46,7 @@ export default function App() {
             path="food"
             element={<PostsList title="Food" category="food" />}
           />
+          <Route path="project/:id" element={<ProjectDetail />} />
           <Route path="post/:slug" element={<PostDetail />} />
         </Route>
       </Routes>
