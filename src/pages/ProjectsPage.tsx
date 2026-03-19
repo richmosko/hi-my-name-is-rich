@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { projects } from '../lib/projects';
 import { getProjectCompletion } from '../types';
 import { mdxComponents } from '../components/MdxComponents';
@@ -128,9 +129,11 @@ function TaskList({ tasks }: { tasks: ProjectTask[] }) {
 }
 
 function ProjectCard({ project }: { project: Project }) {
+  const [expanded, setExpanded] = useState(false);
   const percent = getProjectCompletion(project);
   const isCompleted = project.status === 'completed';
   const ProjectContent = project.content;
+  const hasDetails = ProjectContent || project.tasks.length > 0;
 
   return (
     <div
@@ -138,7 +141,8 @@ function ProjectCard({ project }: { project: Project }) {
         isCompleted
           ? 'border-edge/60 bg-surface-secondary/40'
           : 'border-edge bg-white'
-      }`}
+      } ${hasDetails ? 'cursor-pointer' : ''}`}
+      onClick={() => hasDetails && setExpanded(!expanded)}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
@@ -160,6 +164,19 @@ function ProjectCard({ project }: { project: Project }) {
             >
               {isCompleted ? 'Completed' : 'Active'}
             </span>
+            {hasDetails && (
+              <svg
+                className={`w-4 h-4 text-content-muted transition-transform duration-200 ${
+                  expanded ? 'rotate-180' : ''
+                }`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            )}
           </div>
           <p
             className={`text-sm mt-1 ${
@@ -209,14 +226,19 @@ function ProjectCard({ project }: { project: Project }) {
         </div>
       )}
 
-      {/* Task list — grouped or flat */}
-      {project.tasks.length > 0 && <TaskList tasks={project.tasks} />}
+      {/* Expandable details */}
+      {expanded && (
+        <>
+          {/* MDX body content */}
+          {ProjectContent && (
+            <div className="pt-2 border-t border-edge/50 text-sm text-content-secondary leading-relaxed">
+              <ProjectContent components={mdxComponents} />
+            </div>
+          )}
 
-      {/* MDX body content */}
-      {ProjectContent && (
-        <div className="pt-2 border-t border-edge/50 text-sm text-content-secondary leading-relaxed">
-          <ProjectContent components={mdxComponents} />
-        </div>
+          {/* Task list — grouped or flat */}
+          {project.tasks.length > 0 && <TaskList tasks={project.tasks} />}
+        </>
       )}
     </div>
   );
@@ -227,18 +249,27 @@ export default function ProjectsPage() {
   const completedProjects = projects.filter((p) => p.status === 'completed');
 
   return (
-    <div className="flex flex-col gap-8 sm:gap-12">
+    <div className="flex flex-col gap-8 items-center">
       {/* Page header */}
-      <div>
+      <div className="w-full max-w-[640px]">
         <h1 className="text-2xl sm:text-3xl font-bold text-content">Projects</h1>
         <p className="text-content-secondary mt-2 text-sm">
           What I&rsquo;m building, tinkering with, and have shipped.
         </p>
       </div>
 
+      {/* Hero image */}
+      <div className="w-full max-w-[1250px] rounded-2xl overflow-hidden">
+        <img
+          src="/images/stock/profile-rich-welding.jpg"
+          alt="Rich welding in the workshop"
+          className="w-full h-auto object-cover aspect-[21/9]"
+        />
+      </div>
+
       {/* Active projects */}
       {activeProjects.length > 0 && (
-        <section className="flex flex-col gap-6">
+        <section className="w-full max-w-[640px] flex flex-col gap-6">
           <h2 className="text-xl font-semibold text-content">
             In Progress
           </h2>
@@ -252,7 +283,7 @@ export default function ProjectsPage() {
 
       {/* Completed projects */}
       {completedProjects.length > 0 && (
-        <section className="flex flex-col gap-6">
+        <section className="w-full max-w-[640px] flex flex-col gap-6">
           <h2 className="text-xl font-semibold text-content-muted">
             Completed
           </h2>
