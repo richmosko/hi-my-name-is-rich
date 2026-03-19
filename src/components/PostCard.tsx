@@ -53,14 +53,17 @@ export default function PostCard({ post, variant = 'default' }: PostCardProps) {
 
         {/* Category badges + tags — left justified */}
         <div className="flex flex-wrap gap-1.5">
-          {post.categories.map((cat) => (
-            <span
-              key={cat}
-              className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColors[cat]}`}
-            >
-              {categoryConfig[cat].label}
-            </span>
-          ))}
+          {post.categories.map((cat) => {
+            const config = categoryConfig[cat];
+            return (
+              <span
+                key={cat}
+                className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColors[cat] ?? 'bg-gray-100 text-gray-600'}`}
+              >
+                {config?.label ?? cat}
+              </span>
+            );
+          })}
           {post.tags?.map((tag) => (
             <span
               key={tag}

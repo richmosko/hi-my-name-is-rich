@@ -35,7 +35,11 @@ function parsePost(filePath: string, mod: MdxModule): BlogPost {
     excerpt: frontmatter.excerpt,
     date: frontmatter.date,
     readTime: frontmatter.readTime ?? '1 min read',
-    categories: frontmatter.categories,
+    categories: Array.isArray(frontmatter.categories)
+      ? frontmatter.categories
+      : frontmatter.categories
+        ? [frontmatter.categories as unknown as Category]
+        : [],
     featured: frontmatter.featured ?? false,
     image: frontmatter.image || undefined,
     imageAspectRatio: frontmatter.imageAspectRatio,

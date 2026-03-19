@@ -50,10 +50,10 @@ export default function CategoryFilter({ categories, activeCategories, onToggle 
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                   isActive
                     ? 'bg-accent text-white'
-                    : categoryConfig[cat].badgeColors + ' hover:opacity-80'
+                    : (categoryConfig[cat]?.badgeColors ?? 'bg-gray-100 text-gray-600') + ' hover:opacity-80'
                 }`}
               >
-                {categoryConfig[cat].label}
+                {categoryConfig[cat]?.label ?? cat}
               </button>
             );
           })}
