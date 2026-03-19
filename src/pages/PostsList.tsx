@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { posts } from '../lib/posts';
 import { authors } from '../data/authors';
 import { categoryColors, categoryConfig } from '../data/categories';
-import PostCard from '../components/PostCard';
 import type { BlogPost, Category } from '../types';
 
 const DEFAULT_IMAGE = '/images/stock/northern-lights-snowy-mountains.jpg';
@@ -91,15 +90,22 @@ export default function PostsList({ category, title }: PostsListProps) {
     ? posts.filter((p) => p.categories.includes(category))
     : posts;
 
-  const [featuredPost, ...remainingPosts] = filteredPosts;
-
   return (
-    <div className="flex flex-col gap-10">
-      <div>
+    <div className="flex flex-col gap-8 items-center">
+      <div className="w-full max-w-[640px]">
         <h2 className="text-2xl sm:text-3xl font-bold text-content">{title}</h2>
         <p className="text-content-secondary mt-2 text-sm">
           {filteredPosts.length} post{filteredPosts.length !== 1 ? 's' : ''}
         </p>
+      </div>
+
+      {/* Hero image */}
+      <div className="w-full max-w-[1250px] rounded-2xl overflow-hidden">
+        <img
+          src="/images/stock/profile-rich-writing.jpg"
+          alt="Rich writing"
+          className="w-full h-auto object-cover aspect-[21/9]"
+        />
       </div>
 
       {filteredPosts.length === 0 ? (
@@ -107,19 +113,11 @@ export default function PostsList({ category, title }: PostsListProps) {
           <p className="text-content-muted">No posts yet in this category.</p>
         </div>
       ) : (
-        <>
-          {/* Featured latest post — full width */}
-          <PostCard post={featuredPost} />
-
-          {/* Remaining posts — mini-postcard rows */}
-          {remainingPosts.length > 0 && (
-            <div className="flex flex-col gap-6">
-              {remainingPosts.map((post) => (
-                <MiniPostCard key={post.id} post={post} />
-              ))}
-            </div>
-          )}
-        </>
+        <div className="w-full max-w-[640px] flex flex-col gap-6">
+          {filteredPosts.map((post) => (
+            <MiniPostCard key={post.id} post={post} />
+          ))}
+        </div>
       )}
     </div>
   );
