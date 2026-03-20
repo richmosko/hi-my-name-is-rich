@@ -67,6 +67,22 @@ export default function Comments({ pageId }: CommentsProps) {
   return (
     <div ref={containerRef} className="w-full max-w-[640px] border-t border-gray-200 pt-8 mt-4">
       <h3 className="text-lg font-semibold text-content mb-4">Comments</h3>
+      <style>{`
+        .remark42 {
+          --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+          --color0: var(--color-surface, #ffffff);
+          --color1: var(--color-content, #444444);
+          --color2: var(--color-content-secondary, #555555);
+          --color3: var(--color-content-muted, #999999);
+          --color4: var(--color-surface-secondary, #f5f5f5);
+          --color5: var(--color-edge, #e5e5e5);
+          --color6: var(--color-accent, #4a6cf7);
+          --color7: var(--color-accent-hover, #3451d1);
+          --border-radius: 6px;
+        }
+        .remark42 a { color: var(--color-accent, #4a6cf7); }
+        .remark42 a:hover { color: var(--color-accent-hover, #3451d1); }
+      `}</style>
       <div id="remark42" />
     </div>
   );
