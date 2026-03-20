@@ -33,8 +33,7 @@ export default function Comments({ pageId }: CommentsProps) {
       locale: 'en',
       show_email_subscription: false,
       simple_view: false,
-      __colors__: '',
-      theme_custom: `${window.location.origin}/remark42-custom.css`,
+      primary_color: '#4a6cf7',  // Match site accent color
     };
 
     window.remark_config = config;
