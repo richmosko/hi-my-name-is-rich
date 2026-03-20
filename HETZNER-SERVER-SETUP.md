@@ -277,7 +277,7 @@ PermitRootLogin no
 Restart SSH:
 
 ```bash
-systemctl restart sshd
+sudo systemctl restart ssh
 ```
 
 **Important:** Before disabling root login, make sure you can successfully SSH in as your non-root user. Keep your current SSH session open as a fallback while testing.
