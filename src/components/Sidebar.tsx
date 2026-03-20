@@ -6,6 +6,7 @@ import { getProjectCompletion } from '../types';
 const navItems = [
   { label: 'Home', path: '/' },
   { label: 'About', path: '/about' },
+  { label: 'Contributors', path: '/contributors' },
 ];
 
 const categoryItems = [

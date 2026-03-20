@@ -18,6 +18,7 @@ A personal blog and portfolio site built with React, TypeScript, Vite, and Tailw
 |-------|------|-------------|
 | `/` | Home | Hero section with profile intro, Featured Posts (3-across), and Latest Posts grid |
 | `/about` | About | Author bio, interests, and category card grid with lightbox on hero image |
+| `/contributors` | Contributors | Author cards with avatars (lightbox), bios, and social links from `authors.ts` |
 | `/posts` | All Posts | Hero image, tag filter, search-filtered post list at 640px centered width |
 | `/travel` | Travel | Posts filtered by category with category description |
 | `/design` | Design | Posts filtered by category with category description |
@@ -46,6 +47,7 @@ A personal blog and portfolio site built with React, TypeScript, Vite, and Tailw
 - **Word-boundary matching** to avoid substring false positives (e.g., "cuba" won't match "scuba")
 - **Category filter**: collapsible "Filter by Category" section on the All Posts page with color-coded category pills matching each category's theme color
 - **Tag filter**: collapsible "Filter by Tag" section with tag pills
+- **OR logic**: both category and tag filters use OR — selecting multiple shows posts matching *any* of the selected items
 - **Side-by-side filters**: category and tag filters sit inline next to each other with stable minimum widths
 - **Clickable tags** in post cards toggle that tag as a filter
 - **URL search params** (`?q=...&tag=...&cat=...`) for shareable/composable search, category, and filter state
@@ -177,6 +179,7 @@ src/
   pages/
     Home.tsx            # Hero + Featured Posts (3-across) + Latest Posts
     About.tsx           # Bio, interests, category cards with lightbox
+    Contributors.tsx    # Author cards with avatar lightbox, bios, social links
     PostsList.tsx       # Category + tag filters, search-filtered post list (640px centered)
     PostDetail.tsx      # Full post view with hero image, lightbox, MDX rendering, prev/next nav
     ProjectsPage.tsx    # Project cards with expand/collapse (640px centered, 1250px hero)

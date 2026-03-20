@@ -92,7 +92,7 @@ export function searchPosts(
 
   if (activeTags.length > 0) {
     results = results.filter((p) =>
-      activeTags.every((tag) => p.tags?.includes(tag))
+      activeTags.some((tag) => p.tags?.includes(tag))
     );
   }
 

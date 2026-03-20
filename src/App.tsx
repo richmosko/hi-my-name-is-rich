@@ -6,6 +6,7 @@ import PostsList from './pages/PostsList';
 import ProjectsPage from './pages/ProjectsPage';
 import ProjectDetail from './pages/ProjectDetail';
 import PostDetail from './pages/PostDetail';
+import Contributors from './pages/Contributors';
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="about" element={<About />} />
+          <Route path="contributors" element={<Contributors />} />
           <Route
             path="posts"
             element={<PostsList title="All Posts" />}

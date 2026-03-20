@@ -1,9 +1,17 @@
 export type Category = 'travel' | 'design' | 'finance' | 'projects' | 'musings' | 'cool-shit' | 'food';
 
+export interface AuthorSocial {
+  platform: 'github' | 'instagram' | 'linkedin' | 'twitter' | 'website';
+  url: string;
+  label?: string;
+}
+
 export interface Author {
   id: string;
   name: string;
+  bio?: string;
   avatar: string;
+  socials?: AuthorSocial[];
 }
 
 import type { MDXComponents } from 'mdx/types';
