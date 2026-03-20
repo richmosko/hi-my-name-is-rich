@@ -164,7 +164,7 @@ export default function ProjectDetail() {
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-2xl sm:text-3xl font-bold text-content">
+              <h1 className="text-2xl sm:text-4xl font-bold text-content">
                 {project.name}
               </h1>
               <span
@@ -250,7 +250,7 @@ export default function ProjectDetail() {
 
       {/* MDX content */}
       {ProjectContent && (
-        <div className="w-full max-w-[640px] text-sm text-content-secondary leading-relaxed">
+        <div className="w-full max-w-[640px] flex flex-col gap-4 prose-custom text-content-secondary leading-relaxed">
           <ProjectContent components={mdxComponents} />
         </div>
       )}
