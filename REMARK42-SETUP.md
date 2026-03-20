@@ -1,12 +1,26 @@
 # Remark42 Comments Setup
 
-This guide walks through setting up [Remark42](https://remark42.com/) as a self-hosted comment system for the blog.
+This guide walks through setting up [Remark42](https://remark42.com/) as a self-hosted comment system for the blog, deployed via [Coolify](https://coolify.io/) on a Hetzner VPS.
+
+## Server Requirements
+
+A Hetzner CPX11 (2 shared vCPU / 2 GB RAM / 40 GB SSD) is sufficient to run Coolify + the blog + Remark42. Typical idle usage is ~1 GB RAM total.
+
+**Recommended:** Enable 1-2 GB swap as a safety net for Docker image builds:
+
+```bash
+fallocate -l 2G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+echo '/swapfile none swap sw 0 0' >> /etc/fstab
+```
 
 ## Prerequisites
 
-- Docker and Docker Compose installed on your server
-- A domain or subdomain for the Remark42 API (e.g., `remark42.yourdomain.com`)
-- A reverse proxy (nginx, Caddy, etc.) with TLS configured for that domain
+- A Hetzner VPS (or similar) with Coolify installed
+- A domain pointed to your server (e.g., `yourdomain.com`)
+- A subdomain for Remark42 (e.g., `remark42.yourdomain.com`)
 - At least one OAuth app for authentication (GitHub, Google, etc.)
 
 ## 1. Create OAuth App(s)
@@ -28,60 +42,49 @@ You need at least one auth provider so visitors can log in to comment. GitHub is
 2. Set **Authorized redirect URI** to: `https://remark42.yourdomain.com/auth/google/callback`
 3. Save the **Client ID** and **Client Secret**
 
-## 2. Set Up the Remark42 Server
+## 2. Deploy Remark42 via Coolify
 
-### Directory structure
+### Option A: Docker Compose service in Coolify
 
-Create a directory on your server for Remark42 data:
-
-```bash
-mkdir -p /opt/remark42/data
-```
-
-### Docker Compose
-
-Create `/opt/remark42/docker-compose.yml`:
+1. In Coolify, go to **Projects > your project > Add Resource > Docker Compose**
+2. Paste the following `docker-compose.yml`:
 
 ```yaml
-version: "3"
-
 services:
   remark42:
     image: umputun/remark42:latest
     container_name: remark42
     restart: unless-stopped
-    ports:
-      - "8042:8080"
     environment:
       - REMARK_URL=https://remark42.yourdomain.com
       - SITE=himynameisrich
-      - SECRET=CHANGE_ME_TO_A_RANDOM_STRING
+      - SECRET=${REMARK42_SECRET}
 
-      # Admin — your email to get admin access
-      - ADMIN_SHARED_EMAIL=you@yourdomain.com
+      # Admin
+      - ADMIN_SHARED_EMAIL=${ADMIN_EMAIL}
 
       # GitHub auth
-      - AUTH_GITHUB_CID=your-github-client-id
-      - AUTH_GITHUB_CSEC=your-github-client-secret
+      - AUTH_GITHUB_CID=${GITHUB_CLIENT_ID}
+      - AUTH_GITHUB_CSEC=${GITHUB_CLIENT_SECRET}
 
       # Google auth (optional — remove if not using)
-      - AUTH_GOOGLE_CID=your-google-client-id
-      - AUTH_GOOGLE_CSEC=your-google-client-secret
+      - AUTH_GOOGLE_CID=${GOOGLE_CLIENT_ID}
+      - AUTH_GOOGLE_CSEC=${GOOGLE_CLIENT_SECRET}
 
-      # Anonymous comments (set to true to allow comments without login)
+      # Anonymous comments
       - AUTH_ANON=false
 
       # Email notifications (optional — remove block if not using)
       - NOTIFY_TYPE=email
       - NOTIFY_EMAIL_FROM=noreply@yourdomain.com
-      - SMTP_HOST=smtp.yourdomain.com
+      - SMTP_HOST=${SMTP_HOST}
       - SMTP_PORT=587
-      - SMTP_USERNAME=noreply@yourdomain.com
-      - SMTP_PASSWORD=your-smtp-password
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
       - SMTP_TLS=true
 
       # Moderation
-      - ADMIN_SHARED_ID=github_YOUR_GITHUB_USER_ID
+      - ADMIN_SHARED_ID=${ADMIN_SHARED_ID}
       - LOW_SCORE=-5
       - CRITICAL_SCORE=-10
       - POSITIVE_SCORE=false
@@ -89,118 +92,125 @@ services:
       - MAX_COMMENT_SIZE=2048
 
     volumes:
-      - /opt/remark42/data:/srv/var
+      - remark42-data:/srv/var
+
+volumes:
+  remark42-data:
 ```
 
-### Generate a secret
+3. In Coolify's **Environment Variables** section for this service, add:
 
-```bash
-openssl rand -base64 32
+| Variable | Value |
+|----------|-------|
+| `REMARK42_SECRET` | (generate with `openssl rand -base64 32`) |
+| `ADMIN_EMAIL` | `you@yourdomain.com` |
+| `GITHUB_CLIENT_ID` | (from step 1) |
+| `GITHUB_CLIENT_SECRET` | (from step 1) |
+| `GOOGLE_CLIENT_ID` | (optional) |
+| `GOOGLE_CLIENT_SECRET` | (optional) |
+| `SMTP_HOST` | (your SMTP server) |
+| `SMTP_USERNAME` | (your SMTP user) |
+| `SMTP_PASSWORD` | (your SMTP password) |
+| `ADMIN_SHARED_ID` | (set after first login — see step 4) |
+
+4. Under **Network**, set:
+   - **Port**: `8080`
+   - **Domain**: `remark42.yourdomain.com`
+   - Coolify's Traefik will handle SSL automatically
+
+5. Click **Deploy**
+
+### Option B: Standalone Docker service in Coolify
+
+1. Go to **Projects > your project > Add Resource > Docker Image**
+2. Set image to `umputun/remark42:latest`
+3. Set port to `8080`
+4. Set domain to `remark42.yourdomain.com`
+5. Add the same environment variables from Option A directly (without the `${}` wrapper)
+6. Add a persistent volume: `/srv/var` mapped to a named volume
+7. Deploy
+
+## 3. Deploy the Blog via Coolify
+
+### Using a Dockerfile
+
+1. In Coolify, add a new resource: **GitHub Repository** (connect your `hi-my-name-is-rich` repo)
+2. Coolify will detect the build method. For a static site, create a `Dockerfile` in the repo root if you don't have one:
+
+```dockerfile
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+ARG VITE_REMARK42_HOST
+ENV VITE_REMARK42_HOST=$VITE_REMARK42_HOST
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
 ```
 
-Use the output as your `SECRET` value.
-
-### Start the server
-
-```bash
-cd /opt/remark42
-docker compose up -d
-```
-
-Verify it's running:
-
-```bash
-docker compose logs -f remark42
-```
-
-You should see `listening on 0.0.0.0:8080` in the logs.
-
-## 3. Configure Reverse Proxy
-
-Remark42 needs to be accessible via HTTPS. Here are configs for common reverse proxies.
-
-### Caddy (simplest)
-
-```
-remark42.yourdomain.com {
-    reverse_proxy localhost:8042
-}
-```
-
-### nginx
+3. Create `nginx.conf` in the repo root:
 
 ```nginx
 server {
-    listen 443 ssl http2;
-    server_name remark42.yourdomain.com;
+    listen 80;
+    root /usr/share/nginx/html;
+    index index.html;
 
-    ssl_certificate     /path/to/cert.pem;
-    ssl_certificate_key /path/to/key.pem;
-
+    # SPA fallback — all routes serve index.html
     location / {
-        proxy_pass http://localhost:8042;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Cache static assets
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Cache images
+    location /images/ {
+        expires 30d;
+        add_header Cache-Control "public";
     }
 }
 ```
 
-### CORS
+4. In Coolify, set:
+   - **Domain**: `yourdomain.com`
+   - **Port**: `80`
+   - **Build variable**: `VITE_REMARK42_HOST=https://remark42.yourdomain.com`
 
-Remark42 handles CORS internally — no additional CORS headers needed in your reverse proxy. Just make sure the `REMARK_URL` env var matches the public URL exactly.
+5. Deploy — Coolify handles SSL via Traefik automatically
 
-## 4. Connect the Blog
+### Using Nixpacks (alternative)
 
-### Set the environment variable
+Coolify can auto-detect Node.js projects via Nixpacks. It will run `npm run build` and serve the `dist/` folder. Add the `VITE_REMARK42_HOST` build variable in the Coolify UI.
 
-Create or edit `.env` in the blog project root:
-
-```
-VITE_REMARK42_HOST=https://remark42.yourdomain.com
-```
-
-For production builds, set this in your build environment / CI:
-
-```bash
-VITE_REMARK42_HOST=https://remark42.yourdomain.com npm run build
-```
-
-### How it works
-
-The `Comments` component (`src/components/Comments.tsx`) handles everything:
-
-- Reads `VITE_REMARK42_HOST` from the environment at build time
-- If the variable is empty (local dev), shows a placeholder message instead
-- If set, loads the Remark42 embed script and renders the comment widget
-- Each post's slug is used as the unique page ID
-- The `site_id` is set to `himynameisrich` (must match the `SITE` env var on the server)
-- Comments are cleaned up on page navigation to prevent stale state
-
-## 5. Admin Access
+## 4. Admin Access
 
 ### Finding your admin ID
 
-After logging in to Remark42 via your blog for the first time, find your user ID:
+After deploying Remark42, visit your blog and leave a test comment (log in via GitHub). Then find your user ID:
+
+1. In Coolify, open the Remark42 service terminal (or SSH into the server)
+2. Run:
 
 ```bash
 docker exec remark42 remark42 admin --site=himynameisrich --list
 ```
 
-Update `ADMIN_SHARED_ID` in your docker-compose.yml with the ID (e.g., `github_abc123`), then restart:
-
-```bash
-docker compose restart remark42
-```
+3. Copy your user ID (e.g., `github_abc123`)
+4. Update the `ADMIN_SHARED_ID` environment variable in Coolify
+5. Redeploy the Remark42 service
 
 ### Admin panel
 
-Once configured as admin, you'll see moderation controls directly in the comment widget on your blog. You can also access the admin API at:
-
-```
-https://remark42.yourdomain.com/api/v1/admin
-```
+Once configured as admin, you'll see moderation controls directly in the comment widget on your blog.
 
 ### What admins can do
 
@@ -211,7 +221,7 @@ https://remark42.yourdomain.com/api/v1/admin
 - Export/import comment data
 - Access comment RSS feeds
 
-## 6. Moderation Settings
+## 5. Moderation Settings
 
 These environment variables control moderation behavior:
 
@@ -227,36 +237,34 @@ These environment variables control moderation behavior:
 
 ### Pre-moderation mode
 
-To require approval for all comments, add:
-
-```
-- ADMIN_SHARED_ID=github_YOUR_ID
-```
-
-Then use the admin API to enable moderation:
+To require approval for all comments:
 
 ```bash
 curl -X PUT "https://remark42.yourdomain.com/api/v1/admin/wait?site=himynameisrich&mode=1" \
   -H "Content-Type: application/json"
 ```
 
-## 7. Backup & Restore
+## 6. Backup & Restore
 
 ### Manual backup
+
+In Coolify's terminal for the Remark42 service (or via SSH):
 
 ```bash
 docker exec remark42 remark42 backup --site=himynameisrich --path=/srv/var
 ```
 
-The backup file is saved to `/opt/remark42/data/` on the host.
+The backup file is saved inside the persistent volume.
 
 ### Automated backups
 
-Add to your crontab:
+Add a cron job on the host server:
 
 ```bash
 0 3 * * * docker exec remark42 remark42 backup --site=himynameisrich --path=/srv/var
 ```
+
+**Tip:** Coolify doesn't have built-in cron, so set this up directly on the host via `crontab -e`. Consider also copying backups off-server (e.g., to S3 or rsync to another machine).
 
 ### Restore from backup
 
@@ -264,19 +272,30 @@ Add to your crontab:
 docker exec remark42 remark42 restore --site=himynameisrich --path=/srv/var --file=backup-himynameisrich-YYYYMMDD.gz
 ```
 
+## 7. DNS Setup
+
+Point these DNS records to your Hetzner server's IP:
+
+| Type | Name | Value |
+|------|------|-------|
+| A | `yourdomain.com` | `your.server.ip` |
+| A | `remark42.yourdomain.com` | `your.server.ip` |
+
+Coolify's Traefik proxy routes traffic to the correct container based on the domain and provisions Let's Encrypt certificates automatically.
+
 ## 8. Troubleshooting
 
 **Comments widget not loading**
 - Check browser console for CORS or network errors
 - Verify `VITE_REMARK42_HOST` matches `REMARK_URL` exactly (including https://)
-- Ensure the Remark42 container is running: `docker compose ps`
+- Ensure the Remark42 container is running in Coolify's dashboard
 
 **Auth callback fails**
 - Verify the callback URL in your OAuth app matches `REMARK_URL` + `/auth/{provider}/callback`
-- Check Remark42 logs: `docker compose logs remark42 | grep auth`
+- Check Remark42 logs in Coolify's log viewer
 
 **"Site not found" error**
-- Ensure `SITE=himynameisrich` in docker-compose matches `site_id` in `Comments.tsx`
+- Ensure `SITE=himynameisrich` in Remark42 config matches `site_id` in `Comments.tsx`
 
 **Comments not showing after page navigation**
 - The component handles cleanup/reinit automatically via React effects — if you see stale comments, hard-refresh the page
@@ -284,3 +303,7 @@ docker exec remark42 remark42 restore --site=himynameisrich --path=/srv/var --fi
 **Disk space**
 - Remark42 uses BoltDB (single file). Typical usage is very small (< 100MB for thousands of comments)
 - Avatars are cached in `/srv/var/avatars/` — this directory can grow; clean periodically if needed
+
+**Coolify build fails**
+- Check that `VITE_REMARK42_HOST` is set as a **build** variable (not just runtime) since Vite inlines it at build time
+- Ensure the Dockerfile is in the repo root
