@@ -12,6 +12,22 @@ This guide walks through setting up [Remark42](https://remark42.com/) as a self-
 
 ## Architecture Overview
 
+### Recommended: Application (Coolify builds directly)
+
+```
+GitHub repo                                     Hetzner/Coolify
+───────────                                     ───────────────
+remark42/Dockerfile      ──webhook on push──▶   Coolify pulls repo
+remark42/web/custom.css                         Builds Dockerfile (ARM64 native)
+                                                Deploys container
+                                                    ▼
+                                                remark42.himynameisrich.com:8080
+```
+
+Coolify builds the custom image directly from the repo — no separate CI step needed. Auto-deploys on push to `main` with full deployment history and rollback.
+
+### Alternative: GHCR + Docker Compose Service
+
 ```
 GitHub repo                        GitHub Actions                  Hetzner/Coolify
 ───────────                        ──────────────                  ───────────────
@@ -23,7 +39,7 @@ remark42/web/custom.css             (amd64 + arm64)
                                                             remark42.himynameisrich.com:8080
 ```
 
-The custom Docker image extends the official Remark42 image by appending CSS overrides to match the blog's design. It's built by GitHub Actions and hosted on GitHub Container Registry (GHCR).
+GitHub Actions builds a multi-arch image and pushes to GHCR. Requires manual redeploy in Coolify after image updates.
 
 ## 1. Create OAuth App(s)
 
@@ -53,114 +69,95 @@ You need at least one auth provider so visitors can log in to comment.
    - **Authorization callback URL**: `https://remark42.himynameisrich.com/auth/github/callback`
 3. Save the **Client ID** and **Client Secret**
 
-## 2. Build the Custom Docker Image
+## 2. Deploy Remark42 via Coolify (Application)
 
-The custom image is built automatically by GitHub Actions and published to GHCR.
+The recommended approach is to deploy Remark42 as a Coolify **Application** (not a Service). This gives you:
+- **Auto-deploy** on push to `main` via GitHub webhook
+- **Deployment history** with logs for each deploy
+- **Rollback** to any previous deployment
+- **No separate GitHub Action needed** — Coolify builds the Dockerfile directly
 
-### How the image build works
+### How the custom image works
 
-The GitHub Action (`.github/workflows/remark42-image.yml`):
-- Triggers on every push to `main` and on manual dispatch
-- Uses QEMU + Docker Buildx for cross-platform builds
-- Builds for **both `linux/amd64` and `linux/arm64`** (critical for Hetzner ARM servers)
-- Pushes to `ghcr.io/richmosko/remark42-custom:v1.15.0` and `:latest`
+The repo contains a custom Dockerfile at `remark42/Dockerfile`:
 
-**Important — ARM64:** If you only build for `amd64`, the container will fail on Hetzner ARM servers with `exec /init.sh: exec format error`. The workflow is configured to build for both architectures.
-
-### First-time setup
-
-1. Merge the workflow file to `main` (it should already be there)
-2. Go to **GitHub > Actions > Build Remark42 Custom Image**
-3. Click **Run workflow** > select **main** > click the green **Run workflow** button
-4. Wait for it to complete (~2-3 minutes)
-5. Verify the image exists at: `github.com/richmosko/hi-my-name-is-rich/pkgs/container/remark42-custom`
-
-### Make the package accessible
-
-By default, GHCR packages are **private**. Coolify needs to pull the image, so either:
-
-**Option A: Make it public (simpler)**
-1. Go to `github.com/richmosko/hi-my-name-is-rich/pkgs/container/remark42-custom`
-2. Click **Package settings** (right sidebar)
-3. Scroll to **Danger Zone** > **Change visibility** > **Public**
-
-**Option B: Keep it private**
-- Configure Coolify with a GitHub personal access token that has `read:packages` scope
-
-### Updating styles later
-
-1. Edit `remark42/web/custom.css` in the repo
-2. Commit and push to `main`
-3. GitHub Action rebuilds the image automatically
-4. Redeploy the Remark42 service in Coolify
-5. **Hard-refresh** the browser (Cmd+Shift+R) — the Remark42 iframe caches CSS aggressively
-
-## 3. Deploy Remark42 via Coolify
-
-### Create the Docker Compose resource
-
-1. In Coolify, go to **Projects > your project > Add Resource > Docker Compose**
-2. Paste the following `docker-compose.yml`:
-
-```yaml
-services:
-  remark42:
-    image: ghcr.io/richmosko/remark42-custom:v1.15.0
-    container_name: remark42
-    restart: unless-stopped
-    environment:
-      - REMARK_URL=https://remark42.himynameisrich.com
-      - SITE=himynameisrich
-      - SECRET=${REMARK42_SECRET}
-      - ADMIN_SHARED_EMAIL=${ADMIN_EMAIL}
-      - AUTH_GITHUB_CID=${GITHUB_CLIENT_ID}
-      - AUTH_GITHUB_CSEC=${GITHUB_CLIENT_SECRET}
-      - AUTH_GOOGLE_CID=${GOOGLE_CLIENT_ID}
-      - AUTH_GOOGLE_CSEC=${GOOGLE_CLIENT_SECRET}
-      - AUTH_ANON=false
-      - ADMIN_SHARED_ID=${ADMIN_SHARED_ID}
-      - LOW_SCORE=-5
-      - CRITICAL_SCORE=-10
-      - POSITIVE_SCORE=false
-      - RESTRICTED_WORDS=spam,viagra,casino
-      - MAX_COMMENT_SIZE=2048
-    volumes:
-      - remark42-data:/srv/var
-
-volumes:
-  remark42-data:
+```dockerfile
+FROM umputun/remark42:v1.15.0
+COPY web/custom.css /tmp/custom.css
+RUN cat /tmp/custom.css >> /srv/web/remark.css && rm /tmp/custom.css
 ```
 
-### Set environment variables
+This takes the stock Remark42 image and appends CSS overrides to match the blog's design. Coolify builds this on the server (ARM64-native, no cross-compilation needed).
 
-In Coolify's **Environment Variables** section for this service, add:
+### Create the Application resource
 
-| Variable | Value |
-|----------|-------|
-| `REMARK42_SECRET` | Generate with `openssl rand -base64 32` |
-| `ADMIN_EMAIL` | `admin@himynameisrich.com` |
-| `GITHUB_CLIENT_ID` | From step 1 |
-| `GITHUB_CLIENT_SECRET` | From step 1 |
-| `GOOGLE_CLIENT_ID` | From step 1 |
-| `GOOGLE_CLIENT_SECRET` | From step 1 |
-| `ADMIN_SHARED_ID` | Set after first login — see step 4 |
+1. In Coolify, go to **Projects > your project > Add Resource**
+2. Select **Private Repository (GitHub App)** (or Public Repository if using deploy keys)
+3. Select the `richmosko/hi-my-name-is-rich` repository
+4. Branch: **main**
+
+### Configure build settings
+
+5. In the resource settings, go to the **Build** section:
+   - **Build Pack**: Docker
+   - **Dockerfile Location**: `remark42/Dockerfile`
+   - **Base Directory**: `remark42`
+   - **Port**: `8080`
+
+### Configure environment variables
+
+6. In the **Environment Variables** section, add:
+
+| Variable | Value | Notes |
+|----------|-------|-------|
+| `REMARK_URL` | `https://remark42.himynameisrich.com` | Must match the domain exactly |
+| `SITE` | `himynameisrich` | Must match `site_id` in `Comments.tsx` |
+| `SECRET` | *(generate with `openssl rand -base64 32`)* | Encryption secret |
+| `ADMIN_SHARED_EMAIL` | `admin@himynameisrich.com` | Admin notification email |
+| `AUTH_GITHUB_CID` | *(from step 1)* | GitHub OAuth Client ID |
+| `AUTH_GITHUB_CSEC` | *(from step 1)* | GitHub OAuth Client Secret |
+| `AUTH_GOOGLE_CID` | *(from step 1)* | Google OAuth Client ID |
+| `AUTH_GOOGLE_CSEC` | *(from step 1)* | Google OAuth Client Secret |
+| `AUTH_ANON` | `false` | Disable anonymous comments |
+| `ADMIN_SHARED_ID` | *(set after first login — see step 4)* | Your user ID for admin access |
+| `LOW_SCORE` | `-5` | Score to collapse a comment |
+| `CRITICAL_SCORE` | `-10` | Score to hide a comment |
+| `POSITIVE_SCORE` | `false` | Hide positive vote counts |
+| `RESTRICTED_WORDS` | `spam,viagra,casino` | Flagged words |
+| `MAX_COMMENT_SIZE` | `2048` | Max comment length |
 
 ### Configure networking
 
-In the **Network** section:
-- **Port**: `8080`
-- **Domain**: `remark42.himynameisrich.com`
-- Coolify's Traefik handles SSL automatically
+7. In the **Network** section:
+   - **Domain**: `remark42.himynameisrich.com`
+   - **Port**: `8080`
+   - Coolify's Traefik handles SSL automatically
+
+### Add persistent storage
+
+8. In the **Storage** section, add a volume:
+   - **Mount Path**: `/srv/var`
+   - **Name**: `remark42-data` (or let Coolify generate a name)
+
+   This is where Remark42 stores its BoltDB database, avatars, and backups. Without this, **all comments are lost on redeploy**.
+
+### Enable auto-deploy
+
+9. In the **General** tab, ensure **Auto Deploy** is enabled
+10. Verify the GitHub webhook is active:
+    - In GitHub repo > **Settings > Webhooks** — should show the Coolify webhook
+    - If missing, copy the webhook URL from Coolify (must include auth token)
+    - Webhook URL format: `https://coolify.himynameisrich.com/api/v1/deploy?uuid=...&token=YOUR_API_TOKEN`
+    - Generate an API token in Coolify under **Security** or **API**
 
 ### Deploy
 
-Click **Deploy** and watch the logs. Common issues:
+11. Click **Deploy** and watch the build logs
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `exec /init.sh: exec format error` | Image built for wrong architecture | Ensure the GitHub Action builds for `linux/arm64` |
-| `Degraded (unhealthy)` | Health check failing or missing env vars | Check container logs in Coolify |
-| Image pull fails | GHCR package is private | Make the package public (step 2) or add a pull token |
+The build will:
+1. Pull `umputun/remark42:v1.15.0` (ARM64 native — no cross-compilation needed)
+2. Append `custom.css` to the built-in stylesheet
+3. Start the container on port 8080
 
 ### Verify Remark42 is running
 
@@ -171,6 +168,38 @@ https://remark42.himynameisrich.com/api/v1/config?site=himynameisrich
 ```
 
 **Note:** The root URL (`https://remark42.himynameisrich.com`) shows a 404 — this is normal. Remark42 is an API server, not a website.
+
+### Updating styles later
+
+1. Edit `remark42/web/custom.css` in the repo
+2. Commit and push to `main`
+3. Coolify auto-deploys (or manually trigger from the Deployments tab)
+4. **Hard-refresh** the browser (**Cmd+Shift+R**) — the Remark42 iframe caches CSS aggressively
+
+### Migrating from a Service to an Application
+
+If you already have Remark42 running as a Docker Compose **Service** in Coolify:
+
+1. **Note down** all your current environment variable values
+2. **Note the volume** — your comment data is in a Docker volume
+3. **Back up** the comment database first:
+   ```bash
+   docker exec $(docker ps -qf "ancestor=ghcr.io/richmosko/remark42-custom") remark42 backup --site=himynameisrich --path=/srv/var
+   ```
+4. Create the new **Application** resource following the steps above
+5. **Mount the same volume** that the old Service was using, so you keep all existing comments
+6. Deploy the new Application and verify comments still appear
+7. Delete the old Service resource
+
+### Alternative: GHCR + Docker Compose Service
+
+If you prefer the Service approach (less auto-deploy functionality but simpler setup):
+
+1. The GitHub Action (`.github/workflows/remark42-image.yml`) builds the custom image and pushes to GHCR
+2. The image is multi-arch (`linux/amd64` + `linux/arm64`) for Hetzner ARM servers
+3. Make the GHCR package public: `github.com/richmosko/hi-my-name-is-rich/pkgs/container/remark42-custom` > **Package settings** > **Change visibility** > **Public**
+4. In Coolify, create a Docker Compose resource with `image: ghcr.io/richmosko/remark42-custom:v1.15.0`
+5. **Downside:** No auto-deploy — you must manually redeploy in Coolify after the GitHub Action rebuilds the image
 
 ## 4. Deploy the Blog Frontend with Comments
 
@@ -344,8 +373,8 @@ In addition to the CSS overrides, the `Comments.tsx` component sets:
 
 1. Edit `remark42/web/custom.css` in the repo
 2. Commit and push to `main`
-3. GitHub Action rebuilds the image automatically (~2 min)
-4. Redeploy the Remark42 service in Coolify
+3. **Application approach**: Coolify auto-deploys (~1 min build)
+4. **GHCR approach**: GitHub Action rebuilds the image (~2 min), then manually redeploy in Coolify
 5. **Hard-refresh** the browser (**Cmd+Shift+R**) — the iframe caches CSS aggressively
 6. If styles still look old, try an **incognito window** to confirm the change took effect
 
@@ -377,8 +406,8 @@ curl -s https://remark42.himynameisrich.com/web/remark.css | tr '}' '\n' | grep 
 
 **`exec /init.sh: exec format error`**
 - Architecture mismatch — the image was built for `amd64` but the server is `arm64`
-- Ensure the GitHub Action includes `platforms: linux/amd64,linux/arm64`
-- Re-run the workflow and redeploy
+- **Application approach**: Coolify builds natively on the server, so this shouldn't happen
+- **GHCR approach**: Ensure the GitHub Action includes `platforms: linux/amd64,linux/arm64`
 
 **Container name is randomized (e.g., `remark42-z34c100...`)**
 - Coolify overrides `container_name` with its own ID
