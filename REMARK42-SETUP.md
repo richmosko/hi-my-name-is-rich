@@ -46,31 +46,30 @@ You need at least one auth provider so visitors can log in to comment. GitHub is
 
 ### Option A: Docker Compose service in Coolify
 
-#### Build the custom image first
+#### Custom image via GitHub Container Registry
 
-Before creating the Coolify resource, build the custom Remark42 image on the server. This image layers your CSS overrides on top of the official Remark42 image.
+The custom Remark42 image (with CSS overrides) is built automatically by GitHub Actions whenever `remark42/` changes in the repo. The image is published to:
 
-SSH into your server and run:
-
-```bash
-# Clone the repo (only needed once)
-git clone https://github.com/richmosko/hi-my-name-is-rich.git /opt/remark42-build
-
-# Build the custom image
-cd /opt/remark42-build/remark42
-docker build -t remark42-custom:v1.15.0 .
+```
+ghcr.io/richmosko/remark42-custom:v1.15.0
 ```
 
-When you update `remark42/web/custom.css` in the repo, rebuild the image:
+The GitHub Action (`.github/workflows/remark42-image.yml`) triggers on:
+- Push to `main` that changes any file in `remark42/`
+- Manual trigger via the Actions tab (`workflow_dispatch`)
 
-```bash
-cd /opt/remark42-build
-git pull
-cd remark42
-docker build -t remark42-custom:v1.15.0 .
-```
+**First-time setup:** After merging the workflow to `main`, go to **GitHub > Actions** and run the "Build Remark42 Custom Image" workflow manually to build the initial image. Then verify it at `github.com/richmosko/hi-my-name-is-rich/pkgs/container/remark42-custom`.
 
-Then redeploy the Remark42 service in Coolify.
+**Updating styles:** Edit `remark42/web/custom.css`, commit, push to `main` — the image rebuilds automatically. Then redeploy the Remark42 service in Coolify.
+
+#### Make the package accessible to Coolify
+
+By default, GHCR packages are private. You need to make it accessible:
+
+1. Go to `github.com/richmosko/hi-my-name-is-rich/pkgs/container/remark42-custom`
+2. Click **Package settings** (right sidebar)
+3. Under **Danger Zone**, change visibility to **Public**
+   - Or: keep it private and configure Coolify with a GitHub personal access token that has `read:packages` scope
 
 #### Create the Coolify resource
 
@@ -80,8 +79,8 @@ Then redeploy the Remark42 service in Coolify.
 ```yaml
 services:
   remark42:
-    # Custom image with CSS overrides (built on server — see instructions above)
-    image: remark42-custom:v1.15.0
+    # Custom image with CSS overrides — built by GitHub Actions, hosted on GHCR
+    image: ghcr.io/richmosko/remark42-custom:v1.15.0
     # To use stock image instead: image: umputun/remark42:v1.15.0
     container_name: remark42
     restart: unless-stopped
