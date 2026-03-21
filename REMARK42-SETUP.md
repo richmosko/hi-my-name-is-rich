@@ -46,19 +46,43 @@ You need at least one auth provider so visitors can log in to comment. GitHub is
 
 ### Option A: Docker Compose service in Coolify
 
+#### Build the custom image first
+
+Before creating the Coolify resource, build the custom Remark42 image on the server. This image layers your CSS overrides on top of the official Remark42 image.
+
+SSH into your server and run:
+
+```bash
+# Clone the repo (only needed once)
+git clone https://github.com/richmosko/hi-my-name-is-rich.git /opt/remark42-build
+
+# Build the custom image
+cd /opt/remark42-build/remark42
+docker build -t remark42-custom:v1.15.0 .
+```
+
+When you update `remark42/web/custom.css` in the repo, rebuild the image:
+
+```bash
+cd /opt/remark42-build
+git pull
+cd remark42
+docker build -t remark42-custom:v1.15.0 .
+```
+
+Then redeploy the Remark42 service in Coolify.
+
+#### Create the Coolify resource
+
 1. In Coolify, go to **Projects > your project > Add Resource > Docker Compose**
 2. Paste the following `docker-compose.yml`:
 
 ```yaml
 services:
   remark42:
-    # Custom image with CSS overrides matching the blog's design
-    # See remark42/Dockerfile and remark42/web/custom.css in the repo
-    build:
-      context: ./remark42
-      dockerfile: Dockerfile
-    # Fallback: use stock image if not building custom
-    # image: umputun/remark42:v1.15.0
+    # Custom image with CSS overrides (built on server — see instructions above)
+    image: remark42-custom:v1.15.0
+    # To use stock image instead: image: umputun/remark42:v1.15.0
     container_name: remark42
     restart: unless-stopped
     environment:
