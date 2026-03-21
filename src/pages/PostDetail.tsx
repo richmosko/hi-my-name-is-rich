@@ -36,7 +36,8 @@ export default function PostDetail() {
     );
   }
 
-  const author = authors[post.authorId];
+  const authorIds = Array.isArray(post.authorId) ? post.authorId : [post.authorId];
+  const postAuthors = authorIds.map((id) => authors[id]).filter(Boolean);
   const heroImage = post.image || '';
   const PostContent = post.content;
 
@@ -64,17 +65,22 @@ export default function PostDetail() {
           Back to posts
         </Link>
 
-        {/* Author profile + date row */}
+        {/* Author profile(s) + date row */}
         <div className="flex items-center gap-4">
-          {author && (
+          {postAuthors.length > 0 && (
             <div className="flex items-center gap-3">
-              <img
-                src={author.avatar}
-                alt={author.name}
-                className="w-[48px] h-[48px] rounded-full object-cover"
-              />
+              <div className="flex -space-x-2">
+                {postAuthors.map((a) => (
+                  <img
+                    key={a.id}
+                    src={a.avatar}
+                    alt={a.name}
+                    className="w-[48px] h-[48px] rounded-full object-cover border-2 border-white"
+                  />
+                ))}
+              </div>
               <span className="text-base font-medium text-content">
-                {author.name}
+                {postAuthors.map((a) => a.name).join(' & ')}
               </span>
             </div>
           )}

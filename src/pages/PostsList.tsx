@@ -22,7 +22,8 @@ function MiniPostCard({
   onTagClick?: (tag: string) => void;
 }) {
   const image = post.image || DEFAULT_IMAGE;
-  const author = authors[post.authorId];
+  const authorIds = Array.isArray(post.authorId) ? post.authorId : [post.authorId];
+  const postAuthors = authorIds.map((id) => authors[id]).filter(Boolean);
 
   return (
     <Link
@@ -69,17 +70,22 @@ function MiniPostCard({
           ))}
         </div>
 
-        {/* Author + date */}
+        {/* Author(s) + date */}
         <div className="flex items-center gap-3">
-          {author && (
+          {postAuthors.length > 0 && (
             <div className="flex items-center gap-2">
-              <img
-                src={author.avatar}
-                alt={author.name}
-                className="w-6 h-6 rounded-full object-cover"
-              />
+              <div className="flex -space-x-1">
+                {postAuthors.map((a) => (
+                  <img
+                    key={a.id}
+                    src={a.avatar}
+                    alt={a.name}
+                    className="w-6 h-6 rounded-full object-cover border border-white"
+                  />
+                ))}
+              </div>
               <span className="text-sm font-medium text-content">
-                {author.name}
+                {postAuthors.map((a) => a.name).join(' & ')}
               </span>
             </div>
           )}

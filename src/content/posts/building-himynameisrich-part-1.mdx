@@ -1,0 +1,208 @@
+---
+title: "Building HiMyNameIsRich: Concept to Local Dev"
+excerpt: A walkthrough of how I built my personal blog from scratch using React, Vite, Tailwind CSS, and MDX — with a lot of help from Claude.
+date: 2026-03-21
+readTime: "8 min read"
+categories:
+  - projects
+  - design
+featured: true
+image: /images/stock/profile-rich-coding-intense.jpg
+imageAspectRatio: 21/9
+authorId:
+  - rich
+  - claude
+tags:
+  - AI
+  - himynameisrich
+  - figma
+---
+
+## Why Build a Personal Site?
+
+This is mostly just a test... to see what AI can really do. To touch and feel what is the state of the art. And I know nothing about design, so this is a way for me to get my hands really dirty 😜. 
+
+I also wanted to chronicle my journey. To keep myself honest and driven to finish some projects and goals. Writing here helps me learn, and helps me to stay curious and well rounded. Hopefully I can keep this up and look back fondly as the years go on to how much I have grown.
+
+## Choosing a Tech Stack
+
+I landed on:
+
+- **React** — the component model made sense for a site with lots of reusable UI pieces
+- **Vite** — fast dev server, great DX, and the build tooling just works
+- **Tailwind CSS v4** — utility-first CSS with design tokens defined as CSS custom properties
+- **MDX** — Markdown with JSX components, so I could write posts in Markdown but embed interactive components like galleries and YouTube videos
+
+The key decision was MDX over a traditional CMS. I wanted to write in Markdown (ideally in Obsidian) and have the posts live in the repo as files. No database, no CMS admin panel, no API to maintain.
+
+Oh... and I almost forgot the most important part. I'm running Claude-Code through Claude Desktop on the Opus 4.6 model (currently the most complex model). I have an Anthropic-Pro account, but for constant work over an entire day I would run out of daily tokens about 20% of the time. Temporarily have a Max subscription while I'm doing intense work. Hardcore design visualization and specification is done through Figma.com.
+
+## Starting the Project
+
+The initial setup was straightforward: `npm create vite@latest`, add React Router for client-side routing, wire up Tailwind, and configure the MDX plugin for Vite.
+
+The site structure took shape around a few core ideas:
+
+- **Posts** live as `.mdx` files in `src/content/posts/`
+- **Projects** live as `.mdx` files in `src/content/projects/`
+- Vite's `import.meta.glob` loads all MDX files at build time — no runtime file fetching
+- Frontmatter in each MDX file defines the metadata (title, date, categories, tags, etc.)
+
+BTW: Claude did all of this. I asked for recommendations and it gave me several options... We settled on the above scaffolding after a few iterations.
+
+## The Layout System
+
+I wanted a clean, content-focused layout. The design settled into:
+
+- **1440px max-width** outer container
+- **1250px hero images** that feel expansive but don't overwhelm
+- **640px content column** for readable prose
+- **Slide-out sidebar** for navigation with category links and project progress bars
+- **Glass-morphism top bar** with breadcrumbs
+
+Getting the spacing right between these widths took a lot of iteration. The hero images needed to feel bigger than the content without breaking the visual rhythm. I did a lot of visualization in Figma, which was really convenient as Figma has an MCP server which Claude Code can plug into. Inspiration came from some Figma community templates:
+- https://www.figma.com/community/file/1456300075957972581
+
+and some existing minimalist websites. One in particular for the slide-out sidebar:
+- https://brianlovin.com/
+
+I settled on a light background theme... but I plan on having a toggle button to use a dark theme eventually
+
+## Building the Post System
+
+Each post is an MDX file with YAML frontmatter:
+
+```yaml
+---
+title: "My Post Title"
+excerpt: "A brief description"
+date: "2026-03-11"
+categories:
+  - travel
+tags:
+  - Spain
+  - Road-Trip
+---
+```
+
+The post system evolved through several features:
+
+### Categories and Tags
+Seven color-coded categories (Travel, Design, Finance, Projects, Musings, Cool Shit, Food), each with a Tailwind color scheme. Tags are freeform and filterable.
+
+### Featured Posts
+Posts marked `featured: true` appear in a 3-across grid on the home page. This layout went through several iterations — started as a large hero + stacked sidebar, simplified to 2-across, and finally landed on 3-across as the cleanest option.
+
+### Previous/Next Navigation
+Every post has navigation links at the bottom sorted by date, with slug as the alphabetical tiebreaker for same-day posts.
+
+### Read Time Calculation
+A script (`scripts/update-read-times.mjs`) calculates read time from word count at 225 words per minute and updates the frontmatter automatically.
+
+## Importing 69 Old Blog Posts
+
+I had a travel blog on Blogger from a round-the-world trip in 2009-2010. Scraping and importing those 69 posts was one of the bigger efforts:
+
+1. **Scraped the content** from `moskoliu.blogspot.com` using web fetches
+2. **Converted HTML to MDX** with proper frontmatter
+3. **Prefixed all titles** with "MoskoLiu-RTW:" to keep them distinct
+4. **Matched old Picasa image URLs** to local photo files by IMG number
+5. **Converted Technorati tags** to modern tag format
+6. **Fixed tables** that didn't reproduce accurately in the initial scrape
+7. **Preserved original dates** so the chronological order stayed correct
+
+The trickiest part was the images. The old Blogger posts referenced Picasa-hosted images that were long gone. I had the photos locally in album folders, so I mapped them by filename patterns.
+
+## Search and Filtering
+
+Full-text search was surprisingly tricky to get right:
+
+### The Search Index Problem
+I wanted to search the full body text of posts, not just titles and excerpts. But Vite's MDX plugin intercepts `.mdx` files even when you try to import them as raw text. The `?raw` query parameter that works for other file types just doesn't work with MDX.
+
+The solution was a **build-time search index**: a script (`scripts/build-search-index.mjs`) that strips frontmatter and JSX from the raw MDX files and outputs a JSON index. The search function loads this index and uses word-boundary regex matching.
+
+### The Substring Problem
+Early on, searching for "cuba" returned posts about "scuba" diving. Fixed with word-boundary regex that matches whole words only, preventing partial substring matches.
+
+### The UI Problem
+I spent way too long trying to put a search bar inline in the header. It looked different in every browser — Chrome and Safari rendered the same CSS completely differently. After multiple rounds of tweaking, I scrapped the inline approach entirely and built a **slide-in panel from the right** triggered by a search icon. Much cleaner.
+
+### Category and Tag Filters
+Collapsible filter sections sit side-by-side above the post list. Both use OR logic — selecting multiple categories or tags shows posts matching any of them.
+
+## Image Galleries and Lightbox
+
+Posts can embed photo galleries with a custom `<Gallery>` component:
+
+- **Horizontal carousel** with scroll arrows
+- **Configurable aspect ratio** (default 4/3)
+- **Video support** — galleries can include `.mp4` files alongside images
+- **Wider than content** — galleries extend beyond the 640px content column to ~950px
+
+Individual images in post content are clickable and open in a **lightbox overlay** — a full-screen viewer with click-to-close.
+
+### The Safari Video Problem
+Safari doesn't show a video's first frame as a poster with `preload="metadata"`. The workaround is appending `#t=1` to the video URL to seek 1 second in (past any fade-from-black intro).
+
+## The Project System
+
+Projects are tracked via MDX files with a task list in the frontmatter:
+
+```yaml
+tasks:
+  - name: "Set up routing"
+    completed: true
+  - name: "Add dark mode"
+    completed: false
+```
+
+The project system features:
+- **Progress bars** derived from completed vs total tasks
+- **Collapsible project cards** on the projects list page
+- **Individual project pages** with full MDX content and task breakdowns
+- **Task groups** for organizing tasks under headings
+- **Sidebar integration** showing active projects with mini progress bars
+
+## Obsidian Compatibility
+
+Since all content is MDX files, I wanted to edit them in Obsidian. This required:
+
+- **Wiki-link support** via `remark-wiki-link` — `[[other-post|Display Text]]` resolves to the right URL
+- **Extension stripping** — Obsidian needs `.mdx` extensions, the browser doesn't. The Vite config strips `.mdx` from wiki-link hrefs automatically
+- **Cross-content linking** — wiki-links auto-detect whether a slug is a post or project and route accordingly
+
+## Developer Tooling
+
+As the project grew, I kept forgetting which scripts to run. So I built:
+
+- **`npm run help`** — lists all available commands with descriptions
+- **`npm run precommit`** — runs validation, read-time updates, search index build, gallery manifests, and lint in sequence
+- **`npm run new-post "Title"`** — scaffolds a new post with all frontmatter fields
+- **`npm run new-project "Name"`** — scaffolds a new project
+- **`npm run list-featured`** — shows which posts are marked as featured
+- **Frontmatter validation** — catches unknown categories and YAML formatting issues before commit
+
+## Design Iterations
+
+Almost nothing shipped on the first try. Some highlights:
+
+- **Featured posts layout**: 4 iterations (large+stacked → 2-across → 3-across)
+- **Search bar**: 5+ iterations across browsers before going with the slide-in panel
+- **Post list spacing**: Multiple rounds to get the 640px content within the 1250px hero image container feeling right
+- **Category colors**: Tuned to work as both badges on cards and header accents on category pages
+
+## What I Learned
+
+- **MDX is powerful but has rough edges** — the plugin ecosystem doesn't always play nice with Vite's module system. It also doesn't always display WYSIWYG... even in obsidian. This I think might be a temporary solution until I/We come up with something more sophisticated. Maybe online editing with TinaCMS? 🤔
+- **Safari and Chrome are still very different** — CSS that looks identical in Chrome can be completely wrong in Safari
+- **Build-time is your friend** — when runtime solutions get complicated, a simple Node script that runs before build often solves the problem more cleanly
+- **AI design / vibe-coding is the real deal** — Claude helped me build this entire site, from architecture decisions to debugging Safari CSS quirks to scraping old blog posts. It's not just code generation; it's having a collaborator who can hold the full context of the project. And it is knowledgable. Like... _really_ knowledgeable. I don't know react or css or tailwinds or any frontend coding. Even after all of this. It turns out that I don't really need that skill anymore. The implications of this are mind blowing... and terrifying.
+
+## What's Next
+
+The site is running locally. The next chapter is getting it deployed — Hetzner VPS, Coolify, GitHub CI / CD with GitHub Actions and Apps, Cloudflare CDN, and a self-hosted comment system (remark42). That's a whole separate story.
+
+---
+
+*This site was built with extensive help from Claude. Every component, script, and configuration was developed through conversation — iterating on ideas, debugging issues, and refining the design together.*

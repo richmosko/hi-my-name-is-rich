@@ -1,6 +1,10 @@
 {
   "images": [
     {
+      "src": "profile-claude.png",
+      "alt": ""
+    },
+    {
       "src": "profile-keith.jpeg",
       "alt": ""
     },
