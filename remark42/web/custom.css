@@ -20,6 +20,19 @@
   --primary-brighter-color: 52, 81, 209;
   --primary-darker-color: 37, 64, 166;
 
+  /* Override hardcoded teal color variables used throughout Remark42 */
+  --color9: #4a6cf7;          /* was #0aa — links, buttons */
+  --color15: #3451d1;         /* was #099 — hover states */
+  --color33: #5b7af8;         /* was #06c5c5 — brighter accent */
+  --color29: #3451d1;         /* was #0e7e9d — darker accent */
+  --color40: #a8bcfb;         /* was #9cdddb — light accent */
+  --color43: #c4d1fd;         /* was #b7dddd — lighter accent */
+  --color42: #dce4fe;         /* was #c6efef — lightest accent (selection) */
+  --color3: #e8edfe;          /* was #e2efef — accent tint */
+  --color4: #f0f3ff;          /* was #edf6f7 — accent tint lighter */
+  --color48: rgba(74, 108, 247, 0.6);  /* was rgba(37,156,154,.6) — focus ring */
+  --color47: rgba(74, 108, 247, 0.4);  /* was rgba(37,156,154,.4) — focus ring lighter */
+
   /* Text colors — match site typography */
   --primary-text-color: 68, 68, 68;           /* #444444 — content */
   --secondary-text-color: 85, 85, 85;         /* #555555 — content-secondary */
