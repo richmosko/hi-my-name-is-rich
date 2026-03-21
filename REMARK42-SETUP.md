@@ -46,19 +46,42 @@ You need at least one auth provider so visitors can log in to comment. GitHub is
 
 ### Option A: Docker Compose service in Coolify
 
+#### Custom image via GitHub Container Registry
+
+The custom Remark42 image (with CSS overrides) is built automatically by GitHub Actions whenever `remark42/` changes in the repo. The image is published to:
+
+```
+ghcr.io/richmosko/remark42-custom:v1.15.0
+```
+
+The GitHub Action (`.github/workflows/remark42-image.yml`) triggers on:
+- Push to `main` that changes any file in `remark42/`
+- Manual trigger via the Actions tab (`workflow_dispatch`)
+
+**First-time setup:** After merging the workflow to `main`, go to **GitHub > Actions** and run the "Build Remark42 Custom Image" workflow manually to build the initial image. Then verify it at `github.com/richmosko/hi-my-name-is-rich/pkgs/container/remark42-custom`.
+
+**Updating styles:** Edit `remark42/web/custom.css`, commit, push to `main` — the image rebuilds automatically. Then redeploy the Remark42 service in Coolify.
+
+#### Make the package accessible to Coolify
+
+By default, GHCR packages are private. You need to make it accessible:
+
+1. Go to `github.com/richmosko/hi-my-name-is-rich/pkgs/container/remark42-custom`
+2. Click **Package settings** (right sidebar)
+3. Under **Danger Zone**, change visibility to **Public**
+   - Or: keep it private and configure Coolify with a GitHub personal access token that has `read:packages` scope
+
+#### Create the Coolify resource
+
 1. In Coolify, go to **Projects > your project > Add Resource > Docker Compose**
 2. Paste the following `docker-compose.yml`:
 
 ```yaml
 services:
   remark42:
-    # Custom image with CSS overrides matching the blog's design
-    # See remark42/Dockerfile and remark42/web/custom.css in the repo
-    build:
-      context: ./remark42
-      dockerfile: Dockerfile
-    # Fallback: use stock image if not building custom
-    # image: umputun/remark42:v1.15.0
+    # Custom image with CSS overrides — built by GitHub Actions, hosted on GHCR
+    image: ghcr.io/richmosko/remark42-custom:v1.15.0
+    # To use stock image instead: image: umputun/remark42:v1.15.0
     container_name: remark42
     restart: unless-stopped
     environment:
