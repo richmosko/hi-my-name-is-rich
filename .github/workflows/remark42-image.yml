@@ -3,8 +3,6 @@ name: Build Remark42 Custom Image
 on:
   push:
     branches: [main]
-    paths:
-      - 'remark42/**'
   workflow_dispatch: # Allow manual trigger
 
 env:
