@@ -12,6 +12,15 @@ export const authors: Record<string, Author> = {
       { platform: 'linkedin', url: 'https://www.linkedin.com/in/richard-mosko-41a69b8', label: 'LinkedIn' },
     ],
   },
+  claude: {
+    id: 'claude',
+    name: 'Claude',
+    bio: 'AI assistant by Anthropic. Co-author, pair programmer, and occasional CSS debugger.',
+    avatar: '/images/profiles/profile-claude.png',
+    socials: [
+      { platform: 'website', url: 'https://claude.ai', label: 'Claude.ai' },
+    ],
+  },
   keith: {
     id: 'keith',
     name: 'Keith Holleman',

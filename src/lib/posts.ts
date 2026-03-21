@@ -13,7 +13,7 @@ interface MdxModule {
     featured?: boolean;
     image?: string;
     imageAspectRatio?: string;
-    authorId: string;
+    authorId: string | string[];
     tags?: string[];
   };
 }
