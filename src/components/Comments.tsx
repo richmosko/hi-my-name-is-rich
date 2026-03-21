@@ -32,7 +32,9 @@ export default function Comments({ pageId }: CommentsProps) {
       page_title: document.title,
       locale: 'en',
       show_email_subscription: false,
+      show_rss_subscription: false,
       simple_view: false,
+      no_footer: true,
       primary_color: '#4a6cf7',  // Match site accent color
     };
 

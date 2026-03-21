@@ -52,7 +52,13 @@ You need at least one auth provider so visitors can log in to comment. GitHub is
 ```yaml
 services:
   remark42:
-    image: umputun/remark42:latest
+    # Custom image with CSS overrides matching the blog's design
+    # See remark42/Dockerfile and remark42/web/custom.css in the repo
+    build:
+      context: ./remark42
+      dockerfile: Dockerfile
+    # Fallback: use stock image if not building custom
+    # image: umputun/remark42:v1.15.0
     container_name: remark42
     restart: unless-stopped
     environment:
@@ -307,3 +313,47 @@ Coolify's Traefik proxy routes traffic to the correct container based on the dom
 **Coolify build fails**
 - Check that `VITE_REMARK42_HOST` is set as a **build** variable (not just runtime) since Vite inlines it at build time
 - Ensure the Dockerfile is in the repo root
+
+## 9. Custom Styling
+
+Remark42 renders in an iframe, so your site's CSS can't reach it. The `primary_color` config option changes the accent color, but for deeper customization we build a custom Docker image.
+
+### How it works
+
+```
+remark42/
+  Dockerfile      # Extends official image, appends custom CSS
+  web/
+    custom.css    # CSS overrides matching the blog's design tokens
+```
+
+The Dockerfile appends `custom.css` to the built-in `remark.css` inside the container. This overrides CSS custom properties and specific selectors.
+
+### What's customized
+
+| Property | Default (Remark42) | Override (Blog) |
+|----------|-------------------|-----------------|
+| Accent color | Teal `#0aa` | Blue `#4a6cf7` |
+| Text color | `#333` | `#444444` |
+| Secondary text | `#64748b` | `#555555` |
+| Muted text | `#969696` | `#999999` |
+| Borders | `#e2e8f0` | `#e5e5e5` |
+| Input background | White | `#f5f5f5` |
+| Font stack | System default | Matches site's system font stack |
+| Button radius | Square | 6px rounded |
+
+### Modifying styles
+
+1. Edit `remark42/web/custom.css`
+2. Rebuild and redeploy the Remark42 container in Coolify
+3. Hard-refresh the browser to see changes (iframe CSS may be cached)
+
+### Finding CSS class names
+
+To inspect Remark42's CSS classes, fetch the live stylesheet:
+
+```bash
+curl https://remark42.himynameisrich.com/web/remark.css | head -100
+```
+
+**Important:** Pin the Remark42 image version (`v1.15.0`) in the Dockerfile. A major version update could restructure the CSS and break overrides.
