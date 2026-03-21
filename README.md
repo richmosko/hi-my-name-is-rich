@@ -1,6 +1,6 @@
 # Hi, My Name Is Rich
 
-A personal blog and portfolio site built with React, TypeScript, Vite, and Tailwind CSS. Posts are authored as MDX files — standard markdown with the ability to embed React components directly in your writing.
+A personal blog built with React, TypeScript, Vite, and Tailwind CSS. Posts are authored as MDX files — standard markdown with the ability to embed React components directly in your writing.
 
 ## Tech Stack
 
