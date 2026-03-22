@@ -100,21 +100,11 @@
   background-color: #6b8aff !important;
 }
 
-/* Ghost/link button — .C_F */
+/* Ghost/link button — .C_F (Reply, Copy, Pin, Delete, etc.) */
 .dark .C_F,
 .dark .C_F:hover {
   color: #6b8aff !important;
-}
-.dark .C_F:hover {
-  background-color: rgba(107, 138, 255, 0.2) !important;
-}
-.dark .C_F {
-  background-color: rgba(107, 138, 255, 0.1) !important;
-}
-
-/* Vote/action buttons */
-.dark .comment__score {
-  color: #6b8aff;
+  background-color: transparent !important;
 }
 
 /* Focus ring on inputs */
