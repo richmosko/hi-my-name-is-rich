@@ -75,10 +75,52 @@
   --line-brighter-color: #3a3a3a;
 }
 
-/* Override .dark .C_F which resets color to inherit, losing our accent */
+/*
+ * Direct element overrides for dark mode.
+ * CSS variable inheritance from .root_theme_dark doesn't reach all elements
+ * (e.g., .C_A uses :root-level vars). So we override elements directly.
+ */
+
+/* Primary button (sign-in, submit) — .C_A */
+.dark .C_A {
+  background-color: #6b8aff !important;
+}
+.dark .C_A:hover {
+  background-color: #8da4ff !important;
+}
+.dark .C_A:focus {
+  box-shadow: 0 0 0 2px rgba(107, 138, 255, 0.4) !important;
+}
+.dark .C_A:disabled {
+  background-color: #6b8aff !important;
+}
+
+/* Secondary/outline button hover — .C_C */
+.dark .C_C:hover {
+  background-color: #6b8aff !important;
+}
+
+/* Ghost/link button — .C_F */
 .dark .C_F,
 .dark .C_F:hover {
   color: #6b8aff !important;
+}
+.dark .C_F:hover {
+  background-color: rgba(107, 138, 255, 0.2) !important;
+}
+.dark .C_F {
+  background-color: rgba(107, 138, 255, 0.1) !important;
+}
+
+/* Vote/action buttons */
+.dark .comment__score {
+  color: #6b8aff;
+}
+
+/* Focus ring on inputs */
+.dark .S_A:focus {
+  border-color: #6b8aff !important;
+  box-shadow: 0 0 0 2px rgba(107, 138, 255, 0.4) !important;
 }
 
 /* Font family — match site's system font stack */
