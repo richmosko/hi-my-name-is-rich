@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useTheme } from '../hooks/useTheme';
 
 declare global {
   interface Window {
@@ -18,6 +19,7 @@ interface CommentsProps {
 
 export default function Comments({ pageId }: CommentsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { theme } = useTheme();
 
   useEffect(() => {
     // Skip if no host configured (local dev without Remark42 server)
@@ -28,15 +30,20 @@ export default function Comments({ pageId }: CommentsProps) {
       site_id: 'himynameisrich',
       url: `${window.location.origin}/post/${pageId}`,
       components: ['embed'],
-      theme: 'light',
+      theme: theme,
       page_title: document.title,
       locale: 'en',
       show_email_subscription: false,
       show_rss_subscription: false,
       simple_view: false,
       no_footer: true,
-      primary_color: '#4a6cf7',  // Match site accent color
+      primary_color: theme === 'dark' ? '#6b8aff' : '#4a6cf7',
     };
+
+    // Destroy previous instance before re-creating
+    if (window.REMARK42?.destroy) {
+      window.REMARK42.destroy();
+    }
 
     window.remark_config = config;
 
@@ -55,21 +62,21 @@ export default function Comments({ pageId }: CommentsProps) {
       }
       delete window.remark_config;
     };
-  }, [pageId]);
+  }, [pageId, theme]);
 
   if (!REMARK42_HOST) {
     return (
-      <div className="w-full max-w-[640px] border-t border-gray-200 pt-8 mt-4">
+      <div className="w-full max-w-[640px] border-t border-edge pt-8 mt-4">
         <h3 className="text-lg font-semibold text-content mb-4">Comments</h3>
         <p className="text-sm text-content-muted">
-          Comments are disabled in development. Set <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">VITE_REMARK42_HOST</code> to enable.
+          Comments are disabled in development. Set <code className="bg-surface-secondary px-1.5 py-0.5 rounded text-xs">VITE_REMARK42_HOST</code> to enable.
         </p>
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} className="w-full max-w-[640px] border-t border-gray-200 pt-8 mt-4">
+    <div ref={containerRef} className="w-full max-w-[640px] border-t border-edge pt-8 mt-4">
       <h3 className="text-lg font-semibold text-content mb-4">Comments</h3>
       <div id="remark42" />
     </div>

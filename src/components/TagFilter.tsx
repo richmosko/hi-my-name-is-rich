@@ -49,7 +49,7 @@ export default function TagFilter({ tags, activeTags, onToggle }: TagFilterProps
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                   isActive
                     ? 'bg-accent text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-surface-secondary text-content-muted hover:bg-edge'
                 }`}
               >
                 {tag}

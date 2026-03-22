@@ -25,7 +25,7 @@ function TaskItem({ task }: { task: ProjectTask }) {
         className={`shrink-0 w-4 h-4 rounded flex items-center justify-center border ${
           task.completed
             ? 'bg-accent border-accent text-white'
-            : 'border-edge bg-white'
+            : 'border-edge bg-surface'
         }`}
       >
         {task.completed && (
@@ -140,7 +140,7 @@ function ProjectCard({ project }: { project: Project }) {
       className={`rounded-2xl border p-5 sm:p-8 flex flex-col gap-4 sm:gap-5 ${
         isCompleted
           ? 'border-edge/60 bg-surface-secondary/40'
-          : 'border-edge bg-white'
+          : 'border-edge bg-surface'
       } ${hasDetails ? 'cursor-pointer' : ''}`}
       onClick={() => hasDetails && setExpanded(!expanded)}
     >

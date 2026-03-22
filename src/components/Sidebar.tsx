@@ -65,9 +65,9 @@ export default function Sidebar() {
                    cursor-pointer"
         aria-label={isOpen ? 'Close menu' : 'Open menu'}
       >
-        <span className="hamburger-bar block w-[18px] h-[2.5px] rounded-full bg-[#A0A0A0]" />
-        <span className="hamburger-bar block w-[18px] h-[2.5px] rounded-full bg-[#A0A0A0]" />
-        <span className="hamburger-bar block w-[18px] h-[2.5px] rounded-full bg-[#A0A0A0]" />
+        <span className="hamburger-bar block w-[18px] h-[2.5px] rounded-full bg-content-muted" />
+        <span className="hamburger-bar block w-[18px] h-[2.5px] rounded-full bg-content-muted" />
+        <span className="hamburger-bar block w-[18px] h-[2.5px] rounded-full bg-content-muted" />
       </button>
 
       {/* Backdrop overlay — click to close */}
@@ -80,7 +80,7 @@ export default function Sidebar() {
 
       {/* Sidebar panel */}
       <nav
-        className={`fixed left-0 top-0 h-full w-64 bg-white border-r border-edge shadow-lg
+        className={`fixed left-0 top-0 h-full w-64 bg-surface border-r border-edge shadow-lg
                     flex flex-col pt-20 pb-8 px-6
                     transition-transform duration-300 ease-in-out
                     ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
@@ -96,7 +96,7 @@ export default function Sidebar() {
                    ${
                      isActive
                        ? 'text-content'
-                       : 'text-[#A0A0A0] hover:text-[#202020]'
+                       : 'text-content-muted hover:text-content'
                    }`
                 }
               >
@@ -116,10 +116,10 @@ export default function Sidebar() {
               }`
             }
           >
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#202020] group-hover:text-accent transition-colors">
+            <span className="text-xs font-semibold uppercase tracking-wider text-content group-hover:text-accent transition-colors">
               Posts
             </span>
-            <span className="text-xs text-[#A0A0A0] group-hover:text-accent transition-colors">
+            <span className="text-xs text-content-muted group-hover:text-accent transition-colors">
               &rarr;
             </span>
           </NavLink>
@@ -133,7 +133,7 @@ export default function Sidebar() {
                      ${
                        isActive
                          ? 'text-content'
-                         : 'text-[#A0A0A0] hover:text-[#202020]'
+                         : 'text-content-muted hover:text-content'
                      }`
                   }
                 >
@@ -154,10 +154,10 @@ export default function Sidebar() {
               }`
             }
           >
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#202020] group-hover:text-accent transition-colors">
+            <span className="text-xs font-semibold uppercase tracking-wider text-content group-hover:text-accent transition-colors">
               Projects
             </span>
-            <span className="text-xs text-[#A0A0A0] group-hover:text-accent transition-colors">
+            <span className="text-xs text-content-muted group-hover:text-accent transition-colors">
               &rarr;
             </span>
           </NavLink>

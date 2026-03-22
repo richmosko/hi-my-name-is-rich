@@ -37,7 +37,7 @@ export default function Home() {
           <div className="pt-2">
             <Link
               to="/about"
-              className="text-sm font-medium text-[#A0A0A0] hover:text-[#202020] transition-colors duration-150"
+              className="text-sm font-medium text-content-muted hover:text-content transition-colors duration-150"
             >
               More about me &rarr;
             </Link>
