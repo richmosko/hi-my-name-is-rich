@@ -46,6 +46,33 @@
   --line-brighter-color: #d4d4d4;
 }
 
+/*
+ * Dark theme overrides
+ * Remark42's dark theme uses _theme_dark class suffixes.
+ * The :root variables apply inside the iframe, so we override them
+ * when any dark-themed element exists (using Remark42's own dark class).
+ */
+.root_theme_dark {
+  --primary-color: 107, 138, 255;
+  --primary-brighter-color: 141, 164, 255;
+  --primary-darker-color: 74, 108, 247;
+  --color9: #6b8aff;
+  --color15: #8da4ff;
+  --color33: #8da4ff;
+  --color29: #6b8aff;
+  --color40: #3a4f99;
+  --color43: #2a3a73;
+  --color42: #1e2a55;
+  --color48: rgba(107, 138, 255, 0.6);
+  --color47: rgba(107, 138, 255, 0.4);
+  --primary-text-color: 224, 224, 224;
+  --secondary-text-color: 176, 176, 176;
+  --secondary-darker-text-color: 112, 112, 112;
+  --primary-background-color: 18, 18, 18;
+  --line-color: #2a2a2a;
+  --line-brighter-color: #3a3a3a;
+}
+
 /* Font family — match site's system font stack */
 .root {
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
@@ -69,6 +96,18 @@
   background-color: #ffffff;
 }
 
+/* Dark mode input area — prevent white flash on focus */
+.comment-form_theme_dark .comment-form__field {
+  background-color: #1a1a1a !important;
+  border-color: #2a2a2a !important;
+  color: #e0e0e0 !important;
+}
+
+.comment-form_theme_dark .comment-form__field:focus-within {
+  border-color: #6b8aff !important;
+  background-color: #1e1e1e !important;
+}
+
 /* Submit button — rounded to match site style */
 .comment-form__button {
   border-radius: 6px;
@@ -83,12 +122,55 @@
   color: rgb(52, 81, 209);
 }
 
+.comment_theme_dark .comment__username {
+  color: #6b8aff;
+}
+
+.comment_theme_dark .comment__username:hover {
+  color: #8da4ff;
+}
+
 /* Vote buttons — subtle on hover */
 .comment__action:hover {
   color: rgb(74, 108, 247);
 }
 
+.comment_theme_dark .comment__action:hover {
+  color: #6b8aff;
+}
+
+/* Link-style buttons (Reply, etc.) — override teal in both themes */
+.button_kind_link {
+  color: #4a6cf7 !important;
+}
+
+.button_kind_link:hover {
+  color: #3451d1 !important;
+}
+
+.button_theme_dark.button_kind_link {
+  color: #6b8aff !important;
+}
+
+.button_theme_dark.button_kind_link:hover {
+  color: #8da4ff !important;
+}
+
+/* Comment text */
+.comment__text {
+  color: rgb(85, 85, 85);
+  line-height: 1.625;
+}
+
+.comment_theme_dark .comment__text {
+  color: rgb(176, 176, 176);
+}
+
 /* Timestamp — muted */
 .comment__time {
   color: rgb(153, 153, 153);
+}
+
+.comment_theme_dark .comment__time {
+  color: rgb(112, 112, 112);
 }
