@@ -1,6 +1,15 @@
 /**
- * Minimal force-directed graph layout.
- * No dependencies — just physics.
+ * Force-directed graph layout — Obsidian-style physics.
+ * No dependencies — just forces.
+ *
+ * Forces:
+ *  - Repulsion: all nodes push each other away (charge force)
+ *  - Link attraction: connected nodes pull toward each other (spring force)
+ *    - Wikilinks are strong springs (short ideal distance)
+ *    - Tag edges are weaker springs (longer ideal distance)
+ *  - Centering: gentle gravity toward canvas center
+ *  - Damping: velocity decay for stability
+ *  - Drift: small random perturbation for ambient motion
  */
 
 export interface GraphNode {
@@ -19,6 +28,8 @@ export interface GraphNode {
   vy: number;
   connections: number;
   radius: number;
+  // Pinned by drag — skip force application
+  pinned?: boolean;
 }
 
 export interface GraphEdge {
@@ -34,7 +45,7 @@ export interface GraphData {
 }
 
 /**
- * Initialize node positions in a circle with some randomness.
+ * Initialize node positions in a spread circle with randomness.
  */
 export function initializePositions(
   nodes: GraphNode[],
@@ -47,11 +58,11 @@ export function initializePositions(
 
   nodes.forEach((node, i) => {
     const angle = (i / nodes.length) * Math.PI * 2;
-    const jitter = (Math.random() - 0.5) * radius * 0.5;
+    const jitter = (Math.random() - 0.5) * radius * 0.6;
     node.x = cx + Math.cos(angle) * (radius + jitter);
     node.y = cy + Math.sin(angle) * (radius + jitter);
-    node.vx = 0;
-    node.vy = 0;
+    node.vx = (Math.random() - 0.5) * 0.5;
+    node.vy = (Math.random() - 0.5) * 0.5;
   });
 }
 
@@ -63,26 +74,22 @@ export function computeNodeMetrics(
   edges: GraphEdge[]
 ): void {
   const counts: Record<string, number> = {};
+  // Weight wikilinks more than tag edges
   edges.forEach((e) => {
-    counts[e.source] = (counts[e.source] || 0) + 1;
-    counts[e.target] = (counts[e.target] || 0) + 1;
+    const w = e.type === 'wikilink' ? 3 : 1;
+    counts[e.source] = (counts[e.source] || 0) + w;
+    counts[e.target] = (counts[e.target] || 0) + w;
   });
 
   nodes.forEach((node) => {
     node.connections = counts[node.id] || 0;
-    // Radius: 3px base, up to 8px for highly connected nodes
-    node.radius = 3 + Math.min(node.connections / 3, 5);
+    // Radius: 3px base, up to 12px for highly connected nodes
+    node.radius = 3 + Math.min(node.connections * 0.4, 9);
   });
 }
 
 /**
  * Run one tick of the force simulation.
- *
- * Forces:
- *  - Repulsion: all nodes push each other away
- *  - Attraction: connected nodes pull toward each other
- *  - Centering: gentle pull toward canvas center
- *  - Damping: velocity decay for stability
  */
 export function tick(
   nodes: GraphNode[],
@@ -96,29 +103,33 @@ export function tick(
   const nodeMap = new Map<string, GraphNode>();
   nodes.forEach((n) => nodeMap.set(n.id, n));
 
-  // Repulsion (Barnes-Hut would be faster, but 78 nodes is fine with O(n²))
-  const repulsionStrength = 800 * alpha;
+  // ─── Repulsion (all pairs push apart) ───────────────────────
+  // Higher = more spread out. Obsidian default is moderate.
+  const repulsionStrength = 5000;
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
       const a = nodes[i];
       const b = nodes[j];
-      const dx = b.x - a.x;
-      const dy = b.y - a.y;
+      let dx = b.x - a.x;
+      let dy = b.y - a.y;
       let dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 1) dist = 1;
+      if (dist < 1) {
+        // Jitter to break overlaps
+        dx = (Math.random() - 0.5) * 2;
+        dy = (Math.random() - 0.5) * 2;
+        dist = 1;
+      }
 
-      const force = repulsionStrength / (dist * dist);
+      const force = (repulsionStrength * alpha) / (dist * dist);
       const fx = (dx / dist) * force;
       const fy = (dy / dist) * force;
 
-      a.vx -= fx;
-      a.vy -= fy;
-      b.vx += fx;
-      b.vy += fy;
+      if (!a.pinned) { a.vx -= fx; a.vy -= fy; }
+      if (!b.pinned) { b.vx += fx; b.vy += fy; }
     }
   }
 
-  // Attraction along edges
+  // ─── Link attraction (spring force) ─────────────────────────
   for (const edge of edges) {
     const a = nodeMap.get(edge.source);
     const b = nodeMap.get(edge.target);
@@ -129,32 +140,51 @@ export function tick(
     let dist = Math.sqrt(dx * dx + dy * dy);
     if (dist < 1) dist = 1;
 
-    // Stronger pull for wikilinks
-    const strength =
-      edge.type === 'wikilink' ? 0.15 * alpha : 0.03 * alpha;
-    const idealDist = edge.type === 'wikilink' ? 80 : 150;
+    // Wikilinks: strong pull, short ideal distance → tight clusters
+    // Tags: moderate pull, longer ideal distance → loose affinity
+    let strength: number;
+    let idealDist: number;
 
-    const force = (dist - idealDist) * strength;
+    if (edge.type === 'wikilink') {
+      strength = 0.4 * alpha;
+      idealDist = 60;
+    } else {
+      // tag
+      strength = 0.08 * alpha;
+      idealDist = 150;
+    }
+
+    const displacement = dist - idealDist;
+    const force = displacement * strength;
     const fx = (dx / dist) * force;
     const fy = (dy / dist) * force;
 
-    a.vx += fx;
-    a.vy += fy;
-    b.vx -= fx;
-    b.vy -= fy;
+    if (!a.pinned) { a.vx += fx; a.vy += fy; }
+    if (!b.pinned) { b.vx -= fx; b.vy -= fy; }
   }
 
-  // Centering force
-  const centerStrength = 0.01 * alpha;
+  // ─── Centering gravity ──────────────────────────────────────
+  const centerStrength = 0.02 * alpha;
   for (const node of nodes) {
+    if (node.pinned) continue;
     node.vx += (cx - node.x) * centerStrength;
     node.vy += (cy - node.y) * centerStrength;
   }
 
-  // Apply velocity + damping
-  const damping = 0.85;
-  const maxSpeed = 10;
+  // ─── Ambient drift (gentle random perturbation) ─────────────
+  const driftStrength = 0.15;
   for (const node of nodes) {
+    if (node.pinned) continue;
+    node.vx += (Math.random() - 0.5) * driftStrength;
+    node.vy += (Math.random() - 0.5) * driftStrength;
+  }
+
+  // ─── Apply velocity + damping ───────────────────────────────
+  const damping = 0.88;
+  const maxSpeed = 8;
+  for (const node of nodes) {
+    if (node.pinned) continue;
+
     node.vx *= damping;
     node.vy *= damping;
 
@@ -168,9 +198,12 @@ export function tick(
     node.x += node.vx;
     node.y += node.vy;
 
-    // Keep within bounds (with padding)
-    const pad = 30;
-    node.x = Math.max(pad, Math.min(width - pad, node.x));
-    node.y = Math.max(pad, Math.min(height - pad, node.y));
+    // Soft boundary
+    const pad = 40;
+    const bounce = 0.3;
+    if (node.x < pad) node.vx += (pad - node.x) * bounce;
+    if (node.x > width - pad) node.vx -= (node.x - (width - pad)) * bounce;
+    if (node.y < pad) node.vy += (pad - node.y) * bounce;
+    if (node.y > height - pad) node.vy -= (node.y - (height - pad)) * bounce;
   }
 }

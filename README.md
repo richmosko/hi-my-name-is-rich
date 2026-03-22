@@ -31,6 +31,25 @@ A personal blog built with React, TypeScript, Vite, and Tailwind CSS. Posts are 
 | `/post/:slug` | Post Detail | Full post content with hero image, metadata, tags, MDX body, and Previous/Next navigation |
 | `/constellation` | Constellation | Interactive star map showing how all posts relate through links, tags, and categories |
 
+## Constellation Graph
+
+An interactive force-directed graph visualizing relationships between posts — inspired by Obsidian's graph view.
+
+- **Obsidian-style physics**: continuous force simulation with repulsion, link attraction, centering gravity, and ambient drift
+- **Draggable nodes**: grab any star and move it — connected nodes react in real-time
+- **Wikilink edges**: strong springs (short ideal distance) create tight clusters of directly linked posts
+- **Tag edges**: weaker springs colored by tag — posts sharing tags loosely group together
+- **Category colors**: each post is colored by its primary category (emerald=Travel, purple=Design, etc.)
+- **Tag-colored edges**: each shared tag gets a distinct color via golden-angle hue spacing for visual distinction
+- **Theme-aware**: background, edges, labels, and UI panels adapt to light/dark mode
+- **Pan & zoom**: scroll to zoom, drag empty space to pan
+- **Hover highlights**: hovering a star highlights its connections and dims unrelated nodes
+- **Click to navigate**: click any star to visit that post
+- **Touch support**: drag nodes, pinch to zoom on mobile
+- **Toggles**: show/hide wikilink and tag edges independently
+
+Rebuild graph data after adding/editing posts: `npm run build-graph-index`
+
 ## Layout
 
 - **Max width**: 1440px with 95px horizontal padding (matching Figma spec)
