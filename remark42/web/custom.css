@@ -75,43 +75,9 @@
   --line-brighter-color: #3a3a3a;
 }
 
-/*
- * Direct element overrides for dark mode.
- * CSS variable inheritance from .root_theme_dark doesn't reach all elements
- * (e.g., .C_A uses :root-level vars). So we override elements directly.
- */
-
-/* Primary button (sign-in, submit) — .C_A */
-.dark .C_A {
-  background-color: #6b8aff !important;
-}
-.dark .C_A:hover {
-  background-color: #8da4ff !important;
-}
-.dark .C_A:focus {
-  box-shadow: 0 0 0 2px rgba(107, 138, 255, 0.4) !important;
-}
-.dark .C_A:disabled {
-  background-color: #6b8aff !important;
-}
-
-/* Secondary/outline button hover — .C_C */
-.dark .C_C:hover {
-  background-color: #6b8aff !important;
-}
-
-/* Ghost/link button — .C_F (Reply, Copy, Pin, Delete, etc.) */
-.dark .C_F,
-.dark .C_F:hover {
-  color: #6b8aff !important;
-  background-color: transparent !important;
-}
-
-/* Focus ring on inputs */
-.dark .S_A:focus {
-  border-color: #6b8aff !important;
-  box-shadow: 0 0 0 2px rgba(107, 138, 255, 0.4) !important;
-}
+/* Note: Reply, vote, and action buttons use Remark42's default teal in dark
+   mode. Overriding them causes side effects with minified class specificity.
+   The teal is readable against the dark background, so we leave it as-is. */
 
 /* Font family — match site's system font stack */
 .root {
@@ -162,24 +128,7 @@
   color: rgb(52, 81, 209);
 }
 
-.comment_theme_dark .comment__username {
-  color: #6b8aff;
-}
-
-.comment_theme_dark .comment__username:hover {
-  color: #8da4ff;
-}
-
-/* Vote buttons — subtle on hover */
-.comment__action:hover {
-  color: rgb(74, 108, 247);
-}
-
-.comment_theme_dark .comment__action:hover {
-  color: #6b8aff;
-}
-
-/* Link-style buttons (Reply, etc.) — override teal in both themes */
+/* Light mode: override link buttons to site blue */
 .button_kind_link {
   color: #4a6cf7 !important;
 }
@@ -188,12 +137,9 @@
   color: #3451d1 !important;
 }
 
-.button_theme_dark.button_kind_link {
-  color: #6b8aff !important;
-}
-
-.button_theme_dark.button_kind_link:hover {
-  color: #8da4ff !important;
+/* Light mode: vote/action hover */
+.comment__action:hover {
+  color: rgb(74, 108, 247);
 }
 
 /* Comment text */
