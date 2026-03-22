@@ -52,7 +52,9 @@
  * The :root variables apply inside the iframe, so we override them
  * when any dark-themed element exists (using Remark42's own dark class).
  */
-.root_theme_dark {
+/* Apply to both .root_theme_dark and .dark (Remark42 uses both) */
+.root_theme_dark,
+.dark {
   --primary-color: 107, 138, 255;
   --primary-brighter-color: 141, 164, 255;
   --primary-darker-color: 74, 108, 247;
@@ -71,6 +73,12 @@
   --primary-background-color: 18, 18, 18;
   --line-color: #2a2a2a;
   --line-brighter-color: #3a3a3a;
+}
+
+/* Override .dark .C_F which resets color to inherit, losing our accent */
+.dark .C_F,
+.dark .C_F:hover {
+  color: #6b8aff !important;
 }
 
 /* Font family — match site's system font stack */
