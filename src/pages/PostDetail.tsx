@@ -75,7 +75,7 @@ export default function PostDetail() {
                     key={a.id}
                     src={a.avatar}
                     alt={a.name}
-                    className="w-[48px] h-[48px] rounded-full object-cover border-2 border-white"
+                    className="w-[48px] h-[48px] rounded-full object-cover border-2 border-surface"
                   />
                 ))}
               </div>
@@ -102,7 +102,7 @@ export default function PostDetail() {
         </h1>
 
         {/* Read time + categories bar */}
-        <div className="flex items-center justify-between bg-[#f4f4f4] rounded-xl px-3 py-2.5">
+        <div className="flex items-center justify-between bg-surface-secondary rounded-xl px-3 py-2.5">
           <span className="text-sm font-medium text-content-muted">
             {post.readTime}
           </span>
@@ -110,7 +110,7 @@ export default function PostDetail() {
             {post.categories.map((cat) => (
               <span
                 key={cat}
-                className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColors[cat] ?? 'bg-gray-100 text-gray-600'}`}
+                className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColors[cat] ?? 'bg-surface-secondary text-content-muted'}`}
               >
                 {categoryConfig[cat]?.label ?? cat}
               </span>
@@ -118,7 +118,7 @@ export default function PostDetail() {
             {post.tags?.map((tag) => (
               <span
                 key={tag}
-                className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600"
+                className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-secondary text-content-muted"
               >
                 {tag}
               </span>
@@ -162,7 +162,7 @@ export default function PostDetail() {
 
         {/* Previous / Next navigation */}
         {(prevPost || nextPost) && (
-          <nav className="w-full max-w-[640px] flex justify-between items-center border-t border-gray-200 pt-6 mt-4">
+          <nav className="w-full max-w-[640px] flex justify-between items-center border-t border-edge pt-6 mt-4">
             {prevPost ? (
               <Link
                 to={`/post/${prevPost.slug}`}

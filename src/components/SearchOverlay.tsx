@@ -56,7 +56,7 @@ export default function SearchPanel() {
       {/* Search icon trigger — always visible in top bar */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed right-6 top-5 z-50 icon-hover text-[#A0A0A0]"
+        className="fixed right-6 top-5 z-50 icon-hover text-content-muted"
         aria-label={isOpen ? 'Close search' : 'Search'}
       >
         {isOpen ? (
@@ -86,7 +86,7 @@ export default function SearchPanel() {
       >
         {/* Search input */}
         <div className="px-5 pt-20 pb-4">
-          <div className="flex items-center gap-3 bg-white border border-edge rounded-lg px-3 py-2.5">
+          <div className="flex items-center gap-3 bg-surface-card border border-edge rounded-lg px-3 py-2.5">
             <svg
               className="w-4 h-4 text-content-muted shrink-0"
               fill="none"

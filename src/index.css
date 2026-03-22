@@ -16,6 +16,20 @@
   --font-sans: 'Montserrat', system-ui, sans-serif;
 }
 
+/* Dark mode token overrides */
+html.dark {
+  --color-surface: #121212;
+  --color-surface-secondary: #1e1e1e;
+  --color-surface-sidebar: #181818;
+  --color-surface-card: #1a1a1a;
+  --color-content: #e0e0e0;
+  --color-content-secondary: #b0b0b0;
+  --color-content-muted: #707070;
+  --color-accent: #6b8aff;
+  --color-accent-hover: #8da4ff;
+  --color-edge: #2a2a2a;
+}
+
 html, body, #root {
   height: 100%;
   width: 100%;
@@ -28,14 +42,15 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Icon hover: #A0A0A0 → #FFFFFF */
+/* Icon hover */
 .icon-hover {
   transition: color 0.2s ease;
 }
 .icon-hover:hover {
-  color: #202020;
+  color: var(--color-content);
 }
 
 /* Hamburger bar hover */
@@ -43,7 +58,7 @@ body {
   transition: background-color 0.2s ease;
 }
 .hamburger-btn:hover .hamburger-bar {
-  background-color: #202020;
+  background-color: var(--color-content);
 }
 
 ::-webkit-scrollbar { width: 6px; }

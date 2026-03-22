@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useTheme } from '../hooks/useTheme';
 
 const routeLabels: Record<string, string> = {
   '/': '',
@@ -11,6 +12,7 @@ const routeLabels: Record<string, string> = {
 
 export default function TopBar() {
   const { pathname } = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   // Match /post/:slug to "Posts" and /project/:id to "Projects"
   const isPostDetail = pathname.startsWith('/post/');
@@ -23,7 +25,7 @@ export default function TopBar() {
         {/* Home icon — links to root */}
         <Link
           to="/"
-          className="icon-hover text-[#A0A0A0]"
+          className="icon-hover text-content-muted"
           aria-label="Home"
         >
           <svg
@@ -42,19 +44,41 @@ export default function TopBar() {
         </Link>
 
         {/* Site title */}
-        <h1 className="text-xl font-semibold text-[#A0A0A0] tracking-tight leading-none">
+        <h1 className="text-xl font-semibold text-content-muted tracking-tight leading-none">
           Rich Mosko
         </h1>
 
         {/* Active page breadcrumb */}
         {currentLabel && (
           <>
-            <span className="text-[#A0A0A0] text-sm leading-none mb-[1px]">→</span>
-            <span className="text-xl font-semibold text-[#A0A0A0] tracking-tight leading-none">
+            <span className="text-content-muted text-sm leading-none mb-[1px]">→</span>
+            <span className="text-xl font-semibold text-content-muted tracking-tight leading-none">
               {currentLabel}
             </span>
           </>
         )}
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Theme toggle */}
+        <button
+          onClick={toggleTheme}
+          className="icon-hover text-content-muted mb-[2px]"
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {theme === 'dark' ? (
+            /* Sun icon — shown in dark mode */
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          ) : (
+            /* Moon icon — shown in light mode */
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          )}
+        </button>
       </div>
     </header>
   );

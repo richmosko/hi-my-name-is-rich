@@ -25,7 +25,7 @@ function TaskItem({ task }: { task: ProjectTask }) {
         className={`shrink-0 w-4 h-4 rounded flex items-center justify-center border ${
           task.completed
             ? 'bg-accent border-accent text-white'
-            : 'border-edge bg-white'
+            : 'border-edge bg-surface'
         }`}
       >
         {task.completed && (

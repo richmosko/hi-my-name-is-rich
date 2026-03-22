@@ -50,7 +50,7 @@ function MiniPostCard({
           {post.categories.map((cat) => (
             <span
               key={cat}
-              className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColors[cat] ?? 'bg-gray-100 text-gray-600'}`}
+              className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColors[cat] ?? 'bg-surface-secondary text-content-muted'}`}
             >
               {categoryConfig[cat]?.label ?? cat}
             </span>
@@ -63,7 +63,7 @@ function MiniPostCard({
                 e.stopPropagation();
                 onTagClick?.(tag);
               }}
-              className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+              className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-secondary text-content-muted hover:bg-edge transition-colors"
             >
               {tag}
             </button>
@@ -80,7 +80,7 @@ function MiniPostCard({
                     key={a.id}
                     src={a.avatar}
                     alt={a.name}
-                    className="w-6 h-6 rounded-full object-cover border border-white"
+                    className="w-6 h-6 rounded-full object-cover border border-surface"
                   />
                 ))}
               </div>
