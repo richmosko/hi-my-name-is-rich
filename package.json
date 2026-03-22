@@ -15,6 +15,7 @@
     "build-search-index": "node scripts/build-search-index.mjs",
     "precommit": "node scripts/precommit.mjs",
     "list-featured": "node scripts/list-featured.mjs",
+    "build-graph-index": "node scripts/build-graph-index.mjs",
     "help": "node scripts/help.mjs"
   },
   "dependencies": {

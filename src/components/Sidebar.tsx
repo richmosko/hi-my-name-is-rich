@@ -7,6 +7,7 @@ const navItems = [
   { label: 'Home', path: '/' },
   { label: 'About', path: '/about' },
   { label: 'Contributors', path: '/contributors' },
+  { label: 'Constellation', path: '/constellation' },
 ];
 
 const categoryItems = [
