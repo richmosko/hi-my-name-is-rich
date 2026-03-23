@@ -97,11 +97,11 @@ export default function TopBar() {
           Rich Mosko
         </h1>
 
-        {/* Breadcrumb */}
+        {/* Breadcrumb — hidden on mobile */}
         {currentLabel && (
           <>
-            <span className="text-content-muted text-sm leading-none mb-[1px]">→</span>
-            <span className="text-xl font-semibold text-content-muted tracking-tight leading-none">
+            <span className="hidden sm:inline text-content-muted text-sm leading-none mb-[1px]">→</span>
+            <span className="hidden sm:inline text-xl font-semibold text-content-muted tracking-tight leading-none">
               {currentLabel}
             </span>
           </>
