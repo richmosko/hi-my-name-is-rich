@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { projects } from '../lib/projects';
 import { getProjectCompletion } from '../types';
+import ConstellationIcon from './ConstellationIcon';
 
 const navItems = [
   { label: 'Home', path: '/' },
@@ -102,6 +103,7 @@ export default function Sidebar() {
                 }
               >
                 {item.label}
+                {item.path === '/constellation' && <ConstellationIcon className="w-3.5 h-3.5 inline-block ml-1.5 -mt-0.5" />}
               </NavLink>
             </li>
           ))}

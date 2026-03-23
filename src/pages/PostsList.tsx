@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { posts, searchPosts } from '../lib/posts';
 import { authors } from '../data/authors';
@@ -6,6 +7,30 @@ import { parseLocalDate } from '../lib/dateUtils';
 import TagFilter from '../components/TagFilter';
 import CategoryFilter from '../components/CategoryFilter';
 import type { BlogPost, Category } from '../types';
+
+type SortOption = 'date-desc' | 'date-asc' | 'title-asc' | 'title-desc';
+const SORT_LABELS: Record<SortOption, string> = {
+  'date-desc': 'Newest First',
+  'date-asc': 'Oldest First',
+  'title-asc': 'Title (A–Z)',
+  'title-desc': 'Title (Z–A)',
+};
+
+function sortPosts(items: BlogPost[], sort: SortOption): BlogPost[] {
+  const sorted = [...items];
+  switch (sort) {
+    case 'date-desc':
+      return sorted.sort((a, b) => parseLocalDate(b.date).getTime() - parseLocalDate(a.date).getTime());
+    case 'date-asc':
+      return sorted.sort((a, b) => parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime());
+    case 'title-asc':
+      return sorted.sort((a, b) => a.title.localeCompare(b.title));
+    case 'title-desc':
+      return sorted.sort((a, b) => b.title.localeCompare(a.title));
+    default:
+      return sorted;
+  }
+}
 
 function getCategoryDescription(category?: Category): string | undefined {
   if (!category) return undefined;
@@ -112,6 +137,7 @@ interface PostsListProps {
 
 export default function PostsList({ category, title }: PostsListProps) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [sortBy, setSortBy] = useState<SortOption>('date-desc');
   const query = searchParams.get('q') || '';
   const activeTags = searchParams.getAll('tag');
   const activeCategories = searchParams.getAll('cat') as Category[];
@@ -124,8 +150,8 @@ export default function PostsList({ category, title }: PostsListProps) {
       ? posts.filter((p) => activeCategories.some((c) => p.categories.includes(c)))
       : posts;
 
-  // Stage 2: search + tag filter
-  const filteredPosts = searchPosts(categoryPosts, query, activeTags);
+  // Stage 2: search + tag filter, then sort
+  const filteredPosts = sortPosts(searchPosts(categoryPosts, query, activeTags), sortBy);
 
   // Derive all unique tags from category-scoped posts
   const tagSet = new Set<string>();
@@ -206,25 +232,35 @@ export default function PostsList({ category, title }: PostsListProps) {
         />
       </div>
 
-      {/* Category + Tag filters */}
-      {((!category && availableCategories.length > 0) || availableTags.length > 0) && (
-        <div className="w-full max-w-[640px] flex gap-8">
-          {!category && availableCategories.length > 0 && (
-            <CategoryFilter
-              categories={availableCategories}
-              activeCategories={activeCategories}
-              onToggle={handleCategoryToggle}
-            />
-          )}
-          {availableTags.length > 0 && (
-            <TagFilter
-              tags={availableTags}
-              activeTags={activeTags}
-              onToggle={handleTagToggle}
-            />
-          )}
+      {/* Category + Tag filters + Sort */}
+      <div className="w-full max-w-[1250px] flex items-start gap-4 sm:gap-6">
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-xs font-medium text-content-muted whitespace-nowrap">Sort by</span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortOption)}
+            className="text-xs text-content-muted bg-transparent border border-edge rounded px-2 py-1.5 cursor-pointer hover:border-content-muted transition-colors"
+          >
+            {Object.entries(SORT_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
         </div>
-      )}
+        {!category && availableCategories.length > 0 && (
+          <CategoryFilter
+            categories={availableCategories}
+            activeCategories={activeCategories}
+            onToggle={handleCategoryToggle}
+          />
+        )}
+        {availableTags.length > 0 && (
+          <TagFilter
+            tags={availableTags}
+            activeTags={activeTags}
+            onToggle={handleTagToggle}
+          />
+        )}
+      </div>
 
       {filteredPosts.length === 0 ? (
         <div className="text-center py-16">

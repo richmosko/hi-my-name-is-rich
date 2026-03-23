@@ -16,7 +16,7 @@ export default function CategoryFilter({ categories, activeCategories, onToggle 
   const isOpen = expanded || activeCategories.length > 0;
 
   return (
-    <div className="min-w-fit flex flex-col gap-2">
+    <div className="min-w-[120px] shrink-0 flex flex-col gap-2">
       <button
         onClick={() => setExpanded(!isOpen)}
         className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-content-muted hover:text-content transition-colors whitespace-nowrap"
