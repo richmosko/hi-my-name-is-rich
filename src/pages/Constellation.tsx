@@ -35,7 +35,7 @@ export default function Constellation() {
       }}
     >
       <ConstellationGraph
-        initialZoom={1.4}
+        initialZoom={window.innerWidth < 640 ? 1.0 : 1.4}
         showWikilinks={controls?.showWikilinks ?? true}
         showTags={controls?.showTags ?? true}
         interactive

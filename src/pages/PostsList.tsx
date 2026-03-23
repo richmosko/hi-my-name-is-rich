@@ -233,7 +233,7 @@ export default function PostsList({ category, title }: PostsListProps) {
       </div>
 
       {/* Category + Tag filters + Sort */}
-      <div className="w-full max-w-[1250px] flex items-start gap-4 sm:gap-6">
+      <div className="w-full max-w-[1250px] flex flex-col sm:flex-row items-start gap-3 sm:gap-6">
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-xs font-medium text-content-muted whitespace-nowrap">Sort by</span>
           <select
