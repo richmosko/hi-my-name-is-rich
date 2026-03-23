@@ -16,7 +16,7 @@ A personal blog built with React, TypeScript, Vite, and Tailwind CSS. Posts are 
 
 | Route | Page | Description |
 |-------|------|-------------|
-| `/` | Home | Hero section with profile intro, Featured Posts (3-across), and Latest Posts grid |
+| `/` | Home | Hero section with profile intro, Featured Posts (latest + 2 featured), and ambient Constellation Graph preview |
 | `/about` | About | Author bio, interests, and category card grid with lightbox on hero image |
 | `/contributors` | Contributors | Author cards with avatars (lightbox), bios, and social links from `authors.ts` |
 | `/posts` | All Posts | Hero image, tag filter, search-filtered post list at 640px centered width |
@@ -47,13 +47,17 @@ An interactive force-directed graph visualizing relationships between posts — 
 - **Click to navigate**: click any star to visit that post
 - **Touch support**: drag nodes, pinch to zoom on mobile
 - **Toggles**: show/hide wikilink and tag edges independently
+- **TopBar controls**: on the constellation page, a gear icon replaces the sparkle link — opens a dropdown with visibility toggles, zoom slider, force settings (links, tags, repulsion, gravity, drift), category legend, and Reset All
+- **Home page preview**: ambient non-interactive preview on the home page with shared settings via the gear icon
+- **Smooth reset**: Reset All animates the camera back to center and default zoom
+- **Sparkle icon**: constellation link icon in TopBar (all pages) and sidebar
 
 Rebuild graph data after adding/editing posts: `npm run build-graph-index`
 
 ## Layout
 
 - **Max width**: 1440px with 95px horizontal padding (matching Figma spec)
-- **TopBar**: Sticky header with glass morphism effect, home icon, site title, and breadcrumb navigation
+- **TopBar**: Sticky header with glass morphism effect, home icon, site title, breadcrumb navigation, and fixed-position icons (constellation sparkle/gear, theme toggle, search)
 - **Sidebar** (left): Slide-out mobile navigation (264px wide) with hamburger trigger, backdrop overlay, Escape key to close, and auto-close on route change. Includes nav links, category sub-links (indented), and active projects with completion percentages and mini progress bars
 - **Search Panel** (right): Slide-in search panel with full-text search, live results dropdown, and "View all results" link
 - **Footer**: Profile avatar, name, and social links (Instagram, GitHub, LinkedIn) with auto-updating copyright year
@@ -68,7 +72,8 @@ Rebuild graph data after adding/editing posts: `npm run build-graph-index`
 - **Category filter**: collapsible "Filter by Category" section on the All Posts page with color-coded category pills matching each category's theme color
 - **Tag filter**: collapsible "Filter by Tag" section with tag pills
 - **OR logic**: both category and tag filters use OR — selecting multiple shows posts matching *any* of the selected items
-- **Side-by-side filters**: category and tag filters sit inline next to each other with stable minimum widths
+- **Sort by**: dropdown to sort posts by date (newest/oldest) or title (A–Z/Z–A)
+- **Inline controls**: sort, category filter, and tag filter sit in a single row at 1250px width
 - **Clickable tags** in post cards toggle that tag as a filter
 - **URL search params** (`?q=...&tag=...&cat=...`) for shareable/composable search, category, and filter state
 - **Category scoping**: on category-specific pages (e.g., `/travel`), the category filter is hidden since the page is already scoped; search and tags still work within that category
@@ -186,6 +191,8 @@ src/
     Lightbox.tsx        # Full-screen image viewer
     Comments.tsx        # Remark42 comment widget (env-driven)
     ScrollToTop.tsx     # Resets scroll position on route change
+    ConstellationGraph.tsx  # Reusable force-directed graph canvas (used by Constellation page and Home)
+    ConstellationIcon.tsx   # Sparkle/stars SVG icon for constellation links
   content/
     posts/              # Blog posts as .mdx files
       .obsidian/        # Obsidian vault config for editing posts

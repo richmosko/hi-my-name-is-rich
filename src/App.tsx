@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import ScrollToTop from './components/ScrollToTop';
+import { ConstellationProvider } from './hooks/useConstellationControls';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import About from './pages/About';
@@ -14,6 +15,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <ConstellationProvider>
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
@@ -56,6 +58,7 @@ export default function App() {
           <Route path="post/:slug" element={<PostDetail />} />
         </Route>
       </Routes>
+      </ConstellationProvider>
     </BrowserRouter>
   );
 }
