@@ -41,6 +41,7 @@ function Slider({ label, value, min, max, step, onChange }: {
         className="slider-thumb flex-1 h-1 rounded-full appearance-none cursor-pointer"
         style={{
           background: theme === 'dark' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)',
+          touchAction: 'auto',
           // @ts-expect-error CSS custom property for thumb color
           '--thumb-color': thumbColor,
         }}
@@ -136,12 +137,15 @@ export default function TopBar() {
             {dropdownOpen && (
               <div
                 className="fixed right-6 top-14 px-4 py-3 rounded-xl text-xs space-y-2 min-w-[280px] z-50"
+                onTouchStart={(e) => e.stopPropagation()}
+                onTouchMove={(e) => e.stopPropagation()}
                 style={{
                   background: theme === 'dark' ? 'rgba(0,0,0,0.92)' : 'rgba(255,255,255,0.96)',
                   border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
                   backdropFilter: 'blur(12px)',
                   color: theme === 'dark' ? '#aaa' : '#666',
                   boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+                  touchAction: 'auto',
                 }}
               >
                 {/* Reset All button */}
