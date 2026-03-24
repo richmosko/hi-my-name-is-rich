@@ -15,6 +15,7 @@ interface ProjectMdxModule {
     status: 'active' | 'completed';
     startDate?: string;
     completedDate?: string;
+    vikunjaProjectId?: number;
     tasks?: Array<{ title: string; completed: boolean; group?: string }>;
   };
 }
@@ -50,6 +51,7 @@ function parseProject(filePath: string, mod: ProjectMdxModule): Project {
     status: frontmatter.status,
     startDate: frontmatter.startDate,
     completedDate: frontmatter.completedDate,
+    vikunjaProjectId: frontmatter.vikunjaProjectId,
     tasks,
     content: Content,
   };

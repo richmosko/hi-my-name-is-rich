@@ -3,7 +3,10 @@ import { projects } from '../lib/projects';
 import { getProjectCompletion } from '../types';
 import { mdxComponents } from '../components/MdxComponents';
 import { parseLocalDate } from '../lib/dateUtils';
+import { useVikunjaProject } from '../hooks/useVikunja';
 import type { ProjectTask } from '../types';
+
+const VIKUNJA_HOST = import.meta.env.VITE_VIKUNJA_HOST || '';
 
 function ProgressBar({ percent }: { percent: number }) {
   return (
@@ -129,6 +132,7 @@ function TaskList({ tasks }: { tasks: ProjectTask[] }) {
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const project = projects.find((p) => p.id === id);
+  const vikunja = useVikunjaProject(project?.vikunjaProjectId);
 
   if (!project) {
     return (
@@ -143,7 +147,12 @@ export default function ProjectDetail() {
     );
   }
 
-  const percent = getProjectCompletion(project);
+  const staticPercent = getProjectCompletion(project);
+  // Use live Vikunja data if available, fallback to MDX
+  const percent = vikunja.total > 0 ? vikunja.percent : staticPercent;
+  const taskSummary = vikunja.total > 0
+    ? `${vikunja.done} done · ${vikunja.open} open`
+    : `${project.tasks.filter(t => t.completed).length}/${project.tasks.length}`;
   const isCompleted = project.status === 'completed';
   const ProjectContent = project.content;
 
@@ -192,6 +201,25 @@ export default function ProjectDetail() {
         </div>
 
         <ProgressBar percent={percent} />
+
+        {/* Live task stats from Vikunja */}
+        <div className="flex items-center gap-3 text-xs text-content-muted">
+          <span>{taskSummary}</span>
+          {vikunja.loading && <span className="text-content-muted italic">syncing...</span>}
+          {vikunja.total > 0 && VIKUNJA_HOST && project.vikunjaProjectId && (
+            <a
+              href={`${VIKUNJA_HOST}/projects/${project.vikunjaProjectId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent hover:text-accent-hover inline-flex items-center gap-1"
+            >
+              View in Vikunja
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+          )}
+        </div>
 
         {/* Dates */}
         {(project.startDate || project.completedDate) && (
