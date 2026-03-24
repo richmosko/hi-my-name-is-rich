@@ -205,8 +205,10 @@ export default function ConstellationGraph({
         const scaleX = rect.width / graphW;
         const scaleY = rect.height / graphH;
         const aspectDiff = Math.max(scaleX, scaleY) / Math.min(scaleX, scaleY);
-        const blend = Math.min(aspectDiff - 1, 1) * 0.4; // 0–0.4 blend toward max
-        const zoom = (Math.min(scaleX, scaleY) * (1 - blend) + Math.max(scaleX, scaleY) * blend) * 0.8;
+        // On portrait (high aspectDiff), blend more toward the larger scale
+        // so the graph fills more of the tall viewport even if edges clip
+        const blend = Math.min(aspectDiff - 1, 1) * 0.65;
+        const zoom = (Math.min(scaleX, scaleY) * (1 - blend) + Math.max(scaleX, scaleY) * blend) * 0.85;
         cameraRef.current = { x: 0, y: 0, zoom };
         if (controls) { controls.zoomRef.current = zoom; controls.setZoom(zoom); }
       }
