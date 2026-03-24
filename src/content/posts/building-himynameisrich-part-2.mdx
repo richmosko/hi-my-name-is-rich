@@ -1,14 +1,14 @@
 ---
 title: "Building HiMyNameIsRich: Dev to Deployment"
 excerpt: "Part 2: Taking the blog from localhost to production — setting up a Hetzner VPS, Coolify for CI/CD, Docker containers, Remark42 comments, and Cloudflare edge caching."
-date: "2026-03-24"
-readTime: "7 min read"
+date: 2026-03-24
+readTime: "8 min read"
 categories:
   - projects
   - design
 featured: false
 image: /images/stock/profile-rich-coding-intense.jpg
-imageAspectRatio: "21/9"
+imageAspectRatio: 21/9
 authorId:
   - rich
   - claude
@@ -16,8 +16,6 @@ tags:
   - AI
   - himynameisrich
   - deployment
-  - docker
-  - cloudflare
 ---
 
 In [[building-himynameisrich-part-1|Part 1]], we built the blog from concept to a working local dev environment — React, Vite, Tailwind, MDX, the whole stack. Now it's time to get it online.
@@ -26,7 +24,7 @@ This post covers the full deployment pipeline: provisioning a server, setting up
 
 ## Choosing the Infrastructure
 
-The first decision was where to host. Since I wanted full control (and self-hosted comments), a VPS made sense over a static hosting service like Vercel or Netlify. The requirements were simple:
+The first decision was where to host. Since I wanted full control (and self-hosted comments), a VPS made sense over a static hosting service like Vercel or Netlify. Plus, the whole point if this exercise is to create a vehicle for learning... so I might as well go all the way. The requirements were simple:
 
 - Cheap enough for a personal blog
 - Enough resources for the blog, a comment engine, and the deployment platform
@@ -44,7 +42,7 @@ Hetzner's cloud console makes provisioning straightforward. The key steps:
 4. **Firewall** — locked down to ports 22 (SSH), 80/443 (HTTP/HTTPS), and 8000 (Coolify dashboard)
 5. **SSH hardening** — disabled password authentication, created a non-root user, and restricted root login
 
-The whole setup took about 15 minutes from clicking "Create Server" to having a working Coolify dashboard.
+This whole setup took about 15 minutes from clicking "Create Server" to having a working Coolify dashboard. At least for the preconfigured spin up of the VPS.
 
 ## Coolify and Continuous Deployment
 
@@ -72,7 +70,7 @@ One gotcha: `VITE_REMARK42_HOST` must be set as a **Build** variable in Coolify,
 
 With the GitHub App connected and auto-deploy enabled, the pipeline is:
 
-1. Push to `main` (or merge a PR)
+1. Push to `main` (or merge a Push Request)
 2. GitHub fires the webhook to Coolify
 3. Coolify pulls the latest code, runs the Docker build, and deploys the new container
 4. Traefik routes traffic to the new container and handles SSL
@@ -81,7 +79,7 @@ Rollbacks are one click in Coolify's deployment history — it keeps previous Do
 
 ## Self-Hosted Comments with Remark42
 
-I wanted comments on the blog but didn't want to use Disqus (ads, tracking) or require GitHub accounts (too narrow an audience). [Remark42](https://remark42.com/) hit the sweet spot: self-hosted, lightweight (single Go binary), with Google and GitHub OAuth support.
+I wanted comments on the blog but didn't want to use Disqus (ads, tracking) or require GitHub accounts (too narrow an audience). [Remark42](https://remark42.com/) hit the sweet spot: self-hosted, lightweight (single Go binary), with Google and GitHub OAuth support. The OAuth was key as I didn't want any anonymous comments. I mean really, the comments are mostly for me to add notes after the fact in a timestamped manner.
 
 ### Custom Styling
 
@@ -159,3 +157,5 @@ Cloudflare CDN ◀────────────────────�
 In [[building-himynameisrich-part-1|Part 1]] we built the foundation. In this post we got it deployed. In Part 3, I'll cover the design fine-tuning: dark mode, the interactive constellation graph, mobile responsiveness, and all the small details that make a blog feel polished.
 
 The site is live at [himynameisrich.com](https://himynameisrich.com). Leave a comment if you made it this far — the comment system we just deployed is waiting for its first real test.
+
+...And if you really want to get into the weeds, you should check the markdown files over on this project site on [GitHub](https://github.com/richmosko/hi-my-name-is-rich). There are detailed walkthroughs for most of what is described above. Just look for any file named \*.md
