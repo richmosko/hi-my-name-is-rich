@@ -83,7 +83,7 @@ export default function Sidebar() {
       {/* Sidebar panel */}
       <nav
         className={`fixed left-0 top-0 h-full w-64 bg-surface border-r border-edge shadow-lg
-                    flex flex-col pt-20 pb-8 px-6
+                    flex flex-col pt-20 pb-8 px-6 overflow-y-auto
                     transition-transform duration-300 ease-in-out
                     ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >

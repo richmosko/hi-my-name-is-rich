@@ -534,7 +534,7 @@ export default function ConstellationGraph({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        style={{ cursor: interactive ? 'grab' : 'default' }}
+        style={{ cursor: interactive ? 'grab' : 'default', touchAction: interactive ? 'none' : 'auto' }}
       />
       {interactive && (
         <div
