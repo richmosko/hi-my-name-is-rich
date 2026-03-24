@@ -200,13 +200,8 @@ export default function ConstellationGraph({
         const graphW = maxX - minX || 1;
         const graphH = maxY - minY || 1;
         // Use a blend: min ensures nothing clips, max fills the screen.
-        // On portrait (where aspect ratios differ a lot), bias toward max
-        // so the graph fills more vertical space even if edges clip.
-        const scaleX = rect.width / graphW;
-        const scaleY = rect.height / graphH;
-        const aspectDiff = Math.max(scaleX, scaleY) / Math.min(scaleX, scaleY);
-        const blend = Math.min(aspectDiff - 1, 1) * 0.4; // 0–0.4 blend toward max
-        const zoom = (Math.min(scaleX, scaleY) * (1 - blend) + Math.max(scaleX, scaleY) * blend) * 0.8;
+        // Fit to the smallest dimension so the full graph is visible
+        const zoom = Math.min(rect.width / graphW, rect.height / graphH) * 0.85;
         cameraRef.current = { x: 0, y: 0, zoom };
         if (controls) { controls.zoomRef.current = zoom; controls.setZoom(zoom); }
       }
