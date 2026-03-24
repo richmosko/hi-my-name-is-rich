@@ -57,14 +57,39 @@ export interface ConstellationGraphProps {
   style?: React.CSSProperties;
 }
 
+/** Calculate zoom + camera offset to fit all nodes within the viewport */
+function calculateAutoFit(nodes: GraphNode[], w: number, h: number, padding = 0.85): { zoom: number; cx: number; cy: number } {
+  if (nodes.length === 0) return { zoom: 1, cx: 0, cy: 0 };
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const n of nodes) {
+    if (n.x < minX) minX = n.x;
+    if (n.x > maxX) maxX = n.x;
+    if (n.y < minY) minY = n.y;
+    if (n.y > maxY) maxY = n.y;
+  }
+  const graphW = maxX - minX || 1;
+  const graphH = maxY - minY || 1;
+  const scaleX = w / graphW;
+  const scaleY = h / graphH;
+  const zoom = Math.min(scaleX, scaleY) * padding;
+  // Center camera on the graph centroid
+  const graphCx = (minX + maxX) / 2;
+  const graphCy = (minY + maxY) / 2;
+  // Camera offset: how far from canvas center (w/2, h/2) the graph center is
+  const cx = w / 2 - graphCx;
+  const cy = h / 2 - graphCy;
+  return { zoom, cx, cy };
+}
+
 export default function ConstellationGraph({
   initialZoom = 1.4,
+  autoFit = false,
   showWikilinks = true,
   showTags = true,
   interactive = true,
   className = '',
   style,
-}: ConstellationGraphProps) {
+}: ConstellationGraphProps & { autoFit?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -105,7 +130,12 @@ export default function ConstellationGraph({
   useEffect(() => {
     if (!controls) return;
     controls.onCameraResetRef.current = () => {
-      cameraTargetRef.current = { x: 0, y: 0, zoom: initialZoom };
+      if (autoFit) {
+        const fit = calculateAutoFit(nodesRef.current, sizeRef.current.w, sizeRef.current.h);
+        cameraTargetRef.current = { x: fit.cx, y: fit.cy, zoom: fit.zoom };
+      } else {
+        cameraTargetRef.current = { x: 0, y: 0, zoom: initialZoom };
+      }
     };
     return () => { controls.onCameraResetRef.current = null; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -169,6 +199,13 @@ export default function ConstellationGraph({
       initializePositions(nodes, rect.width, rect.height);
       let alpha = 1.0;
       for (let i = 0; i < 300; i++) { tick(nodes, edges, rect.width, rect.height, alpha); alpha *= 0.98; }
+
+      // Calculate and apply auto-fit zoom + centering
+      if (autoFit) {
+        const fit = calculateAutoFit(nodes, rect.width, rect.height);
+        cameraRef.current = { x: fit.cx, y: fit.cy, zoom: fit.zoom };
+        if (controls) { controls.zoomRef.current = fit.zoom; controls.setZoom(fit.zoom); }
+      }
     };
 
     resize();

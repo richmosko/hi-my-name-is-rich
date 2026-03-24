@@ -276,7 +276,7 @@ export default function Home() {
 
         <Suspense fallback={<div className="w-full rounded-xl aspect-video bg-surface-secondary" />}>
           <ConstellationGraph
-            initialZoom={0.7}
+            autoFit
             showWikilinks={controls?.showWikilinks ?? true}
             showTags={controls?.showTags ?? true}
             interactive={false}
