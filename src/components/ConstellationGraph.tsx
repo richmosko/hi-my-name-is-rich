@@ -255,8 +255,9 @@ export default function ConstellationGraph({
       } : {};
 
       const alpha = draggedNode ? 0.3 : 0.015;
-      // Gravity pulls toward canvas center (where we placed the nodes)
-      tick(nodes, edges, w, h, alpha, multipliers);
+      // Use 1000x1000 sim frame for forces (matching init), but override
+      // the gravity center to canvas center where nodes were shifted to
+      tick(nodes, edges, 1000, 1000, alpha, multipliers, { cx: w / 2, cy: h / 2 });
       if (draggedNode) { draggedNode.vx = 0; draggedNode.vy = 0; }
 
       // Animated camera transition (for Reset All)

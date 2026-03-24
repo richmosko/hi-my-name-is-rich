@@ -108,10 +108,11 @@ export function tick(
   width: number,
   height: number,
   alpha: number = 0.1,
-  multipliers: ForceMultipliers = {}
+  multipliers: ForceMultipliers = {},
+  centerOverride?: { cx: number; cy: number }
 ): void {
-  const cx = width / 2;
-  const cy = height / 2;
+  const cx = centerOverride?.cx ?? width / 2;
+  const cy = centerOverride?.cy ?? height / 2;
   const nodeMap = new Map<string, GraphNode>();
   nodes.forEach((n) => nodeMap.set(n.id, n));
 
