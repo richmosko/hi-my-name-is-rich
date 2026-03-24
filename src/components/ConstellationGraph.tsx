@@ -87,7 +87,7 @@ export default function ConstellationGraph({
   const draggedNodeRef = useRef<GraphNode | null>(null);
   const panRef = useRef<{ startX: number; startY: number; camX: number; camY: number } | null>(null);
   const mouseDownPosRef = useRef<{ x: number; y: number } | null>(null);
-  const tooltipRef = useRef<HTMLDivElement>(null);
+  // Tooltip removed — node titles are drawn on the canvas
 
   // Camera
   const cameraRef = useRef({ x: 0, y: 0, zoom: initialZoom });
@@ -436,20 +436,8 @@ export default function ConstellationGraph({
     hoveredRef.current = node;
     if (canvasRef.current) canvasRef.current.style.cursor = node ? 'pointer' : 'grab';
 
-    const tooltip = tooltipRef.current;
-    if (tooltip) {
-      if (node) {
-        const rect = canvasRef.current?.getBoundingClientRect();
-        if (rect) {
-          tooltip.style.display = 'block';
-          tooltip.style.left = `${e.clientX - rect.left + 14}px`;
-          tooltip.style.top = `${e.clientY - rect.top - 12}px`;
-          tooltip.textContent = node.title;
-        }
-      } else {
-        tooltip.style.display = 'none';
-      }
-    }
+    // Node title is drawn on the canvas (moves with the node),
+    // so no HTML tooltip needed
   }, [interactive, getNodeAt, screenToWorld]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -477,7 +465,7 @@ export default function ConstellationGraph({
     if (!interactive) return;
     if (draggedNodeRef.current) draggedNodeRef.current.pinned = false;
     hoveredRef.current = null; draggedNodeRef.current = null; panRef.current = null;
-    if (tooltipRef.current) tooltipRef.current.style.display = 'none';
+    // Clear hover state
   }, [interactive]);
 
   // Wheel zoom
@@ -550,9 +538,6 @@ export default function ConstellationGraph({
     draggedNodeRef.current = null; panRef.current = null; hoveredRef.current = null; touchStartRef.current = null;
   }, [interactive, getNodeAt, navigate]);
 
-  const tooltipBg = isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.95)';
-  const tooltipText = isDark ? '#e0e0e0' : '#333';
-  const tooltipBorder = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)';
 
   return (
     <div
@@ -571,17 +556,7 @@ export default function ConstellationGraph({
         onTouchEnd={handleTouchEnd}
         style={{ cursor: interactive ? 'grab' : 'default', touchAction: interactive ? 'none' : 'auto' }}
       />
-      {interactive && (
-        <div
-          ref={tooltipRef}
-          className="absolute pointer-events-none px-3 py-1.5 rounded-lg text-sm font-medium"
-          style={{
-            display: 'none', background: tooltipBg, color: tooltipText,
-            border: `1px solid ${tooltipBorder}`, backdropFilter: 'blur(8px)',
-            maxWidth: '280px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', zIndex: 10,
-          }}
-        />
-      )}
+      {/* Node titles are drawn directly on the canvas */}
     </div>
   );
 }
