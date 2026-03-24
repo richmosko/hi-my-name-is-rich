@@ -167,10 +167,14 @@ export default function Admin() {
       if (blockedRes.status === 'fulfilled' && blockedRes.value.ok) {
         const data = blockedRes.value.data;
         setBlockedUsers(Array.isArray(data) ? data as BlockedUser[] : []);
+      } else if (blockedRes.status === 'fulfilled' && blockedRes.value.status === 401) {
+        // Expected when not signed in as admin — don't show as error
+        setBlockedUsers([]);
       } else if (blockedRes.status === 'fulfilled') {
-        errors.push(`Blocked: ${blockedRes.value.status} (sign in on a post page first)`);
+        errors.push(`Blocked: ${blockedRes.value.status}`);
       } else {
-        errors.push(`Blocked: ${blockedRes.reason}`);
+        // Network/bridge errors — don't show for blocked endpoint
+        setBlockedUsers([]);
       }
 
       if (errors.length > 0) setError(errors.join(' | '));
@@ -387,29 +391,45 @@ export default function Admin() {
             </div>
           )}
 
-          {/* Remark42 last-comments widget — runs in same-origin iframe with full admin controls */}
+          {/* Moderate tab — quick links to posts with comments for moderation */}
           {activeTab === 'widget' && (
             <div>
               <p className="text-sm text-content-muted mb-4">
-                This widget runs directly from Remark42. Sign in here to access admin controls (delete, pin, block) across all posts.
+                To moderate comments (delete, pin, block users), sign in on any post page via the comment widget.
+                Admin controls appear inline next to each comment once signed in.
               </p>
-              <div
-                className="rounded-xl overflow-hidden"
-                style={{
-                  ...cardStyle,
-                  minHeight: '500px',
-                }}
-              >
-                <iframe
-                  src={`${REMARK42_HOST}/web/last-comments.html?site=${SITE_ID}&max=50`}
-                  style={{
-                    width: '100%',
-                    minHeight: '500px',
-                    border: 'none',
-                    background: 'transparent',
-                  }}
-                  title="Remark42 Recent Comments"
-                />
+              <div className="space-y-2">
+                <div className="text-xs font-semibold text-content-muted uppercase tracking-wide mb-2">
+                  Posts with recent activity — click to moderate
+                </div>
+                {recentComments
+                  .reduce<{ url: string; slug: string; count: number; latest: string }[]>((acc, c) => {
+                    const slug = postSlugFromUrl(c.locator.url);
+                    const existing = acc.find(p => p.slug === slug);
+                    if (existing) {
+                      existing.count++;
+                      if (c.time > existing.latest) existing.latest = c.time;
+                    } else {
+                      acc.push({ url: c.locator.url, slug, count: 1, latest: c.time });
+                    }
+                    return acc;
+                  }, [])
+                  .sort((a, b) => b.latest.localeCompare(a.latest))
+                  .map((post) => (
+                    <a
+                      key={post.slug}
+                      href={`/post/${post.slug}#remark42`}
+                      className="flex items-center justify-between rounded-xl px-5 py-3 hover:opacity-80 transition-opacity"
+                      style={cardStyle}
+                    >
+                      <span className="text-sm text-accent truncate flex-1 mr-4">{post.slug}</span>
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <span className="text-sm font-semibold text-content">{post.count}</span>
+                        <span className="text-xs text-content-muted">recent</span>
+                        <span className="text-xs text-content-muted">{timeAgo(post.latest)}</span>
+                      </div>
+                    </a>
+                  ))}
               </div>
             </div>
           )}
