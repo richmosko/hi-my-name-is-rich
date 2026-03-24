@@ -396,9 +396,9 @@ export default function ConstellationGraph({
 
         if (interactive && (activeHover?.id === node.id || draggedNode?.id === node.id) && cam.zoom > 0.5) {
           ctx.fillStyle = dark ? 'rgba(224,224,224,0.9)' : 'rgba(68,68,68,0.9)';
-          ctx.font = `${11 / cam.zoom}px ui-sans-serif, system-ui, sans-serif`;
+          ctx.font = `11px ui-sans-serif, system-ui, sans-serif`;
           ctx.textAlign = 'center';
-          ctx.fillText(node.title, node.x, node.y - r - 16 / cam.zoom);
+          ctx.fillText(node.title, node.x, node.y - r - 18);
         }
       }
 
@@ -413,12 +413,12 @@ export default function ConstellationGraph({
         const tags = Array.from(tagSet);
 
         if (tags.length > 0) {
-          const fs = Math.max(8, 9 / cam.zoom);
-          const dotR = 2.5 / cam.zoom;
-          const gap = 6 / cam.zoom;
+          const fs = 9;
+          const dotR = 2.5;
+          const gap = 6;
           const nodeR = activeHover.radius * (draggedNodeRef.current?.id === activeHover.id ? 1.8 : 1.6);
-          // Position just below the node title (which is at y - nodeR - 16/zoom)
-          const tagY = activeHover.y - nodeR - 4 / cam.zoom;
+          // Position just below the node title (title is at y - nodeR - 18)
+          const tagY = activeHover.y - nodeR - 5;
 
           ctx.font = `${fs}px ui-sans-serif, system-ui, sans-serif`;
           ctx.textAlign = 'left';
