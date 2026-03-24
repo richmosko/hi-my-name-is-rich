@@ -4,6 +4,70 @@ import { useTheme } from '../hooks/useTheme';
 const REMARK42_HOST = import.meta.env.VITE_REMARK42_HOST || '';
 const SITE_ID = 'himynameisrich';
 
+// Bridge: sends API requests through a same-origin iframe on remark42's domain
+// so authenticated (cookie-based) endpoints work.
+let bridgeReady = false;
+let bridgeIframe: HTMLIFrameElement | null = null;
+const pendingRequests = new Map<string, { resolve: (v: unknown) => void; reject: (e: Error) => void }>();
+let reqCounter = 0;
+
+function initBridge(): Promise<void> {
+  if (bridgeReady) return Promise.resolve();
+  return new Promise((resolve) => {
+    if (bridgeIframe) { resolve(); return; }
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = `${REMARK42_HOST}/web/admin-bridge.html`;
+    document.body.appendChild(iframe);
+    bridgeIframe = iframe;
+
+    const onMessage = (e: MessageEvent) => {
+      if (e.data?.type === 'remark42-bridge-ready') {
+        bridgeReady = true;
+        window.removeEventListener('message', onMessage);
+        resolve();
+      }
+    };
+    window.addEventListener('message', onMessage);
+    // Timeout fallback
+    setTimeout(() => { bridgeReady = true; resolve(); }, 3000);
+  });
+}
+
+function bridgeFetch(url: string): Promise<{ ok: boolean; status: number; data: unknown }> {
+  return new Promise((resolve, reject) => {
+    if (!bridgeIframe?.contentWindow) {
+      reject(new Error('Bridge iframe not ready'));
+      return;
+    }
+    const id = `req_${++reqCounter}`;
+    pendingRequests.set(id, {
+      resolve: (v) => { pendingRequests.delete(id); resolve(v as { ok: boolean; status: number; data: unknown }); },
+      reject: (e) => { pendingRequests.delete(id); reject(e); },
+    });
+    bridgeIframe.contentWindow.postMessage({ id, url }, REMARK42_HOST);
+    // Timeout
+    setTimeout(() => {
+      if (pendingRequests.has(id)) {
+        pendingRequests.delete(id);
+        reject(new Error('Bridge request timeout'));
+      }
+    }, 10000);
+  });
+}
+
+// Listen for bridge responses
+if (typeof window !== 'undefined') {
+  window.addEventListener('message', (e) => {
+    const { id, ok, status, data, error } = e.data || {};
+    if (id && pendingRequests.has(id)) {
+      const req = pendingRequests.get(id)!;
+      if (error) req.reject(new Error(error));
+      else req.resolve({ ok, status, data });
+    }
+  });
+}
+
 interface Comment {
   id: string;
   pid: string;
@@ -57,7 +121,7 @@ export default function Admin() {
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'recent' | 'posts' | 'blocked'>('recent');
+  const [activeTab, setActiveTab] = useState<'recent' | 'posts' | 'blocked' | 'widget'>('recent');
 
   const fetchData = useCallback(async () => {
     if (!REMARK42_HOST) {
@@ -70,26 +134,46 @@ export default function Admin() {
     setError(null);
 
     try {
+      // Use bridge iframe (same-origin on remark42's domain) for all API calls.
+      // This allows authenticated (cookie-based) admin endpoints to work.
+      await initBridge();
+
+      const errors: string[] = [];
+
       const [commentsRes, postsRes, blockedRes] = await Promise.allSettled([
-        fetch(`${REMARK42_HOST}/api/v1/last/50?site=${SITE_ID}`, { credentials: 'include' }),
-        fetch(`${REMARK42_HOST}/api/v1/list?site=${SITE_ID}&limit=100&skip=0`, { credentials: 'include' }),
-        fetch(`${REMARK42_HOST}/api/v1/admin/blocked?site=${SITE_ID}`, { credentials: 'include' }),
+        bridgeFetch(`${REMARK42_HOST}/api/v1/last/50?site=${SITE_ID}`),
+        bridgeFetch(`${REMARK42_HOST}/api/v1/list?site=${SITE_ID}&limit=100&skip=0`),
+        bridgeFetch(`${REMARK42_HOST}/api/v1/admin/blocked?site=${SITE_ID}`),
       ]);
 
       if (commentsRes.status === 'fulfilled' && commentsRes.value.ok) {
-        const data = await commentsRes.value.json();
-        setRecentComments(Array.isArray(data) ? data : []);
+        const data = commentsRes.value.data;
+        setRecentComments(Array.isArray(data) ? data as Comment[] : []);
+      } else if (commentsRes.status === 'fulfilled') {
+        errors.push(`Comments: ${commentsRes.value.status}`);
+      } else {
+        errors.push(`Comments: ${commentsRes.reason}`);
       }
 
       if (postsRes.status === 'fulfilled' && postsRes.value.ok) {
-        const data = await postsRes.value.json();
-        setPosts(Array.isArray(data) ? data.sort((a: PostInfo, b: PostInfo) => b.count - a.count) : []);
+        const data = postsRes.value.data;
+        setPosts(Array.isArray(data) ? (data as PostInfo[]).sort((a, b) => b.count - a.count) : []);
+      } else if (postsRes.status === 'fulfilled') {
+        errors.push(`Posts: ${postsRes.value.status}`);
+      } else {
+        errors.push(`Posts: ${postsRes.reason}`);
       }
 
       if (blockedRes.status === 'fulfilled' && blockedRes.value.ok) {
-        const data = await blockedRes.value.json();
-        setBlockedUsers(Array.isArray(data) ? data : []);
+        const data = blockedRes.value.data;
+        setBlockedUsers(Array.isArray(data) ? data as BlockedUser[] : []);
+      } else if (blockedRes.status === 'fulfilled') {
+        errors.push(`Blocked: ${blockedRes.value.status} (sign in on a post page first)`);
+      } else {
+        errors.push(`Blocked: ${blockedRes.reason}`);
       }
+
+      if (errors.length > 0) setError(errors.join(' | '));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
     } finally {
@@ -179,6 +263,9 @@ export default function Admin() {
         </button>
         <button style={tabStyle(activeTab === 'blocked')} onClick={() => setActiveTab('blocked')}>
           Blocked ({blockedUsers.length})
+        </button>
+        <button style={tabStyle(activeTab === 'widget')} onClick={() => setActiveTab('widget')}>
+          Moderate
         </button>
       </div>
 
@@ -297,6 +384,33 @@ export default function Admin() {
                   </div>
                 ))
               )}
+            </div>
+          )}
+
+          {/* Remark42 last-comments widget — runs in same-origin iframe with full admin controls */}
+          {activeTab === 'widget' && (
+            <div>
+              <p className="text-sm text-content-muted mb-4">
+                This widget runs directly from Remark42. Sign in here to access admin controls (delete, pin, block) across all posts.
+              </p>
+              <div
+                className="rounded-xl overflow-hidden"
+                style={{
+                  ...cardStyle,
+                  minHeight: '500px',
+                }}
+              >
+                <iframe
+                  src={`${REMARK42_HOST}/web/last-comments.html?site=${SITE_ID}&max=50`}
+                  style={{
+                    width: '100%',
+                    minHeight: '500px',
+                    border: 'none',
+                    background: 'transparent',
+                  }}
+                  title="Remark42 Recent Comments"
+                />
+              </div>
             </div>
           )}
         </>

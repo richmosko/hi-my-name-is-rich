@@ -5,3 +5,6 @@ FROM umputun/remark42:v1.15.0
 # Append custom CSS overrides to the built-in stylesheet
 COPY web/custom.css /tmp/custom.css
 RUN cat /tmp/custom.css >> /srv/web/remark.css && rm /tmp/custom.css
+
+# Admin bridge page — same-origin proxy for authenticated API calls
+COPY web/admin-bridge.html /srv/web/admin-bridge.html
