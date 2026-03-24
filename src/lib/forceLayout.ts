@@ -180,12 +180,27 @@ export function tick(
     if (!b.pinned) { b.vx -= fx; b.vy -= fy; }
   }
 
-  // ─── Centering gravity ──────────────────────────────────────
+  // ─── Centering gravity + circular boundary ──────────────────
+  // Linear gravity pulls nodes toward center.
+  // Beyond a maximum radius, a stronger restoring force keeps
+  // the cluster circular regardless of viewport aspect ratio.
   const centerStrength = 0.02 * alpha * gravMul;
+  const maxRadius = Math.min(width, height) * 0.45; // circular boundary
   for (const node of nodes) {
     if (node.pinned) continue;
+    // Standard centering
     node.vx += (cx - node.x) * centerStrength;
     node.vy += (cy - node.y) * centerStrength;
+    // Circular boundary: strong restoring force beyond maxRadius
+    const dx = node.x - cx;
+    const dy = node.y - cy;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist > maxRadius) {
+      const overflow = (dist - maxRadius) / dist;
+      const boundaryForce = overflow * 0.1 * alpha;
+      node.vx -= dx * boundaryForce;
+      node.vy -= dy * boundaryForce;
+    }
   }
 
   // ─── Ambient drift (smooth sinusoidal perturbation) ─────────
