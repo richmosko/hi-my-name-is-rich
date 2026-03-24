@@ -6,7 +6,7 @@ export interface ForceSettings {
   tagStrength: number;    // 0–2, default 0.3
   repulsion: number;      // 0–3, default 1
   gravity: number;        // 0–1, default 0.1
-  drift: number;          // 0–1, default 0.15
+  drift: number;          // 0–0.25, default 0.05
 }
 
 const DEFAULT_FORCES: ForceSettings = {
@@ -14,7 +14,7 @@ const DEFAULT_FORCES: ForceSettings = {
   tagStrength: 0.3,
   repulsion: 1,
   gravity: 0.1,
-  drift: 0.1,
+  drift: 0.05,
 };
 
 export interface ConstellationControls {

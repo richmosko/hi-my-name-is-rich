@@ -262,7 +262,7 @@ export default function TopBar() {
                   <Slider
                     label="Drift"
                     value={constellation.forces.drift}
-                    min={0} max={1} step={0.05}
+                    min={0} max={0.25} step={0.01}
                     onChange={(v) => constellation.setForces({ ...constellation.forces, drift: v })}
                   />
                 </div>
