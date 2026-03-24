@@ -87,7 +87,7 @@ export default function ConstellationGraph({
   const draggedNodeRef = useRef<GraphNode | null>(null);
   const panRef = useRef<{ startX: number; startY: number; camX: number; camY: number } | null>(null);
   const mouseDownPosRef = useRef<{ x: number; y: number } | null>(null);
-  const tooltipRef = useRef<HTMLDivElement>(null);
+  // Tooltip removed — node titles are drawn on the canvas
 
   // Camera
   const cameraRef = useRef({ x: 0, y: 0, zoom: initialZoom });
@@ -396,9 +396,62 @@ export default function ConstellationGraph({
 
         if (interactive && (activeHover?.id === node.id || draggedNode?.id === node.id) && cam.zoom > 0.5) {
           ctx.fillStyle = dark ? 'rgba(224,224,224,0.9)' : 'rgba(68,68,68,0.9)';
-          ctx.font = `${11 / cam.zoom}px ui-sans-serif, system-ui, sans-serif`;
+          ctx.font = `11px ui-sans-serif, system-ui, sans-serif`;
           ctx.textAlign = 'center';
-          ctx.fillText(node.title, node.x, node.y - r - 8 / cam.zoom);
+          ctx.fillText(node.title, node.x, node.y - r - 18);
+        }
+      }
+
+      // ─── Shared tags row below hovered node ──────
+      if (interactive && hoverFade > 0.3 && activeHover) {
+        const tagSet = new Set<string>();
+        for (const edge of filteredEdges) {
+          const connected = edge.source === activeHover.id || edge.target === activeHover.id;
+          if (!connected || !edge.shared) continue;
+          edge.shared.forEach((t) => tagSet.add(t));
+        }
+        const tags = Array.from(tagSet);
+
+        if (tags.length > 0) {
+          const fs = 9;
+          const dotR = 2.5;
+          const gap = 6;
+          const nodeR = activeHover.radius * (draggedNodeRef.current?.id === activeHover.id ? 1.8 : 1.6);
+          // Position just below the node title (title is at y - nodeR - 18)
+          const tagY = activeHover.y - nodeR - 5;
+
+          ctx.font = `${fs}px ui-sans-serif, system-ui, sans-serif`;
+          ctx.textAlign = 'left';
+          ctx.globalAlpha = hoverFade * 0.85;
+
+          // Measure total width to center the row
+          let totalW = 0;
+          const measurements: { tag: string; w: number }[] = [];
+          for (const tag of tags) {
+            const w = ctx.measureText(tag).width;
+            measurements.push({ tag, w });
+            totalW += dotR * 2 + gap * 0.5 + w + gap;
+          }
+          totalW -= gap; // remove trailing gap
+
+          let curX = activeHover.x - totalW / 2;
+          for (const { tag, w } of measurements) {
+            // Colored dot
+            const tagColor = TAG_COLORS[tag];
+            ctx.beginPath();
+            ctx.arc(curX + dotR, tagY, dotR, 0, Math.PI * 2);
+            ctx.fillStyle = tagColor
+              ? hslToString(tagColor, dark ? 0.8 : 0.65)
+              : dark ? 'rgba(150,150,180,0.7)' : 'rgba(100,100,140,0.6)';
+            ctx.fill();
+            curX += dotR * 2 + gap * 0.5;
+            // Tag name
+            ctx.fillStyle = dark ? 'rgba(200,200,200,0.75)' : 'rgba(80,80,80,0.7)';
+            ctx.fillText(tag, curX, tagY + fs * 0.35);
+            curX += w + gap;
+          }
+
+          ctx.globalAlpha = 1;
         }
       }
 
@@ -436,20 +489,8 @@ export default function ConstellationGraph({
     hoveredRef.current = node;
     if (canvasRef.current) canvasRef.current.style.cursor = node ? 'pointer' : 'grab';
 
-    const tooltip = tooltipRef.current;
-    if (tooltip) {
-      if (node) {
-        const rect = canvasRef.current?.getBoundingClientRect();
-        if (rect) {
-          tooltip.style.display = 'block';
-          tooltip.style.left = `${e.clientX - rect.left + 14}px`;
-          tooltip.style.top = `${e.clientY - rect.top - 12}px`;
-          tooltip.textContent = node.title;
-        }
-      } else {
-        tooltip.style.display = 'none';
-      }
-    }
+    // Node title is drawn on the canvas (moves with the node),
+    // so no HTML tooltip needed
   }, [interactive, getNodeAt, screenToWorld]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -477,7 +518,7 @@ export default function ConstellationGraph({
     if (!interactive) return;
     if (draggedNodeRef.current) draggedNodeRef.current.pinned = false;
     hoveredRef.current = null; draggedNodeRef.current = null; panRef.current = null;
-    if (tooltipRef.current) tooltipRef.current.style.display = 'none';
+    // Clear hover state
   }, [interactive]);
 
   // Wheel zoom
@@ -550,9 +591,6 @@ export default function ConstellationGraph({
     draggedNodeRef.current = null; panRef.current = null; hoveredRef.current = null; touchStartRef.current = null;
   }, [interactive, getNodeAt, navigate]);
 
-  const tooltipBg = isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.95)';
-  const tooltipText = isDark ? '#e0e0e0' : '#333';
-  const tooltipBorder = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)';
 
   return (
     <div
@@ -571,17 +609,7 @@ export default function ConstellationGraph({
         onTouchEnd={handleTouchEnd}
         style={{ cursor: interactive ? 'grab' : 'default', touchAction: interactive ? 'none' : 'auto' }}
       />
-      {interactive && (
-        <div
-          ref={tooltipRef}
-          className="absolute pointer-events-none px-3 py-1.5 rounded-lg text-sm font-medium"
-          style={{
-            display: 'none', background: tooltipBg, color: tooltipText,
-            border: `1px solid ${tooltipBorder}`, backdropFilter: 'blur(8px)',
-            maxWidth: '280px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', zIndex: 10,
-          }}
-        />
-      )}
+      {/* Node titles are drawn directly on the canvas */}
     </div>
   );
 }
