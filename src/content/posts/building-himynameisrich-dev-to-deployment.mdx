@@ -1,0 +1,161 @@
+---
+title: "Building HiMyNameIsRich: Dev to Deployment"
+excerpt: "Part 2: Taking the blog from localhost to production — setting up a Hetzner VPS, Coolify for CI/CD, Docker containers, Remark42 comments, and Cloudflare edge caching."
+date: "2026-03-24"
+readTime: "7 min read"
+categories:
+  - projects
+  - design
+featured: false
+image: /images/stock/profile-rich-coding-intense.jpg
+imageAspectRatio: "21/9"
+authorId:
+  - rich
+  - claude
+tags:
+  - AI
+  - himynameisrich
+  - deployment
+  - docker
+  - cloudflare
+---
+
+In [[building-himynameisrich-part-1|Part 1]], we built the blog from concept to a working local dev environment — React, Vite, Tailwind, MDX, the whole stack. Now it's time to get it online.
+
+This post covers the full deployment pipeline: provisioning a server, setting up continuous deployment, containerizing the frontend and comment system, and putting a CDN in front of everything. All of this was built collaboratively with Claude as a coding partner.
+
+## Choosing the Infrastructure
+
+The first decision was where to host. Since I wanted full control (and self-hosted comments), a VPS made sense over a static hosting service like Vercel or Netlify. The requirements were simple:
+
+- Cheap enough for a personal blog
+- Enough resources for the blog, a comment engine, and the deployment platform
+- ARM64 support (better price-to-performance ratio)
+
+I landed on a **Hetzner CAX11** — an ARM64 (Ampere) instance with 2 vCPUs, 4 GB RAM, and 40 GB SSD for about 3.29 EUR/month. With automatic backups enabled, the total comes to under 4 EUR/month. That's enough to run Coolify (the deployment platform), the blog frontend, and Remark42 (the comment system) with plenty of headroom.
+
+## Setting Up the Server
+
+Hetzner's cloud console makes provisioning straightforward. The key steps:
+
+1. **SSH keys** — generated an Ed25519 key pair and added the public key to Hetzner before creating the server
+2. **Coolify app image** — instead of installing Coolify manually, Hetzner offers it as a pre-installed app image. One click and the server boots with Coolify ready to go
+3. **Swap space** — added 2 GB of swap as a safety net for Docker image builds, which can spike memory usage
+4. **Firewall** — locked down to ports 22 (SSH), 80/443 (HTTP/HTTPS), and 8000 (Coolify dashboard)
+5. **SSH hardening** — disabled password authentication, created a non-root user, and restricted root login
+
+The whole setup took about 15 minutes from clicking "Create Server" to having a working Coolify dashboard.
+
+## Coolify and Continuous Deployment
+
+[Coolify](https://coolify.io/) is a self-hosted alternative to platforms like Vercel or Railway. It handles Docker builds, reverse proxying (via Traefik), automatic SSL certificates (Let's Encrypt), and deployment webhooks — all from a web dashboard.
+
+### Connecting GitHub
+
+Coolify supports GitHub App integration, which is cleaner than deploy keys. You register a GitHub App through Coolify's UI, install it on your repository, and you get:
+
+- Automatic webhook on every push to `main`
+- No manual webhook configuration needed
+- Read access scoped to just your repo
+
+### The Frontend Docker Setup
+
+The blog is a static site (React SPA), so the deployment is a two-stage Docker build:
+
+**Stage 1: Build** — Node 22 Alpine runs `npm ci` and `npm run build`, producing the static `dist/` folder. The `VITE_REMARK42_HOST` environment variable is injected here as a build argument because Vite inlines environment variables at compile time.
+
+**Stage 2: Serve** — The built files are copied into an Nginx Alpine container with a custom `nginx.conf` that handles SPA routing (`try_files`), asset caching (1-year for Vite's hashed files), and gzip compression.
+
+One gotcha: `VITE_REMARK42_HOST` must be set as a **Build** variable in Coolify, not a Runtime variable. Since Vite replaces `import.meta.env.VITE_*` at build time, a runtime-only variable would be undefined in the built JavaScript.
+
+### The Deployment Flow
+
+With the GitHub App connected and auto-deploy enabled, the pipeline is:
+
+1. Push to `main` (or merge a PR)
+2. GitHub fires the webhook to Coolify
+3. Coolify pulls the latest code, runs the Docker build, and deploys the new container
+4. Traefik routes traffic to the new container and handles SSL
+
+Rollbacks are one click in Coolify's deployment history — it keeps previous Docker images around.
+
+## Self-Hosted Comments with Remark42
+
+I wanted comments on the blog but didn't want to use Disqus (ads, tracking) or require GitHub accounts (too narrow an audience). [Remark42](https://remark42.com/) hit the sweet spot: self-hosted, lightweight (single Go binary), with Google and GitHub OAuth support.
+
+### Custom Styling
+
+Remark42 renders inside an iframe, so the blog's CSS can't reach it. The solution: build a custom Docker image that appends CSS overrides to Remark42's built-in stylesheet.
+
+The repo contains a `remark42/Dockerfile` that takes the stock image, copies in a `custom.css` file, and appends it to the existing `remark.css`. This overrides the accent colors (from teal to the blog's blue), adjusts text colors, rounds button corners, and tweaks the input field styling to match the site's design tokens.
+
+### Deploying as a Coolify Application
+
+Initially I set up Remark42 as a Docker Compose **Service** in Coolify, but that meant no auto-deploy, no deployment history, and no rollback. Converting it to an **Application** (pointing Coolify at the repo's `remark42/Dockerfile`) gave it the same CI/CD pipeline as the frontend.
+
+A critical detail: Remark42's data lives in a BoltDB file at `/srv/var`. Without a persistent volume mounted there, every redeploy would wipe all comments. The volume mount was the first thing to configure.
+
+### OAuth and Admin Setup
+
+Setting up OAuth required creating apps on both Google Cloud Console and GitHub, with redirect URIs pointing to the Remark42 subdomain. The redirect URI has to match **exactly** — `https://remark42.himynameisrich.com/auth/google/callback` — or you get cryptic "Access blocked" errors.
+
+Finding my admin user ID was less intuitive than expected. Remark42's CLI admin commands didn't work because Coolify assigns random container names. Instead, I used browser dev tools: logged in, left a test comment, and found my user ID in the API response JSON.
+
+### Dark Mode Challenges
+
+The blog supports light and dark themes, and Remark42 has built-in `light` and `dark` themes. Switching the Remark42 theme alongside the blog theme worked well — except for some buttons and links that use hardcoded teal color variables in the minified CSS. After several rounds of trying to override every minified class name, I settled on a pragmatic approach: the custom CSS handles most elements, and the remaining teal accents in dark mode actually look fine against the dark background.
+
+## Cloudflare Edge Caching
+
+With the server in Germany and most readers likely in the US, I put Cloudflare's free CDN in front of everything. The setup:
+
+1. **Nameserver migration** — pointed my domain's nameservers from Porkbun to Cloudflare. This means all DNS is managed in Cloudflare, and the old Porkbun records are ignored
+2. **SSL mode** — set to Full (Strict) because both Cloudflare and Coolify/Traefik terminate SSL. Using "Flexible" mode causes infinite redirect loops
+3. **DNS records** — the main domain and `www` are proxied through Cloudflare (orange cloud), while `coolify` and `remark42` subdomains are DNS-only (gray cloud) to avoid interference with WebSocket connections and OAuth callbacks
+4. **www redirect** — a Cloudflare redirect rule sends `www.himynameisrich.com` to the apex domain with a 301
+
+### What Gets Cached
+
+Vite's build output uses content-hashed filenames (`index-BFPfTO3i.js`), which means the JS and CSS files are immutable — they can be cached forever without worrying about stale content. Only `index.html` needs to be fetched fresh.
+
+Cloudflare automatically caches static assets (JS, CSS, images) at edge nodes worldwide. The blog's images get a 30-day cache, and Vite's hashed assets get a 1-year cache. The HTML is served dynamically from origin, but since it's tiny, the latency impact is minimal.
+
+## The Full Architecture
+
+Here's what the full stack looks like:
+
+```
+Developer pushes to main
+        │
+        ├──▶ GitHub Actions: lint + type-check + build (CI)
+        │
+        └──▶ Coolify webhook triggers
+                │
+                ├──▶ Blog frontend: Docker build → nginx container
+                │       └──▶ Traefik → himynameisrich.com
+                │
+                └──▶ Remark42: Docker build → custom image
+                        └──▶ Traefik → remark42.himynameisrich.com
+                                        │
+Cloudflare CDN ◀────────────────────────┘
+        │
+        └──▶ Edge-cached static assets served globally
+```
+
+## Lessons Learned
+
+**Start simple, add complexity as needed.** I initially tried to set up a GitHub Action to build a multi-arch Docker image for Remark42 and push it to GHCR. This was unnecessary — Coolify builds the Dockerfile natively on the ARM64 server, so no cross-compilation was needed. The simpler Application approach works better.
+
+**Environment variables at build time vs runtime.** Vite inlines `VITE_*` variables at build time. If you set them as runtime-only in your deployment platform, they silently don't work. This cost me a deployment cycle to figure out.
+
+**OAuth redirect URIs are unforgiving.** A missing `s` in `https`, a trailing slash, or a slightly different subdomain will give you an unhelpful error message. Copy-paste the exact URI.
+
+**Browser caching is aggressive.** After deploying CSS changes to Remark42, I spent time debugging why the styles looked unchanged. Hard-refresh (Cmd+Shift+R) and incognito windows became essential testing tools.
+
+**Coolify Services vs Applications.** Docker Compose Services in Coolify are convenient but lack auto-deploy and deployment history. If you want the full CI/CD experience, deploy as an Application pointing at your repo's Dockerfile.
+
+## What's Next
+
+In [[building-himynameisrich-part-1|Part 1]] we built the foundation. In this post we got it deployed. In Part 3, I'll cover the design fine-tuning: dark mode, the interactive constellation graph, mobile responsiveness, and all the small details that make a blog feel polished.
+
+The site is live at [himynameisrich.com](https://himynameisrich.com). Leave a comment if you made it this far — the comment system we just deployed is waiting for its first real test.
