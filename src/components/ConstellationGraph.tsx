@@ -402,101 +402,52 @@ export default function ConstellationGraph({
         }
       }
 
-      // ─── Hover legend panel ──────────────────────
+      // ─── Shared tags row below hovered node ──────
       if (interactive && hoverFade > 0.3 && activeHover) {
-        // Collect connections
-        const links: string[] = [];
         const tagSet = new Set<string>();
         for (const edge of filteredEdges) {
           const connected = edge.source === activeHover.id || edge.target === activeHover.id;
-          if (!connected) continue;
-          if (edge.type === 'wikilink') {
-            const otherId = edge.source === activeHover.id ? edge.target : edge.source;
-            const other = nodeMap.get(otherId);
-            if (other) links.push(other.title);
-          } else if (edge.shared) {
-            edge.shared.forEach((t) => tagSet.add(t));
-          }
+          if (!connected || !edge.shared) continue;
+          edge.shared.forEach((t) => tagSet.add(t));
         }
         const tags = Array.from(tagSet);
 
-        if (links.length > 0 || tags.length > 0) {
-          const fs = Math.max(9, 10 / cam.zoom);
-          const lineH = fs * 1.4;
-          const pad = 8 / cam.zoom;
-          const dotR = 3 / cam.zoom;
-
-          // Position panel to the right of the node
-          const nodeR = activeHover.radius * 1.6;
-          const panelX = activeHover.x + nodeR + 12 / cam.zoom;
-          let panelY = activeHover.y - 10 / cam.zoom;
-
-          // Measure panel height
-          let totalLines = 0;
-          if (links.length > 0) totalLines += 1 + links.length; // header + items
-          if (tags.length > 0) totalLines += 1; // header
-          const tagRows = Math.ceil(tags.length / 2);
-          if (tags.length > 0) totalLines += tagRows;
-          const panelH = pad * 2 + totalLines * lineH;
-          const panelW = 160 / cam.zoom;
-
-          // Background
-          ctx.globalAlpha = hoverFade * 0.9;
-          ctx.fillStyle = dark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.92)';
-          ctx.beginPath();
-          const br = 4 / cam.zoom;
-          ctx.roundRect(panelX, panelY, panelW, panelH, br);
-          ctx.fill();
-          ctx.strokeStyle = dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-          ctx.lineWidth = 1 / cam.zoom;
-          ctx.stroke();
+        if (tags.length > 0) {
+          const fs = Math.max(8, 9 / cam.zoom);
+          const dotR = 2.5 / cam.zoom;
+          const gap = 6 / cam.zoom;
+          const nodeR = activeHover.radius * (draggedNodeRef.current?.id === activeHover.id ? 1.8 : 1.6);
+          const tagY = activeHover.y + nodeR + 14 / cam.zoom;
 
           ctx.font = `${fs}px ui-sans-serif, system-ui, sans-serif`;
           ctx.textAlign = 'left';
-          let curY = panelY + pad + fs;
+          ctx.globalAlpha = hoverFade * 0.85;
 
-          // Links section
-          if (links.length > 0) {
-            ctx.fillStyle = dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)';
-            ctx.font = `bold ${fs * 0.85}px ui-sans-serif, system-ui, sans-serif`;
-            ctx.fillText('LINKS', panelX + pad, curY);
-            curY += lineH;
-            ctx.font = `${fs}px ui-sans-serif, system-ui, sans-serif`;
-            ctx.fillStyle = dark ? 'rgba(180,180,220,0.8)' : 'rgba(80,80,120,0.7)';
-            for (const title of links.slice(0, 5)) {
-              const truncated = title.length > 20 ? title.slice(0, 18) + '…' : title;
-              ctx.fillText('→ ' + truncated, panelX + pad, curY);
-              curY += lineH;
-            }
+          // Measure total width to center the row
+          let totalW = 0;
+          const measurements: { tag: string; w: number }[] = [];
+          for (const tag of tags) {
+            const w = ctx.measureText(tag).width;
+            measurements.push({ tag, w });
+            totalW += dotR * 2 + gap * 0.5 + w + gap;
           }
+          totalW -= gap; // remove trailing gap
 
-          // Tags section
-          if (tags.length > 0) {
-            ctx.fillStyle = dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)';
-            ctx.font = `bold ${fs * 0.85}px ui-sans-serif, system-ui, sans-serif`;
-            ctx.fillText('SHARED TAGS', panelX + pad, curY);
-            curY += lineH;
-            ctx.font = `${fs}px ui-sans-serif, system-ui, sans-serif`;
-            // Two-column layout
-            const colW = (panelW - pad * 2) / 2;
-            for (let t = 0; t < tags.length; t++) {
-              const col = t % 2;
-              const row = Math.floor(t / 2);
-              const tx = panelX + pad + col * colW + dotR * 3;
-              const ty = curY + row * lineH;
-              // Colored dot
-              const tagColor = TAG_COLORS[tags[t]];
-              ctx.beginPath();
-              ctx.arc(tx - dotR * 2, ty - fs * 0.3, dotR, 0, Math.PI * 2);
-              ctx.fillStyle = tagColor
-                ? hslToString(tagColor, dark ? 0.8 : 0.7)
-                : dark ? 'rgba(150,150,180,0.7)' : 'rgba(100,100,140,0.6)';
-              ctx.fill();
-              // Tag name
-              ctx.fillStyle = dark ? 'rgba(224,224,224,0.8)' : 'rgba(68,68,68,0.8)';
-              const tagName = tags[t].length > 10 ? tags[t].slice(0, 9) + '…' : tags[t];
-              ctx.fillText(tagName, tx, ty);
-            }
+          let curX = activeHover.x - totalW / 2;
+          for (const { tag, w } of measurements) {
+            // Colored dot
+            const tagColor = TAG_COLORS[tag];
+            ctx.beginPath();
+            ctx.arc(curX + dotR, tagY, dotR, 0, Math.PI * 2);
+            ctx.fillStyle = tagColor
+              ? hslToString(tagColor, dark ? 0.8 : 0.65)
+              : dark ? 'rgba(150,150,180,0.7)' : 'rgba(100,100,140,0.6)';
+            ctx.fill();
+            curX += dotR * 2 + gap * 0.5;
+            // Tag name
+            ctx.fillStyle = dark ? 'rgba(200,200,200,0.75)' : 'rgba(80,80,80,0.7)';
+            ctx.fillText(tag, curX, tagY + fs * 0.35);
+            curX += w + gap;
           }
 
           ctx.globalAlpha = 1;
