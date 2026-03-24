@@ -58,7 +58,7 @@ export interface ConstellationGraphProps {
 }
 
 /** Calculate zoom + camera offset to fit all nodes within the viewport */
-function calculateAutoFit(nodes: GraphNode[], w: number, h: number, padding = 0.85): { zoom: number; cx: number; cy: number } {
+function calculateAutoFit(nodes: GraphNode[], w: number, h: number, padding = 0.8): { zoom: number; cx: number; cy: number } {
   if (nodes.length === 0) return { zoom: 1, cx: 0, cy: 0 };
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   for (const n of nodes) {
