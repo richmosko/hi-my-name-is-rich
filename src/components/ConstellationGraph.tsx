@@ -57,29 +57,6 @@ export interface ConstellationGraphProps {
   style?: React.CSSProperties;
 }
 
-/** Calculate zoom + camera offset to fit all nodes within the viewport */
-function calculateAutoFit(nodes: GraphNode[], w: number, h: number, padding = 0.8): { zoom: number; cx: number; cy: number } {
-  if (nodes.length === 0) return { zoom: 1, cx: 0, cy: 0 };
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  for (const n of nodes) {
-    if (n.x < minX) minX = n.x;
-    if (n.x > maxX) maxX = n.x;
-    if (n.y < minY) minY = n.y;
-    if (n.y > maxY) maxY = n.y;
-  }
-  const graphW = maxX - minX || 1;
-  const graphH = maxY - minY || 1;
-  const scaleX = w / graphW;
-  const scaleY = h / graphH;
-  const zoom = Math.min(scaleX, scaleY) * padding;
-  // Center camera on the graph centroid
-  const graphCx = (minX + maxX) / 2;
-  const graphCy = (minY + maxY) / 2;
-  // Camera offset: how far from canvas center (w/2, h/2) the graph center is
-  const cx = w / 2 - graphCx;
-  const cy = h / 2 - graphCy;
-  return { zoom, cx, cy };
-}
 
 export default function ConstellationGraph({
   initialZoom = 1.4,
@@ -130,12 +107,15 @@ export default function ConstellationGraph({
   useEffect(() => {
     if (!controls) return;
     controls.onCameraResetRef.current = () => {
-      if (autoFit) {
-        const fit = calculateAutoFit(nodesRef.current, sizeRef.current.w, sizeRef.current.h);
-        cameraTargetRef.current = { x: fit.cx, y: fit.cy, zoom: fit.zoom };
-      } else {
-        cameraTargetRef.current = { x: 0, y: 0, zoom: initialZoom };
-      }
+      // Recalculate zoom from current node positions
+      const nodes = nodesRef.current;
+      const { w, h } = sizeRef.current;
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (const n of nodes) { minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x); minY = Math.min(minY, n.y); maxY = Math.max(maxY, n.y); }
+      const graphW = maxX - minX || 1;
+      const graphH = maxY - minY || 1;
+      const zoom = autoFit ? Math.min(w / graphW, h / graphH) * 0.8 : initialZoom;
+      cameraTargetRef.current = { x: 0, y: 0, zoom };
     };
     return () => { controls.onCameraResetRef.current = null; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -196,21 +176,46 @@ export default function ConstellationGraph({
 
       const nodes = nodesRef.current;
       const edges = edgesRef.current;
-      initializePositions(nodes, rect.width, rect.height);
+      // Settle in a 1000x1000 frame
+      initializePositions(nodes, 1000, 1000);
       let alpha = 1.0;
-      for (let i = 0; i < 300; i++) { tick(nodes, edges, rect.width, rect.height, alpha); alpha *= 0.98; }
+      for (let i = 0; i < 300; i++) { tick(nodes, edges, 1000, 1000, alpha); alpha *= 0.98; }
 
-      // Calculate and apply auto-fit zoom + centering
       if (autoFit) {
-        const fit = calculateAutoFit(nodes, rect.width, rect.height);
-        cameraRef.current = { x: fit.cx, y: fit.cy, zoom: fit.zoom };
-        if (controls) { controls.zoomRef.current = fit.zoom; controls.setZoom(fit.zoom); }
+        // Shift all nodes so centroid is at canvas center, then compute zoom
+        let sumX = 0, sumY = 0;
+        for (const n of nodes) { sumX += n.x; sumY += n.y; }
+        const cx = sumX / nodes.length;
+        const cy = sumY / nodes.length;
+        const dx = rect.width / 2 - cx;
+        const dy = rect.height / 2 - cy;
+        for (const n of nodes) { n.x += dx; n.y += dy; }
+
+        // Now compute zoom from bounding box
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        for (const n of nodes) {
+          minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x);
+          minY = Math.min(minY, n.y); maxY = Math.max(maxY, n.y);
+        }
+        const graphW = maxX - minX || 1;
+        const graphH = maxY - minY || 1;
+        // Use a blend: min ensures nothing clips, max fills the screen.
+        // On portrait (where aspect ratios differ a lot), bias toward max
+        // so the graph fills more vertical space even if edges clip.
+        const scaleX = rect.width / graphW;
+        const scaleY = rect.height / graphH;
+        const aspectDiff = Math.max(scaleX, scaleY) / Math.min(scaleX, scaleY);
+        const blend = Math.min(aspectDiff - 1, 1) * 0.4; // 0–0.4 blend toward max
+        const zoom = (Math.min(scaleX, scaleY) * (1 - blend) + Math.max(scaleX, scaleY) * blend) * 0.8;
+        cameraRef.current = { x: 0, y: 0, zoom };
+        if (controls) { controls.zoomRef.current = zoom; controls.setZoom(zoom); }
       }
     };
 
     resize();
     window.addEventListener('resize', resize);
     return () => window.removeEventListener('resize', resize);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ─── Render loop ────────────────────────────────────────────────
@@ -255,6 +260,7 @@ export default function ConstellationGraph({
       } : {};
 
       const alpha = draggedNode ? 0.3 : 0.015;
+      // Gravity pulls toward canvas center (where we placed the nodes)
       tick(nodes, edges, w, h, alpha, multipliers);
       if (draggedNode) { draggedNode.vx = 0; draggedNode.vy = 0; }
 
