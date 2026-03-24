@@ -23,6 +23,7 @@ const routeLabels: Record<string, string> = {
   '/finance': 'Finance',
   '/constellation': 'Constellation',
   '/contributors': 'Contributors',
+  '/admin': 'Admin',
 };
 
 function Slider({ label, value, min, max, step, onChange }: {
