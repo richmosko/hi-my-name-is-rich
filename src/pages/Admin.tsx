@@ -121,7 +121,7 @@ export default function Admin() {
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'recent' | 'posts' | 'blocked'>('recent');
+  const [activeTab, setActiveTab] = useState<'recent' | 'posts' | 'blocked' | 'widget'>('recent');
 
   const fetchData = useCallback(async () => {
     if (!REMARK42_HOST) {
@@ -264,6 +264,9 @@ export default function Admin() {
         <button style={tabStyle(activeTab === 'blocked')} onClick={() => setActiveTab('blocked')}>
           Blocked ({blockedUsers.length})
         </button>
+        <button style={tabStyle(activeTab === 'widget')} onClick={() => setActiveTab('widget')}>
+          Moderate
+        </button>
       </div>
 
       {loading ? (
@@ -381,6 +384,33 @@ export default function Admin() {
                   </div>
                 ))
               )}
+            </div>
+          )}
+
+          {/* Remark42 last-comments widget — runs in same-origin iframe with full admin controls */}
+          {activeTab === 'widget' && (
+            <div>
+              <p className="text-sm text-content-muted mb-4">
+                This widget runs directly from Remark42. Sign in here to access admin controls (delete, pin, block) across all posts.
+              </p>
+              <div
+                className="rounded-xl overflow-hidden"
+                style={{
+                  ...cardStyle,
+                  minHeight: '500px',
+                }}
+              >
+                <iframe
+                  src={`${REMARK42_HOST}/web/last-comments.html?site=${SITE_ID}&max=50`}
+                  style={{
+                    width: '100%',
+                    minHeight: '500px',
+                    border: 'none',
+                    background: 'transparent',
+                  }}
+                  title="Remark42 Recent Comments"
+                />
+              </div>
             </div>
           )}
         </>
