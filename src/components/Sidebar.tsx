@@ -93,6 +93,7 @@ export default function Sidebar() {
             <li key={item.path}>
               <NavLink
                 to={item.path}
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 className={({ isActive }) =>
                   `block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150
                    ${
