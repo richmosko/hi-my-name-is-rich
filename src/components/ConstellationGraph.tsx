@@ -402,6 +402,40 @@ export default function ConstellationGraph({
         }
       }
 
+      // ─── Edge labels (tag names on hover) ──────────
+      if (interactive && hoverFade > 0.3 && activeHover) {
+        const labelSize = Math.max(9, 10 / cam.zoom);
+        ctx.font = `${labelSize}px ui-sans-serif, system-ui, sans-serif`;
+        ctx.textAlign = 'center';
+
+        for (const edge of filteredEdges) {
+          const connected = edge.source === activeHover.id || edge.target === activeHover.id;
+          if (!connected) continue;
+          const a = nodeMap.get(edge.source);
+          const b = nodeMap.get(edge.target);
+          if (!a || !b) continue;
+
+          // Midpoint of edge
+          const mx = (a.x + b.x) / 2;
+          const my = (a.y + b.y) / 2;
+
+          if (edge.type === 'wikilink') {
+            ctx.fillStyle = dark ? 'rgba(180,180,220,0.7)' : 'rgba(80,80,120,0.6)';
+            ctx.fillText('link', mx, my - 4 / cam.zoom);
+          } else if (edge.shared && edge.shared.length > 0) {
+            // Draw each shared tag name, stacked vertically
+            for (let t = 0; t < edge.shared.length; t++) {
+              const tag = edge.shared[t];
+              const tagColor = TAG_COLORS[tag];
+              ctx.fillStyle = tagColor
+                ? hslToString(tagColor, dark ? 0.8 : 0.7)
+                : dark ? 'rgba(150,150,180,0.7)' : 'rgba(100,100,140,0.6)';
+              ctx.fillText(tag, mx, my + (t * labelSize * 1.2) - 4 / cam.zoom);
+            }
+          }
+        }
+      }
+
       ctx.restore();
       frameCount++;
       animFrameRef.current = requestAnimationFrame(render);
