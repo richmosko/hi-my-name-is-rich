@@ -31,8 +31,10 @@ window.addEventListener('message', async function(event) {
       method: method || 'GET',
       credentials: 'include',
     });
-    const data = await res.json();
-    event.source.postMessage({ id, ok: res.ok, status: res.status, data }, event.origin);
+    var data;
+    var text = await res.text();
+    try { data = JSON.parse(text); } catch(e) { data = null; }
+    event.source.postMessage({ id, ok: res.ok, status: res.status, data: data, statusText: text }, event.origin);
   } catch (err) {
     event.source.postMessage({ id, ok: false, status: 0, error: err.message }, event.origin);
   }

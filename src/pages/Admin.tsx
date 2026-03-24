@@ -167,10 +167,14 @@ export default function Admin() {
       if (blockedRes.status === 'fulfilled' && blockedRes.value.ok) {
         const data = blockedRes.value.data;
         setBlockedUsers(Array.isArray(data) ? data as BlockedUser[] : []);
+      } else if (blockedRes.status === 'fulfilled' && blockedRes.value.status === 401) {
+        // Expected when not signed in as admin — don't show as error
+        setBlockedUsers([]);
       } else if (blockedRes.status === 'fulfilled') {
-        errors.push(`Blocked: ${blockedRes.value.status} (sign in on a post page first)`);
+        errors.push(`Blocked: ${blockedRes.value.status}`);
       } else {
-        errors.push(`Blocked: ${blockedRes.reason}`);
+        // Network/bridge errors — don't show for blocked endpoint
+        setBlockedUsers([]);
       }
 
       if (errors.length > 0) setError(errors.join(' | '));
