@@ -70,26 +70,44 @@ export default function Admin() {
     setError(null);
 
     try {
+      // Public endpoints don't need credentials.
+      // Note: credentials: 'include' + Access-Control-Allow-Origin: * is rejected by browsers.
       const [commentsRes, postsRes, blockedRes] = await Promise.allSettled([
-        fetch(`${REMARK42_HOST}/api/v1/last/50?site=${SITE_ID}`, { credentials: 'include' }),
-        fetch(`${REMARK42_HOST}/api/v1/list?site=${SITE_ID}&limit=100&skip=0`, { credentials: 'include' }),
-        fetch(`${REMARK42_HOST}/api/v1/admin/blocked?site=${SITE_ID}`, { credentials: 'include' }),
+        fetch(`${REMARK42_HOST}/api/v1/last/50?site=${SITE_ID}`),
+        fetch(`${REMARK42_HOST}/api/v1/list?site=${SITE_ID}&limit=100&skip=0`),
+        fetch(`${REMARK42_HOST}/api/v1/admin/blocked?site=${SITE_ID}`),
       ]);
+
+      const errors: string[] = [];
 
       if (commentsRes.status === 'fulfilled' && commentsRes.value.ok) {
         const data = await commentsRes.value.json();
         setRecentComments(Array.isArray(data) ? data : []);
+      } else if (commentsRes.status === 'fulfilled') {
+        errors.push(`Comments: ${commentsRes.value.status} ${commentsRes.value.statusText}`);
+      } else {
+        errors.push(`Comments: ${commentsRes.reason}`);
       }
 
       if (postsRes.status === 'fulfilled' && postsRes.value.ok) {
         const data = await postsRes.value.json();
         setPosts(Array.isArray(data) ? data.sort((a: PostInfo, b: PostInfo) => b.count - a.count) : []);
+      } else if (postsRes.status === 'fulfilled') {
+        errors.push(`Posts: ${postsRes.value.status} ${postsRes.value.statusText}`);
+      } else {
+        errors.push(`Posts: ${postsRes.reason}`);
       }
 
       if (blockedRes.status === 'fulfilled' && blockedRes.value.ok) {
         const data = await blockedRes.value.json();
         setBlockedUsers(Array.isArray(data) ? data : []);
+      } else if (blockedRes.status === 'fulfilled') {
+        errors.push(`Blocked: ${blockedRes.value.status} (admin auth required)`);
+      } else {
+        errors.push(`Blocked: ${blockedRes.reason}`);
       }
+
+      if (errors.length > 0) setError(errors.join(' | '));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
     } finally {
