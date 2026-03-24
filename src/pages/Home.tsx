@@ -22,6 +22,7 @@ function Slider({ label, value, min, max, step, onChange }: {
   onChange: (v: number) => void;
 }) {
   const { theme } = useTheme();
+  const thumbColor = theme === 'dark' ? '#6b8aff' : '#4a6cf7';
   return (
     <label className="flex items-center gap-2">
       <span className="w-20 text-right" style={{ color: theme === 'dark' ? '#aaa' : '#666' }}>{label}</span>
@@ -29,10 +30,11 @@ function Slider({ label, value, min, max, step, onChange }: {
         type="range"
         min={min} max={max} step={step} value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="flex-1 h-1 rounded-full appearance-none cursor-pointer"
+        className="slider-thumb flex-1 h-1 rounded-full appearance-none cursor-pointer"
         style={{
           background: theme === 'dark' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)',
-          accentColor: theme === 'dark' ? '#6b8aff' : '#4a6cf7',
+          // @ts-expect-error CSS custom property for thumb color
+          '--thumb-color': thumbColor,
         }}
       />
       <span className="w-8 text-right tabular-nums" style={{ color: theme === 'dark' ? '#888' : '#999' }}>
@@ -212,6 +214,12 @@ export default function Home() {
                     <span>Shared Tags ({tagCount})</span>
                   </label>
 
+                  {/* Zoom */}
+                  <div className="border-t pt-2 mt-1" style={{ borderColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }}>
+                    <div className="font-semibold mb-1" style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)' }}>Zoom</div>
+                    <Slider label="Level" value={controls.zoom} min={0.2} max={4} step={0.1} onChange={(v) => controls.setZoom(v)} />
+                  </div>
+
                   {/* Forces */}
                   <div className="border-t pt-2 mt-1 space-y-1" style={{ borderColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }}>
                     <div className="flex items-center justify-between">
@@ -268,7 +276,7 @@ export default function Home() {
 
         <Suspense fallback={<div className="w-full rounded-xl aspect-video bg-surface-secondary" />}>
           <ConstellationGraph
-            initialZoom={1.6}
+            initialZoom={0.7}
             showWikilinks={controls?.showWikilinks ?? true}
             showTags={controls?.showTags ?? true}
             interactive={false}

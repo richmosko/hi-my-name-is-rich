@@ -30,6 +30,7 @@ function Slider({ label, value, min, max, step, onChange }: {
   onChange: (v: number) => void;
 }) {
   const { theme } = useTheme();
+  const thumbColor = theme === 'dark' ? '#6b8aff' : '#4a6cf7';
   return (
     <label className="flex items-center gap-2">
       <span className="w-20 text-right" style={{ color: theme === 'dark' ? '#aaa' : '#666' }}>{label}</span>
@@ -37,10 +38,11 @@ function Slider({ label, value, min, max, step, onChange }: {
         type="range"
         min={min} max={max} step={step} value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="flex-1 h-1 rounded-full appearance-none cursor-pointer"
+        className="slider-thumb flex-1 h-1 rounded-full appearance-none cursor-pointer"
         style={{
           background: theme === 'dark' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)',
-          accentColor: theme === 'dark' ? '#6b8aff' : '#4a6cf7',
+          // @ts-expect-error CSS custom property for thumb color
+          '--thumb-color': thumbColor,
         }}
       />
       <span className="w-8 text-right tabular-nums" style={{ color: theme === 'dark' ? '#888' : '#999' }}>
