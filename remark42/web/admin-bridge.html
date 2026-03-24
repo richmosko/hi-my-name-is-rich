@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head><title>Remark42 Admin Bridge</title></head>
+<body>
+<script>
+// This page is served from remark42.himynameisrich.com/web/admin-bridge.html
+// It acts as a same-origin proxy for authenticated Remark42 API calls.
+// The parent page (himynameisrich.com/admin) communicates via postMessage.
+
+const ALLOWED_ORIGIN = location.origin.replace(/^remark42\./, '');
+// Also allow the main domain
+const ALLOWED_ORIGINS = [
+  ALLOWED_ORIGIN,
+  location.origin.replace('remark42.', ''),
+  'https://himynameisrich.com',
+  'http://localhost:5173',
+  'http://localhost:4173',
+];
+
+window.addEventListener('message', async function(event) {
+  // Verify origin
+  if (!ALLOWED_ORIGINS.some(o => event.origin === o || event.origin.startsWith('http://localhost'))) {
+    return;
+  }
+
+  const { id, url, method } = event.data || {};
+  if (!id || !url) return;
+
+  try {
+    const res = await fetch(url, {
+      method: method || 'GET',
+      credentials: 'include',
+    });
+    const data = await res.json();
+    event.source.postMessage({ id, ok: res.ok, status: res.status, data }, event.origin);
+  } catch (err) {
+    event.source.postMessage({ id, ok: false, status: 0, error: err.message }, event.origin);
+  }
+});
+
+// Signal ready
+if (window.parent !== window) {
+  window.parent.postMessage({ type: 'remark42-bridge-ready' }, '*');
+}
+</script>
+</body>
+</html>
