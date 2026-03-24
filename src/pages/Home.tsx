@@ -134,15 +134,15 @@ export default function Home() {
           </h2>
           {/* Desktop: large left (4/3) + two stacked right (16/9). Mobile: stack all */}
           <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
-            {/* Left — latest post, large 4/3 */}
+            {/* Left — latest post, large 4/3 (2/3 width) */}
             {heroCards[0] && (
-              <div className="lg:w-1/2">
+              <div className="lg:w-2/3">
                 <PostCard post={heroCards[0]} variant="large" />
               </div>
             )}
-            {/* Right — two stacked featured posts, compact 16/9 */}
+            {/* Right — two stacked featured posts, compact 16/9 (1/3 width) */}
             {heroCards.length > 1 && (
-              <div className="lg:w-1/2 flex flex-col gap-6 sm:gap-8">
+              <div className="lg:w-1/3 flex flex-col gap-6 sm:gap-8">
                 {heroCards.slice(1).map((post) => (
                   <PostCard key={post.id} post={post} variant="compact" />
                 ))}
