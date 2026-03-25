@@ -43,7 +43,8 @@ categories:
 featured: false
 image: "/images/stock/northern-lights-snowy-mountains.jpg"
 imageAspectRatio: "16/9"
-authorId: "rich"
+authorId:
+  - rich
 tags: []
 ---
 
