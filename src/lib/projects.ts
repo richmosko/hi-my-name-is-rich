@@ -16,6 +16,7 @@ interface ProjectMdxModule {
     startDate?: string;
     completedDate?: string;
     vikunjaProjectId?: number;
+    groupOrder?: string[];
     tasks?: Array<{ title: string; completed: boolean; group?: string }>;
   };
 }
@@ -52,6 +53,7 @@ function parseProject(filePath: string, mod: ProjectMdxModule): Project {
     startDate: frontmatter.startDate,
     completedDate: frontmatter.completedDate,
     vikunjaProjectId: frontmatter.vikunjaProjectId,
+    groupOrder: frontmatter.groupOrder,
     tasks,
     content: Content,
   };

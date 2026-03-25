@@ -131,7 +131,7 @@ function TaskList({ tasks }: { tasks: ProjectTask[] }) {
 }
 
 /** Group Vikunja tasks by label and render with collapsible sections */
-function VikunjaTaskList({ tasks }: { tasks: VikunjaTask[] }) {
+function VikunjaTaskList({ tasks, groupOrder }: { tasks: VikunjaTask[]; groupOrder?: string[] }) {
   // Start with all groups collapsed
   const [collapsed, setCollapsed] = useState<Set<string> | null>(null);
 
@@ -151,8 +151,17 @@ function VikunjaTaskList({ tasks }: { tasks: VikunjaTask[] }) {
   }
   const collapsedSet = collapsed ?? new Set<string>();
 
-  // Sort groups: put groups with incomplete tasks first, then by name
+  // Sort groups by groupOrder if provided, otherwise active-first then alphabetical
   const sorted = Array.from(groups.entries()).sort(([aKey, aVal], [bKey, bVal]) => {
+    if (groupOrder) {
+      const aIdx = groupOrder.indexOf(aKey);
+      const bIdx = groupOrder.indexOf(bKey);
+      // Items in groupOrder sort by their position; unlisted items go to the end
+      const aPos = aIdx >= 0 ? aIdx : groupOrder.length + 1;
+      const bPos = bIdx >= 0 ? bIdx : groupOrder.length + 1;
+      if (aPos !== bPos) return aPos - bPos;
+    }
+    // Fallback: active groups first, then alphabetical
     const aOpen = aVal.tasks.filter(t => !t.done).length;
     const bOpen = bVal.tasks.filter(t => !t.done).length;
     if (aOpen > 0 && bOpen === 0) return -1;
@@ -386,7 +395,7 @@ export default function ProjectDetail() {
       {/* Task list — Vikunja live data when available, otherwise static MDX */}
       {vikunja.total > 0 ? (
         <div className="w-full max-w-[640px]">
-          <VikunjaTaskList tasks={vikunja.tasks} />
+          <VikunjaTaskList tasks={vikunja.tasks} groupOrder={project.groupOrder} />
         </div>
       ) : project.tasks.length > 0 ? (
         <div className="w-full max-w-[640px]">
