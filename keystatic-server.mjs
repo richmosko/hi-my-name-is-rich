@@ -10,11 +10,7 @@
 
 import http from 'node:http';
 
-// Dynamic import — Keystatic's ESM exports need async import
 const { makeGenericAPIRouteHandler } = await import('@keystatic/core/api/generic');
-
-// Import the config — need to handle TypeScript/TSX
-// For local dev, we'll use a simplified JS version
 const config = (await import('./keystatic.config.tsx')).default;
 
 const handler = makeGenericAPIRouteHandler({
@@ -36,29 +32,58 @@ const server = http.createServer(async (req, res) => {
   }
 
   try {
-    // Adapt Node.js IncomingMessage to Keystatic's request format
     const url = new URL(req.url || '/', `http://localhost:3333`);
-    const body = await new Promise((resolve) => {
+
+    // Buffer the full request body (support large uploads up to 50MB)
+    const body = await new Promise((resolve, reject) => {
       const chunks = [];
-      req.on('data', (chunk) => chunks.push(chunk));
+      let size = 0;
+      const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+      req.on('data', (chunk) => {
+        size += chunk.length;
+        if (size > MAX_SIZE) {
+          reject(new Error('Request body too large'));
+          req.destroy();
+          return;
+        }
+        chunks.push(chunk);
+      });
       req.on('end', () => resolve(Buffer.concat(chunks)));
+      req.on('error', reject);
     });
+
+    const contentType = req.headers['content-type'] || '';
 
     const keystaticReq = {
       method: req.method || 'GET',
       url: url.toString(),
       headers: { get: (name) => req.headers[name.toLowerCase()] || null },
-      json: () => JSON.parse(body.toString() || '{}'),
+      json: () => {
+        // Only parse as JSON if content-type is JSON
+        if (contentType.includes('application/json')) {
+          const str = body.toString();
+          return JSON.parse(str || '{}');
+        }
+        // For other content types (multipart, etc.), return the raw body as-is
+        // Keystatic may call .json() but the handler should handle non-JSON
+        return JSON.parse(body.toString() || '{}');
+      },
+      body: body,
+      arrayBuffer: () => Promise.resolve(body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength)),
     };
 
     const keystaticRes = await handler(keystaticReq);
 
-    // Write response
-    const headers = keystaticRes.headers || {};
+    // Write response headers
+    const headers = keystaticRes.headers;
     if (headers instanceof Headers) {
       headers.forEach((value, key) => res.setHeader(key, value));
     } else if (Array.isArray(headers)) {
       for (const [key, value] of headers) res.setHeader(key, value);
+    } else if (headers && typeof headers === 'object') {
+      for (const [key, value] of Object.entries(headers)) {
+        if (value) res.setHeader(key, String(value));
+      }
     }
 
     res.writeHead(keystaticRes.status || 200);
@@ -68,9 +93,11 @@ const server = http.createServer(async (req, res) => {
       res.end();
     }
   } catch (err) {
-    console.error('Keystatic API error:', err);
-    res.writeHead(500);
-    res.end(JSON.stringify({ error: err.message }));
+    console.error('Keystatic API error:', err.message);
+    if (!res.headersSent) {
+      res.writeHead(err.message === 'Request body too large' ? 413 : 500);
+      res.end(JSON.stringify({ error: err.message }));
+    }
   }
 });
 

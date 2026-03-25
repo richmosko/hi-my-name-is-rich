@@ -1,17 +1,13 @@
-/* eslint-disable react-refresh/only-export-components */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { config, collection, fields } from '@keystatic/core';
 import { block, mark } from '@keystatic/core/content-components';
 
-// Detect environment — works in both Vite (import.meta.env) and Node (process.env)
-const isProduction = typeof import.meta !== 'undefined' && import.meta.env?.PROD;
-
 export default config({
-  storage: isProduction
-    ? {
-        kind: 'github',
-        repo: 'richmosko/hi-my-name-is-rich',
-      }
-    : { kind: 'local' },
+  storage: {
+    kind: 'github',
+    repo: 'richmosko/hi-my-name-is-rich',
+    branchPrefix: 'keystatic/',
+  },
 
   collections: {
     posts: collection({
@@ -57,7 +53,7 @@ export default config({
         }),
         authorId: fields.text({
           label: 'Author(s)',
-          description: 'Single author: "rich" or multiple: "rich,claude". Options: rich, claude, keith',
+          description: 'Single author: "rich" or multiple: ["rich","claude"]. Options: rich, claude, keith',
           defaultValue: 'rich',
         }),
         tags: fields.array(fields.text({ label: 'Tag' }), {
@@ -94,7 +90,6 @@ export default config({
                 caption: fields.text({ label: 'Caption (optional)' }),
               },
             }),
-            // HTML inline mark elements used in some posts
             big: mark({ label: 'Big Text', icon: null as never, schema: {}, tag: 'big' }),
             u: mark({ label: 'Underline', icon: null as never, schema: {}, tag: 'u' }),
             mark: mark({ label: 'Highlight', icon: null as never, schema: {}, tag: 'mark' }),
@@ -114,10 +109,9 @@ export default config({
         name: fields.slug({ name: { label: 'Project Name' } }),
         description: fields.text({ label: 'Description' }),
         excerpt: fields.text({ label: 'Excerpt', multiline: true }),
-        image: fields.image({
-          label: 'Hero Image',
-          directory: 'public/images/stock',
-          publicPath: '/images/stock/',
+        image: fields.text({
+          label: 'Hero Image Path',
+          description: 'Path to image (e.g., /images/stock/my-project.jpg)',
         }),
         imageAspectRatio: fields.select({
           label: 'Image Aspect Ratio',

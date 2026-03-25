@@ -310,43 +310,130 @@ This means no server-side filesystem access is needed in production — the admi
 3. Preview the draft
 4. When ready, merge the branch → auto-deploy
 
+## Production Deployment (GitHub Mode)
+
+### Architecture
+
+The production editor runs as a **separate Next.js application** at `edit.himynameisrich.com`:
+
+```
+edit.himynameisrich.com (Coolify Application)
+├── Next.js server (port 4444)
+├── Keystatic admin UI at /keystatic
+├── API routes handle GitHub OAuth + content CRUD
+└── Commits changes to richmosko/hi-my-name-is-rich repo
+         ↓
+    Coolify auto-deploys himynameisrich.com
+```
+
+### Step 1: DNS Setup
+
+Add an A record in Cloudflare:
+
+| Type | Name | Value | Proxy |
+|------|------|-------|-------|
+| A | `edit` | your server IP | DNS only (gray) |
+
+### Step 2: Deploy to Coolify
+
+1. In Coolify, go to **Projects > your project > Add Resource**
+2. Select **Private Repository (GitHub App)**
+3. Select the `richmosko/hi-my-name-is-rich` repository
+4. Configure:
+   - **Build Pack**: Docker
+   - **Dockerfile Location**: `keystatic-admin/Dockerfile`
+   - **Base Directory**: `keystatic-admin`
+   - **Port**: `4444`
+   - **Domain**: `edit.himynameisrich.com`
+
+### Step 3: Create GitHub App for Keystatic
+
+1. Deploy the app first (it will show an error page — that's OK)
+2. Visit `https://edit.himynameisrich.com/keystatic`
+3. Keystatic will show a setup wizard — click **"Create GitHub App"**
+4. Enter:
+   - **Deployment URL**: `https://edit.himynameisrich.com`
+   - **Organization**: (leave empty for personal account)
+5. Follow GitHub's app creation flow
+6. Grant the app access to the `hi-my-name-is-rich` repo
+
+### Step 4: Configure Environment Variables
+
+After creating the GitHub App, Keystatic provides credentials. Add them in Coolify as **build + runtime variables**:
+
+| Variable | Source |
+|----------|--------|
+| `KEYSTATIC_GITHUB_CLIENT_ID` | GitHub App credentials |
+| `KEYSTATIC_GITHUB_CLIENT_SECRET` | GitHub App credentials |
+| `KEYSTATIC_SECRET` | Generate with `openssl rand -base64 32` |
+| `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | The slug of your GitHub App (shown in the URL) |
+
+### Step 5: Redeploy
+
+Redeploy the Coolify application so it picks up the environment variables.
+
+### Step 6: Test
+
+1. Visit `https://edit.himynameisrich.com`
+2. You'll be redirected to GitHub OAuth login
+3. After authenticating, you should see the Keystatic admin with all your posts
+4. Try editing a post and saving — it should commit to GitHub
+5. Check that Coolify auto-deploys the blog
+
+### Draft / Branch Workflow
+
+The config uses `branchPrefix: 'keystatic/'`, which enables:
+
+1. **Create a draft** — save to a new branch (e.g., `keystatic/my-new-post`)
+2. **Edit the draft** — keep editing, each save is a commit on that branch
+3. **Preview** — pull the branch locally and `npm run dev` to preview
+4. **Publish** — Keystatic creates a PR → you merge to `main` → Coolify deploys
+
+### Security
+
+- Only GitHub users with **write access** to the repo can edit content
+- OAuth tokens are scoped to the specific GitHub App
+- The `KEYSTATIC_SECRET` encrypts session cookies
+- No anonymous access — authentication is required
+
 ## Current Status
 
-**Phase 1 — Research (Complete)**
-- Confirmed Keystatic supports all our field types
-- Identified the SPA integration challenge
-- Designed the hybrid architecture (local server for dev, GitHub mode for prod)
+**Phase 1 — Research** ✅
+- Confirmed Keystatic supports all field types
+- Identified SPA integration challenge
+- Designed hybrid architecture
 
-**Phase 2 — Installation & Config (In Progress)**
-- Install packages
-- Create keystatic.config.tsx with post and project schemas
-- Set up local dev server
+**Phase 2 — Local Dev** ✅
+- Installed `@keystatic/core`
+- Created `keystatic.config.tsx` with post + project schemas
+- Keystatic API server (`keystatic-server.mjs`) for local mode
+- Vite proxy for seamless dev experience
+- Admin UI at `localhost:5173/keystatic` working
 
-**Phase 3 — Local Dev Integration (Pending)**
-- Create Express server for Keystatic API routes
-- Add Vite proxy for `/keystatic` routes
-- Test creating/editing posts locally
+**Phase 3 — Production Deployment** 🔄
+- Created `keystatic-admin/` Next.js app for GitHub mode
+- Dockerfile for Coolify deployment
+- DNS setup for `edit.himynameisrich.com`
+- GitHub App creation and OAuth configuration
 
-**Phase 4 — Production Deployment (Pending)**
-- Set up GitHub App for OAuth
-- Configure GitHub mode in keystatic.config.tsx
-- Deploy admin UI (Option A or B)
-- Test full workflow: edit → commit → auto-deploy
-
-**Phase 5 — Polish (Pending)**
-- Add content components for YouTube, Gallery, Video
-- Image upload to correct directories
-- Validate frontmatter schema matches existing posts
+**Phase 4 — Polish** (Pending)
+- Test full edit → commit → deploy workflow
+- Test draft/branch workflow
+- Verify all field types work in GitHub mode
+- Image handling refinements
 
 ## Decisions Log
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
 | CMS | Keystatic | Git-backed, no DB, rich editor, self-hosted, React-native |
-| Dev mode | Local + Express server | SPA can't serve API routes; Express is lightweight (~20 lines) |
-| Prod mode | GitHub mode | No server needed; commits via GitHub API, auto-deploys via Coolify |
-| Admin hosting | TBD (Option A vs B) | Option A is cleaner but requires a separate deploy; Option B is self-contained |
+| Dev mode | Local + Node HTTP server | SPA can't serve API routes; generic handler wraps cleanly |
+| Prod mode | GitHub mode via Next.js | OAuth + API routes need server; Next.js is Keystatic's primary target |
+| Admin hosting | Separate Coolify app (`edit.himynameisrich.com`) | Keeps blog SPA untouched; clean separation of concerns |
 | Content format | MDX | Already using MDX; Keystatic has native MDX field support |
+| Draft support | Branch-based (`keystatic/` prefix) | Keeps `main` clean; PR workflow for publishing |
+| Image handling | Text field (path entry) | `fields.image()` upload hangs on large files; manual path is reliable |
+| Auth | GitHub OAuth via GitHub App | Only repo collaborators can edit; no anonymous access |
 
 ## References
 
@@ -354,5 +441,6 @@ This means no server-side filesystem access is needed in production — the admi
 - [Keystatic Docs — MDX Field](https://keystatic.com/docs/fields/mdx)
 - [Keystatic Docs — GitHub Mode](https://keystatic.com/docs/github-mode)
 - [Keystatic Docs — Local Mode](https://keystatic.com/docs/local-mode)
+- [Keystatic Docs — Content Components](https://keystatic.com/docs/content-components)
 - [Keystatic + Static Sites Discussion](https://github.com/Thinkmill/keystatic/discussions/826)
 - [Keystatic GitHub](https://github.com/Thinkmill/keystatic)
