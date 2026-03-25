@@ -400,7 +400,7 @@ export default function ProjectDetail() {
 
       {/* Task views — toggle between Labels, Kanban, Gantt */}
       {(vikunja.total > 0 || project.tasks.length > 0) && (
-        <div className="w-full max-w-[640px]">
+        <div className={`w-full ${viewMode === 'labels' ? 'max-w-[640px]' : 'max-w-[1250px]'} transition-all duration-300`}>
           {/* View mode toggle — only show when Vikunja data available */}
           {vikunja.total > 0 && (
             <div className="flex gap-1.5 mb-4">
