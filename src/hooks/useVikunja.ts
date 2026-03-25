@@ -194,13 +194,23 @@ export function useVikunjaRecentTasks(limit = 50): {
 
     (async () => {
       try {
-        const res = await fetch(
-          `${VIKUNJA_API}/tasks/all?sort_by=updated&order_by=desc&per_page=${limit}`,
+        // Fetch all projects, then all tasks, sort by updated desc
+        const projectsRes = await fetch(
+          `${VIKUNJA_API}/projects?page=1&per_page=50`,
           { headers: { Authorization: `Bearer ${VIKUNJA_TOKEN}` } }
         );
-        if (!res.ok) throw new Error(`Vikunja API error: ${res.status}`);
-        const tasks: VikunjaTask[] = await res.json();
-        if (!cancelled) setState({ tasks, loading: false, error: null });
+        if (!projectsRes.ok) throw new Error(`Vikunja API error: ${projectsRes.status}`);
+        const projects: { id: number }[] = await projectsRes.json();
+
+        const allTasks: VikunjaTask[] = [];
+        const taskArrays = await Promise.all(
+          projects.map(p => fetchProjectTasks(p.id))
+        );
+        for (const tasks of taskArrays) allTasks.push(...tasks);
+
+        // Sort by updated desc and take top N
+        allTasks.sort((a, b) => new Date(b.updated).getTime() - new Date(a.updated).getTime());
+        if (!cancelled) setState({ tasks: allTasks.slice(0, limit), loading: false, error: null });
       } catch (err) {
         if (!cancelled) {
           setState({ tasks: [], loading: false, error: err instanceof Error ? err.message : 'Failed to fetch' });
@@ -246,20 +256,22 @@ export function useVikunjaIssueCounts(): {
 
     (async () => {
       try {
-        // Fetch all open tasks across all projects
+        // Get all projects first
+        const projectsRes = await fetch(
+          `${VIKUNJA_API}/projects?page=1&per_page=50`,
+          { headers: { Authorization: `Bearer ${VIKUNJA_TOKEN}` } }
+        );
+        if (!projectsRes.ok) throw new Error('Failed to fetch projects');
+        const projects: { id: number }[] = await projectsRes.json();
+
+        if (cancelled) return;
+
+        // Fetch tasks from each project in parallel
         const allTasks: VikunjaTask[] = [];
-        let page = 1;
-        while (true) {
-          const res = await fetch(
-            `${VIKUNJA_API}/tasks/all?sort_by=id&order_by=asc&page=${page}&per_page=50&filter=done&filter_value=false`,
-            { headers: { Authorization: `Bearer ${VIKUNJA_TOKEN}` } }
-          );
-          if (!res.ok) break;
-          const tasks: VikunjaTask[] = await res.json();
-          allTasks.push(...tasks);
-          if (tasks.length < 50) break;
-          page++;
-        }
+        const taskArrays = await Promise.all(
+          projects.map(p => fetchProjectTasks(p.id))
+        );
+        for (const tasks of taskArrays) allTasks.push(...tasks);
 
         if (cancelled) return;
 
