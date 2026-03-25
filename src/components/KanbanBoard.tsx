@@ -90,7 +90,7 @@ export default function KanbanBoard({ buckets, loading, error }: {
 
   return (
     <div className="overflow-x-auto -mx-2 px-2 pb-2">
-      <div className="flex gap-4 min-w-min">
+      <div className="flex gap-4 min-w-min justify-center">
         {buckets.map(bucket => (
           <Column key={bucket.id} bucket={bucket} />
         ))}
