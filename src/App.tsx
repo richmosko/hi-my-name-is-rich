@@ -12,10 +12,6 @@ import Contributors from './pages/Contributors';
 import Constellation from './pages/Constellation';
 import Admin from './pages/Admin';
 import Changelog from './pages/Changelog';
-import { lazy, Suspense } from 'react';
-
-// Lazy-load Keystatic to keep the main bundle small
-const KeystaticAdmin = lazy(() => import('./pages/KeystaticAdmin'));
 
 export default function App() {
   return (
@@ -65,15 +61,6 @@ export default function App() {
           <Route path="admin" element={<Admin />} />
           <Route path="changelog" element={<Changelog />} />
         </Route>
-        {/* Keystatic CMS — outside Layout (has its own UI chrome) */}
-        <Route
-          path="keystatic/*"
-          element={
-            <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading editor...</div>}>
-              <KeystaticAdmin />
-            </Suspense>
-          }
-        />
       </Routes>
       </ConstellationProvider>
     </BrowserRouter>
