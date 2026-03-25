@@ -129,12 +129,17 @@ export function useVikunjaProject(projectId: number | undefined): VikunjaProject
 
         if (cancelled) return;
 
-        const done = allTasks.filter((t) => t.done).length;
-        const total = allTasks.length;
+        // Exclude issue-tracking tasks (bug/enhancement/question) from progress
+        const isIssueTask = (t: VikunjaTask) =>
+          (t.labels || []).some(l => ISSUE_LABELS.includes(l.title as IssueType));
+        const progressTasks = allTasks.filter(t => !isIssueTask(t));
 
-        // Build sub-project breakdown
+        const done = progressTasks.filter((t) => t.done).length;
+        const total = progressTasks.length;
+
+        // Build sub-project breakdown (also excluding issue tasks)
         const subProjects = descendants.map(d => {
-          const tasks = allTasks.filter(t => t.project_id === d.id);
+          const tasks = progressTasks.filter(t => t.project_id === d.id);
           const subDone = tasks.filter(t => t.done).length;
           return {
             id: d.id,
@@ -143,10 +148,10 @@ export function useVikunjaProject(projectId: number | undefined): VikunjaProject
             done: subDone,
             percent: tasks.length > 0 ? Math.round((subDone / tasks.length) * 100) : 0,
           };
-        }).filter(s => s.total > 0); // Only include sub-projects that have tasks
+        }).filter(s => s.total > 0);
 
         // Also include tasks directly on the parent (not in any sub-project)
-        const parentTasks = allTasks.filter(t => t.project_id === projectId);
+        const parentTasks = progressTasks.filter(t => t.project_id === projectId);
         if (parentTasks.length > 0 && descendants.length > 0) {
           const parentDone = parentTasks.filter(t => t.done).length;
           subProjects.unshift({

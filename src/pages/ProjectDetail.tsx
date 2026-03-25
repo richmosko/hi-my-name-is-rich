@@ -403,7 +403,7 @@ export default function ProjectDetail() {
         <div className={`w-full ${viewMode === 'labels' ? 'max-w-[640px]' : 'max-w-[1250px]'} transition-all duration-300`}>
           {/* View mode toggle — only show when Vikunja data available */}
           {vikunja.total > 0 && (
-            <div className="flex gap-1.5 mb-4">
+            <div className="flex gap-1.5 mb-4 justify-center">
               {(['labels', 'kanban', 'gantt'] as ViewMode[]).map(mode => (
                 <button
                   key={mode}
