@@ -3,7 +3,9 @@ import { projects } from '../lib/projects';
 import { getProjectCompletion } from '../types';
 import { mdxComponents } from '../components/MdxComponents';
 import { parseLocalDate } from '../lib/dateUtils';
-import { useVikunjaProject, type VikunjaTask } from '../hooks/useVikunja';
+import { useVikunjaProject, useVikunjaKanban, type VikunjaTask } from '../hooks/useVikunja';
+import KanbanBoard from '../components/KanbanBoard';
+import GanttChart from '../components/GanttChart';
 import type { ProjectTask } from '../types';
 import { useState } from 'react';
 
@@ -238,10 +240,14 @@ function VikunjaTaskList({ tasks, groupOrder }: { tasks: VikunjaTask[]; groupOrd
   );
 }
 
+type ViewMode = 'labels' | 'kanban' | 'gantt';
+
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const project = projects.find((p) => p.id === id);
   const vikunja = useVikunjaProject(project?.vikunjaProjectId);
+  const kanban = useVikunjaKanban(project?.vikunjaProjectId);
+  const [viewMode, setViewMode] = useState<ViewMode>('labels');
 
   if (!project) {
     return (
@@ -392,16 +398,53 @@ export default function ProjectDetail() {
         </div>
       )}
 
-      {/* Task list — Vikunja live data when available, otherwise static MDX */}
-      {vikunja.total > 0 ? (
+      {/* Task views — toggle between Labels, Kanban, Gantt */}
+      {(vikunja.total > 0 || project.tasks.length > 0) && (
         <div className="w-full max-w-[640px]">
-          <VikunjaTaskList tasks={vikunja.tasks} groupOrder={project.groupOrder} />
+          {/* View mode toggle — only show when Vikunja data available */}
+          {vikunja.total > 0 && (
+            <div className="flex gap-1.5 mb-4">
+              {(['labels', 'kanban', 'gantt'] as ViewMode[]).map(mode => (
+                <button
+                  key={mode}
+                  onClick={() => setViewMode(mode)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors"
+                  style={{
+                    background: viewMode === mode ? 'var(--color-accent)' : 'var(--color-surface-secondary)',
+                    color: viewMode === mode ? '#fff' : 'var(--color-content-muted)',
+                  }}
+                >
+                  {mode === 'labels' ? 'Labels' : mode === 'kanban' ? 'Kanban' : 'Gantt'}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* View content */}
+          {viewMode === 'labels' && (
+            vikunja.total > 0 ? (
+              <VikunjaTaskList tasks={vikunja.tasks} groupOrder={project.groupOrder} />
+            ) : (
+              <TaskList tasks={project.tasks} />
+            )
+          )}
+
+          {viewMode === 'kanban' && (
+            <KanbanBoard
+              buckets={kanban.buckets}
+              loading={kanban.loading}
+              error={kanban.error}
+            />
+          )}
+
+          {viewMode === 'gantt' && (
+            <GanttChart
+              tasks={vikunja.tasks}
+              loading={vikunja.loading}
+            />
+          )}
         </div>
-      ) : project.tasks.length > 0 ? (
-        <div className="w-full max-w-[640px]">
-          <TaskList tasks={project.tasks} />
-        </div>
-      ) : null}
+      )}
     </article>
   );
 }
