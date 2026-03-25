@@ -51,13 +51,13 @@ export function useVikunjaProject(projectId: number | undefined): VikunjaProject
         let page = 1;
         while (true) {
           const res = await fetch(
-            `${VIKUNJA_API}/projects/${projectId}/tasks?page=${page}&per_page=100`,
+            `${VIKUNJA_API}/projects/${projectId}/tasks?page=${page}&per_page=50`,
             { headers: { Authorization: `Bearer ${VIKUNJA_TOKEN}` } }
           );
           if (!res.ok) throw new Error(`Vikunja API error: ${res.status}`);
           const tasks: VikunjaTask[] = await res.json();
           allTasks.push(...tasks);
-          if (tasks.length < 100) break;
+          if (tasks.length < 50) break;
           page++;
         }
 
