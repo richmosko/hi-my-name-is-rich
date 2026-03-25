@@ -3,6 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { projects } from '../lib/projects';
 import { getProjectCompletion } from '../types';
 import ConstellationIcon from './ConstellationIcon';
+import { useVikunjaIssueCounts } from '../hooks/useVikunja';
 
 const navItems = [
   { label: 'Home', path: '/' },
@@ -26,6 +27,7 @@ export default function Sidebar() {
   const [prevPathname, setPrevPathname] = useState('');
   const sidebarRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
+  const { counts: issueCounts } = useVikunjaIssueCounts();
 
   // Close sidebar on route change (render-time state adjustment)
   if (location.pathname !== prevPathname) {
@@ -171,6 +173,7 @@ export default function Sidebar() {
               .filter((p) => p.status === 'active')
               .map((project) => {
                 const percent = getProjectCompletion(project);
+                const issues = project.vikunjaProjectId ? issueCounts[project.vikunjaProjectId] : null;
                 return (
                   <li key={project.id}>
                     <NavLink
@@ -182,8 +185,26 @@ export default function Sidebar() {
                         <span className="text-sm font-medium text-content truncate">
                           {project.name}
                         </span>
-                        <span className="text-xs font-medium text-content-muted tabular-nums ml-2">
-                          {percent}%
+                        <span className="flex items-center gap-1.5 ml-2 flex-shrink-0">
+                          {/* Issue badges */}
+                          {issues && issues.bug > 0 && (
+                            <span className="text-[10px] font-bold px-1 py-0 rounded-full" style={{ background: '#ef444422', color: '#ef4444' }}>
+                              {issues.bug}
+                            </span>
+                          )}
+                          {issues && issues.enhancement > 0 && (
+                            <span className="text-[10px] font-bold px-1 py-0 rounded-full" style={{ background: '#3b82f622', color: '#3b82f6' }}>
+                              {issues.enhancement}
+                            </span>
+                          )}
+                          {issues && issues.question > 0 && (
+                            <span className="text-[10px] font-bold px-1 py-0 rounded-full" style={{ background: '#a855f722', color: '#a855f7' }}>
+                              {issues.question}
+                            </span>
+                          )}
+                          <span className="text-xs font-medium text-content-muted tabular-nums">
+                            {percent}%
+                          </span>
                         </span>
                       </span>
                       {/* Mini progress bar */}
