@@ -46,16 +46,17 @@ export default config({
         featured: fields.checkbox({ label: 'Featured', defaultValue: false }),
         image: fields.text({
           label: 'Hero Image Path',
-          description: 'Path to image (e.g., /images/stock/my-photo.jpg). Leave empty for default.',
+          description: 'Path to existing image (e.g., /images/stock/my-photo.jpg). Leave empty for default. Use "Upload New Image" below to add a new image.',
         }),
-        imageAspectRatio: fields.select({
+        imageUpload: fields.image({
+          label: 'Upload New Image',
+          directory: 'public/images/stock',
+          publicPath: '/images/stock/',
+          description: 'Upload a new image — it will be committed to the repo. After uploading, copy the path to "Hero Image Path" above.',
+        }),
+        imageAspectRatio: fields.text({
           label: 'Image Aspect Ratio',
-          options: [
-            { label: '16:9 (default)', value: '16/9' },
-            { label: '4:3', value: '4/3' },
-            { label: '1:1', value: '1/1' },
-            { label: '21:9 (ultrawide)', value: '21/9' },
-          ],
+          description: 'Common ratios: 16/9 (default), 4/3, 1/1, 21/9, 6/4',
           defaultValue: '16/9',
         }),
         authorId: fields.text({
@@ -118,14 +119,17 @@ export default config({
         excerpt: fields.text({ label: 'Excerpt', multiline: true }),
         image: fields.text({
           label: 'Hero Image Path',
-          description: 'Path to image (e.g., /images/stock/my-project.jpg)',
+          description: 'Path to existing image (e.g., /images/stock/my-project.jpg). Use "Upload" below to add new.',
         }),
-        imageAspectRatio: fields.select({
+        imageUpload: fields.image({
+          label: 'Upload New Image',
+          directory: 'public/images/stock',
+          publicPath: '/images/stock/',
+          description: 'Upload a new image — committed to repo. Copy path to "Hero Image Path" after.',
+        }),
+        imageAspectRatio: fields.text({
           label: 'Image Aspect Ratio',
-          options: [
-            { label: '16:9', value: '16/9' },
-            { label: '21:9', value: '21/9' },
-          ],
+          description: 'Common ratios: 16/9, 4/3, 1/1, 21/9',
           defaultValue: '16/9',
         }),
         url: fields.url({ label: 'Project URL' }),
