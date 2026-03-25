@@ -131,8 +131,9 @@ function TaskList({ tasks }: { tasks: ProjectTask[] }) {
 }
 
 /** Group Vikunja tasks by label and render with collapsible sections */
-function VikunjaTaskList({ tasks }: { tasks: VikunjaTask[] }) {
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+function VikunjaTaskList({ tasks, groupOrder }: { tasks: VikunjaTask[]; groupOrder?: string[] }) {
+  // Start with all groups collapsed
+  const [collapsed, setCollapsed] = useState<Set<string> | null>(null);
 
   // Group tasks by first label (or "Ungrouped")
   const groups = new Map<string, { color: string; tasks: VikunjaTask[] }>();
@@ -144,11 +145,25 @@ function VikunjaTaskList({ tasks }: { tasks: VikunjaTask[] }) {
     groups.get(key)!.tasks.push(task);
   }
 
-  // Sort groups: put groups with incomplete tasks first, then by name
+  // Initialize all groups as collapsed on first render
+  if (collapsed === null && groups.size > 0) {
+    setCollapsed(new Set(groups.keys()));
+  }
+  const collapsedSet = collapsed ?? new Set<string>();
+
+  // Sort groups by groupOrder if provided, otherwise active-first then alphabetical
   const sorted = Array.from(groups.entries()).sort(([aKey, aVal], [bKey, bVal]) => {
+    if (groupOrder) {
+      const aIdx = groupOrder.indexOf(aKey);
+      const bIdx = groupOrder.indexOf(bKey);
+      // Items in groupOrder sort by their position; unlisted items go to the end
+      const aPos = aIdx >= 0 ? aIdx : groupOrder.length + 1;
+      const bPos = bIdx >= 0 ? bIdx : groupOrder.length + 1;
+      if (aPos !== bPos) return aPos - bPos;
+    }
+    // Fallback: active groups first, then alphabetical
     const aOpen = aVal.tasks.filter(t => !t.done).length;
     const bOpen = bVal.tasks.filter(t => !t.done).length;
-    // Active groups first (have open tasks)
     if (aOpen > 0 && bOpen === 0) return -1;
     if (aOpen === 0 && bOpen > 0) return 1;
     return aKey.localeCompare(bKey);
@@ -156,7 +171,7 @@ function VikunjaTaskList({ tasks }: { tasks: VikunjaTask[] }) {
 
   const toggle = (key: string) => {
     setCollapsed(prev => {
-      const next = new Set(prev);
+      const next = new Set(prev ?? []);
       if (next.has(key)) next.delete(key); else next.add(key);
       return next;
     });
@@ -169,7 +184,7 @@ function VikunjaTaskList({ tasks }: { tasks: VikunjaTask[] }) {
         const done = groupTasks.filter(t => t.done).length;
         const total = groupTasks.length;
         const pct = Math.round((done / total) * 100);
-        const isCollapsed = collapsed.has(groupName);
+        const isCollapsed = collapsedSet.has(groupName);
         const allDone = done === total;
 
         return (
@@ -380,7 +395,7 @@ export default function ProjectDetail() {
       {/* Task list — Vikunja live data when available, otherwise static MDX */}
       {vikunja.total > 0 ? (
         <div className="w-full max-w-[640px]">
-          <VikunjaTaskList tasks={vikunja.tasks} />
+          <VikunjaTaskList tasks={vikunja.tasks} groupOrder={project.groupOrder} />
         </div>
       ) : project.tasks.length > 0 ? (
         <div className="w-full max-w-[640px]">

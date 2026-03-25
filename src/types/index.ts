@@ -51,6 +51,7 @@ export interface Project {
   startDate?: string;
   completedDate?: string;
   vikunjaProjectId?: number;
+  groupOrder?: string[];
   tasks: ProjectTask[];
   content?: React.ComponentType<{ components?: MDXComponents }>;
 }
