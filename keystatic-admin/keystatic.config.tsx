@@ -2,12 +2,20 @@
 import { config, collection, fields } from '@keystatic/core';
 import { block, mark } from '@keystatic/core/content-components';
 
+// Use local mode during build (no GitHub credentials needed).
+// At runtime, GitHub mode activates when the env vars are present.
+const hasGitHubConfig = typeof process !== 'undefined' &&
+  process.env?.KEYSTATIC_GITHUB_CLIENT_ID &&
+  process.env?.KEYSTATIC_GITHUB_CLIENT_SECRET;
+
 export default config({
-  storage: {
-    kind: 'github',
-    repo: 'richmosko/hi-my-name-is-rich',
-    branchPrefix: 'keystatic/',
-  },
+  storage: hasGitHubConfig
+    ? {
+        kind: 'github',
+        repo: 'richmosko/hi-my-name-is-rich',
+        branchPrefix: 'keystatic/',
+      }
+    : { kind: 'local' },
 
   collections: {
     posts: collection({
