@@ -20,6 +20,15 @@ const projectSlugs = new Set(
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    proxy: {
+      // Proxy Keystatic API requests to the local Keystatic server
+      '/api/keystatic': {
+        target: 'http://localhost:3333',
+        changeOrigin: true,
+      },
+    },
+  },
   plugins: [
     mdx({
       remarkPlugins: [
