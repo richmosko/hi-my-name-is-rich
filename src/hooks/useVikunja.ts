@@ -213,3 +213,78 @@ export function useVikunjaRecentTasks(limit = 50): {
 
   return state;
 }
+
+const ISSUE_LABELS = ['bug', 'enhancement', 'question'] as const;
+type IssueType = typeof ISSUE_LABELS[number];
+
+export interface ProjectIssueCounts {
+  [projectId: number]: {
+    bug: number;
+    enhancement: number;
+    question: number;
+    total: number;
+  };
+}
+
+/**
+ * Fetch open issue counts (bug/enhancement/question) for all projects.
+ * Returns a map of projectId → { bug, enhancement, question, total }.
+ * Only counts open (not done) tasks.
+ */
+export function useVikunjaIssueCounts(): {
+  counts: ProjectIssueCounts;
+  loading: boolean;
+} {
+  const [state, setState] = useState<{ counts: ProjectIssueCounts; loading: boolean }>({
+    counts: {}, loading: !!(VIKUNJA_HOST && VIKUNJA_TOKEN),
+  });
+
+  useEffect(() => {
+    if (!VIKUNJA_HOST || !VIKUNJA_TOKEN) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        // Fetch all open tasks across all projects
+        const allTasks: VikunjaTask[] = [];
+        let page = 1;
+        while (true) {
+          const res = await fetch(
+            `${VIKUNJA_API}/tasks/all?sort_by=id&order_by=asc&page=${page}&per_page=50&filter=done&filter_value=false`,
+            { headers: { Authorization: `Bearer ${VIKUNJA_TOKEN}` } }
+          );
+          if (!res.ok) break;
+          const tasks: VikunjaTask[] = await res.json();
+          allTasks.push(...tasks);
+          if (tasks.length < 50) break;
+          page++;
+        }
+
+        if (cancelled) return;
+
+        // Count issues by project and label
+        const counts: ProjectIssueCounts = {};
+        for (const task of allTasks) {
+          if (task.done) continue;
+          const projectId = task.project_id;
+          for (const label of task.labels || []) {
+            if (ISSUE_LABELS.includes(label.title as IssueType)) {
+              if (!counts[projectId]) counts[projectId] = { bug: 0, enhancement: 0, question: 0, total: 0 };
+              counts[projectId][label.title as IssueType]++;
+              counts[projectId].total++;
+            }
+          }
+        }
+
+        if (!cancelled) setState({ counts, loading: false });
+      } catch {
+        if (!cancelled) setState({ counts: {}, loading: false });
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, []);
+
+  return state;
+}
