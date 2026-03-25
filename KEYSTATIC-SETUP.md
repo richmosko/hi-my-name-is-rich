@@ -346,39 +346,79 @@ Add an A record in Cloudflare:
    - **Port**: `4444`
    - **Domain**: `edit.himynameisrich.com`
 
-### Step 3: Create GitHub App for Keystatic
+### Step 3: Create a GitHub App (Manual Setup)
 
-1. Deploy the app first (it will show an error page — that's OK)
-2. Visit `https://edit.himynameisrich.com/keystatic`
-3. Keystatic will show a setup wizard — click **"Create GitHub App"**
-4. Enter:
-   - **Deployment URL**: `https://edit.himynameisrich.com`
-   - **Organization**: (leave empty for personal account)
-5. Follow GitHub's app creation flow
-6. Grant the app access to the `hi-my-name-is-rich` repo
+The auto-wizard requires credentials that don't exist yet — so create the GitHub App manually:
 
-### Step 4: Configure Environment Variables
+1. Go to: `https://github.com/settings/apps/new`
+2. Fill in:
+   - **GitHub App name**: `himynameisrich-keystatic` (must be globally unique on GitHub)
+   - **Homepage URL**: `https://edit.himynameisrich.com`
+   - **Callback URL**: `https://edit.himynameisrich.com/api/keystatic/github/oauth/callback`
+   - **Request user authorization (OAuth) during installation**: ✅ Checked
+   - **Webhook**: ❌ Uncheck "Active" (not needed)
+3. **Permissions** (Repository permissions):
+   - **Contents**: Read & Write (for reading/writing MDX files)
+   - **Pull requests**: Read & Write (for draft mode branch PRs)
+4. **Where can this GitHub App be installed?**: Only on this account
+5. Click **Create GitHub App**
 
-After creating the GitHub App, Keystatic provides credentials. Add them in Coolify as **build + runtime variables**:
+### Step 4: Collect Credentials
 
-| Variable | Source |
-|----------|--------|
-| `KEYSTATIC_GITHUB_CLIENT_ID` | GitHub App credentials |
-| `KEYSTATIC_GITHUB_CLIENT_SECRET` | GitHub App credentials |
-| `KEYSTATIC_SECRET` | Generate with `openssl rand -base64 32` |
-| `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | The slug of your GitHub App (shown in the URL) |
+After creating the app:
 
-### Step 5: Redeploy
+1. **Client ID** — shown at the top of the app settings page
+2. **Client Secret** — click **Generate a new client secret** (copy it immediately, it's only shown once)
+3. **App Slug** — from the URL: `github.com/settings/apps/{this-is-the-slug}`
+4. **Keystatic Secret** — generate locally:
+   ```bash
+   openssl rand -hex 32
+   ```
 
-Redeploy the Coolify application so it picks up the environment variables.
+### Step 5: Install the App on Your Repo
 
-### Step 6: Test
+1. On the GitHub App settings page, click **Install App** (left sidebar)
+2. Select your GitHub account
+3. Choose **Only select repositories** → `richmosko/hi-my-name-is-rich`
+4. Click **Install**
 
-1. Visit `https://edit.himynameisrich.com`
-2. You'll be redirected to GitHub OAuth login
-3. After authenticating, you should see the Keystatic admin with all your posts
-4. Try editing a post and saving — it should commit to GitHub
-5. Check that Coolify auto-deploys the blog
+### Step 6: Set Environment Variables in Coolify
+
+Go to the **Keystatic admin** application in Coolify > **Environment Variables** and add:
+
+| Variable | Value | Type |
+|----------|-------|------|
+| `KEYSTATIC_GITHUB_CLIENT_ID` | Your GitHub App Client ID | Build + Runtime |
+| `KEYSTATIC_GITHUB_CLIENT_SECRET` | Your GitHub App Client Secret | Build + Runtime |
+| `KEYSTATIC_SECRET` | The hex string from Step 4 | Build + Runtime |
+| `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | The app slug from Step 4 | Build + Runtime |
+
+**Important:** These must be set as **both Build AND Runtime** variables:
+- **Build time**: The Next.js build validates that the GitHub config is present
+- **Runtime**: The server uses them to handle OAuth callbacks and API requests
+
+### Step 7: Redeploy
+
+Redeploy the Keystatic admin application in Coolify.
+
+### Step 8: Test
+
+1. Visit `https://edit.himynameisrich.com/keystatic`
+2. You should see a **Sign in with GitHub** button
+3. Click it — GitHub OAuth flow redirects you to authorize the app
+4. After authenticating, you should see the Keystatic admin UI with all your blog posts and projects listed
+5. Try editing a post and saving — it should create a commit on your GitHub repo
+6. Check that Coolify auto-deploys the blog frontend
+
+**If you see "Missing required config" errors:**
+- Verify all 4 environment variables are set in Coolify
+- Make sure they're set as both Build and Runtime variables
+- Redeploy after adding/changing any variable
+
+**If you see an empty page with no posts:**
+- You're likely still in local mode — the environment variables aren't being picked up
+- Check the Coolify build logs for the `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` value
+- The `NEXT_PUBLIC_` prefix is required for Next.js to expose it to the client
 
 ### Draft / Branch Workflow
 
@@ -414,13 +454,16 @@ The config uses `branchPrefix: 'keystatic/'`, which enables:
 - Created `keystatic-admin/` Next.js app for GitHub mode
 - Dockerfile for Coolify deployment
 - DNS setup for `edit.himynameisrich.com`
-- GitHub App creation and OAuth configuration
+- GitHub App creation and OAuth configuration (manual steps documented)
+- ⚠️ **Lesson learned**: Keystatic's `fields.image()` can embed binary data as `!!binary` in YAML frontmatter (instead of saving to disk), causing the blog bundle to balloon from 1.2MB to 6.5MB and crash with `Buffer is not defined`. Fixed by clearing the binary data and using text-based image paths.
 
 **Phase 4 — Polish** (Pending)
+- Set up GitHub App with credentials (Steps 3-8 above)
 - Test full edit → commit → deploy workflow
 - Test draft/branch workflow
 - Verify all field types work in GitHub mode
-- Image handling refinements
+- Image handling: use text field for image paths (avoids binary embedding issue)
+- Test image uploads in GitHub mode (should save as file commits, not binary)
 
 ## Decisions Log
 
