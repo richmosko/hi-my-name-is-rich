@@ -1,0 +1,11 @@
+{
+  "categories": [
+    { "id": "travel", "label": "Travel", "description": "Stories and photos from places near and far.", "color": "emerald" },
+    { "id": "design", "label": "Design", "description": "Thoughts on visual design, systems, and craft.", "color": "purple" },
+    { "id": "finance", "label": "Finance", "description": "Thoughts on money, investing, and financial independence.", "color": "amber" },
+    { "id": "projects", "label": "Projects", "description": "What I'm working on in my free time.", "color": "sky" },
+    { "id": "musings", "label": "Musings", "description": "Thoughts on life and the human condition.", "color": "rose" },
+    { "id": "cool-shit", "label": "Cool Shit", "description": "Just cool shit I've seen lately.", "color": "orange" },
+    { "id": "food", "label": "Food", "description": "Tinkering with tastes.", "color": "lime" }
+  ]
+}

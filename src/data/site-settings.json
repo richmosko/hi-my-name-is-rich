@@ -1,0 +1,18 @@
+{
+  "siteTitle": "Hi, My Name Is Rich",
+  "siteTagline": "A personal blog about travel, design, and projects",
+  "siteUrl": "https://himynameisrich.com",
+  "profileImage": "/images/profiles/profile-rich-watercolor-bg.png",
+  "defaultHeroImage": "/images/stock/northern-lights-snowy-mountains.jpg",
+  "featuredPostCount": 3,
+  "metaDescription": "A personal blog by Rich Mosko about travel, design, projects, and life.",
+  "ogImage": "/images/profiles/profile-rich-watercolor-bg.png",
+  "footerText": "© {year} Rich",
+  "adminLinks": [
+    { "name": "Keystatic CMS", "url": "https://edit.himynameisrich.com/keystatic", "description": "Create and edit posts & projects" },
+    { "name": "Vikunja Tasks", "url": "https://tasks.himynameisrich.com", "description": "Bug tracking, task management" },
+    { "name": "Coolify Dashboard", "url": "https://coolify.himynameisrich.com", "description": "Deployments and services" },
+    { "name": "Cloudflare Analytics", "url": "https://dash.cloudflare.com", "description": "Traffic and bandwidth" },
+    { "name": "GitHub Repo", "url": "https://github.com/richmosko/hi-my-name-is-rich", "description": "Source code and PRs" }
+  ]
+}
