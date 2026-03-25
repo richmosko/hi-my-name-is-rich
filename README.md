@@ -169,6 +169,52 @@ Optional rich MDX body content here — supports markdown, React components, gal
 - **External URL** shown as "Visit Project" link when set (hidden if `"#"`)
 - **MDX body** renders on the detail page (supports all MDX components)
 
+## Vikunja Task Manager Integration
+
+Live task data from [Vikunja](https://vikunja.io/) (self-hosted) powers project tracking on the blog.
+
+- **Live progress** — project completion percentages and task counts fetched from Vikunja API via nginx proxy (avoids CORS)
+- **Recursive sub-projects** — tasks from nested sub-projects are aggregated automatically
+- **Label-based grouping** — tasks grouped by Vikunja labels with colored progress bars and collapsible sections
+- **Custom group order** — `groupOrder` in MDX frontmatter controls display sequence (e.g., construction phases)
+- **Issue badges** — tasks labeled `bug` (red), `enhancement` (blue), or `question` (purple) show as badges on project cards; excluded from progress calculations
+- **Four view modes** on project detail pages:
+  - **Labels** — tasks grouped by label with collapsible sections and per-group progress (640px)
+  - **Pending** — flat list of unfinished tasks only, with label pills (640px)
+  - **Kanban** — bucket columns from Vikunja's Kanban view (1250px)
+  - **Gantt** — timeline chart placeholder for tasks with dates (1250px)
+- **Changelog** — `/changelog` page auto-generates a list of recently completed tasks, grouped by month and day
+- **Fallback** — when `vikunjaProjectId` is not set or Vikunja is unavailable, falls back to static MDX task data
+- See [`VIKUNJA-SETUP.md`](./VIKUNJA-SETUP.md) for deployment and API integration details
+
+## Dark Mode
+
+- **Toggle** via sun/moon icon in the TopBar header
+- **Persists** via `localStorage` — survives page reloads and sessions
+- **System preference** — respects `prefers-color-scheme: dark` on first visit
+- **CSS custom properties** — all design tokens have dark variants defined in `src/index.css`
+- **Remark42 sync** — comment widget switches between light/dark theme automatically
+- **Constellation** — graph background, edges, and labels adapt to theme
+
+## Admin Dashboard
+
+The `/admin` page (not linked in navigation — access via URL) provides:
+
+- **Comment activity** from Remark42 via bridge iframe (same-origin authenticated)
+- **Tabs**: Recent Comments (last 50), Posts by comment count, Blocked Users, Moderate
+- **Moderate tab** — quick links to posts with comments for inline moderation
+- **Cloudflare dashboard link** for traffic analytics
+- **Refresh button** to reload data
+
+## Mobile Responsive
+
+- **Breadcrumbs hidden** on screens < 640px to prevent icon overlap
+- **Sort/filter controls** stack vertically on mobile
+- **Sidebar** and search panel scrollable on small screens (`overflow-y-auto`)
+- **Constellation** uses `touch-action: none` to prevent page scroll during pan/pinch
+- **Constellation auto-fit** — graph scales to viewport with aspect-ratio-aware zoom
+- **Featured posts** stack vertically on mobile
+
 ## Comments (Remark42)
 
 Posts include a comments section powered by [Remark42](https://remark42.com/), a self-hosted comment engine.
@@ -455,5 +501,6 @@ See deployment guides:
 - **Content as code**: Posts and projects live in the repo as `.mdx` files. Creating, editing, and publishing is just a git commit. The Obsidian vault config in `src/content/posts/.obsidian/` lets you use Obsidian as a WYSIWYG editor with live preview. Wikilinks work in both Obsidian and the blog (with or without `.mdx` extension).
 - **Full-text search**: A build-time script extracts plain text from all MDX posts into `search-index.json`. The search function uses word-boundary regex matching on the index to avoid substring false positives, plus substring matching on titles/excerpts/tags.
 - **Gallery manifests**: Since Vite can't list directory contents at runtime, each gallery uses a `manifest.json` that maps filenames to metadata. The `generate-galleries` script automates creation and preserves hand-edited alt text and captions.
-- **Project tracking**: Projects use the same MDX + frontmatter pattern as posts. Completion percentages are derived at render time from task data. Tasks optionally support grouping for hierarchical organization. Individual project detail pages mirror the post detail pattern.
-- **Pre-commit workflow**: `npm run precommit` ensures read times, search index, gallery manifests, and lint are all up to date before committing.
+- **Project tracking**: Projects use MDX + frontmatter for static data and Vikunja for live task tracking. When `vikunjaProjectId` is set, `useVikunjaProject` recursively fetches tasks from sub-projects, groups by label, and computes progress — excluding issue-tracking labels (bug/enhancement/question). The nginx proxy (`/api/vikunja/`) forwards requests to the Vikunja server same-origin to avoid CORS.
+- **Dark mode**: Theme state managed via `useTheme` context with `localStorage` persistence. All design tokens have dark variants as CSS custom properties in `:root.dark`. The Remark42 comment widget receives theme changes via `window.REMARK42.changeTheme()`.
+- **Pre-commit workflow**: `npm run precommit` ensures read times, search index, gallery manifests, graph index, frontmatter validation, and lint are all up to date before committing.
