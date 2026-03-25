@@ -29,6 +29,8 @@ A personal blog built with React, TypeScript, Vite, and Tailwind CSS. Posts are 
 | `/cool-shit` | Cool Shit | Posts filtered by category |
 | `/food` | Food | Posts filtered by category |
 | `/post/:slug` | Post Detail | Full post content with hero image, metadata, tags, MDX body, and Previous/Next navigation |
+| `/changelog` | Changelog | Auto-generated list of recently completed tasks from Vikunja, grouped by month/day |
+| `/admin` | Admin | Comment activity dashboard (Remark42), moderation links, Cloudflare analytics link |
 | `/constellation` | Constellation | Interactive star map showing how all posts relate through links, tags, and categories |
 
 ## Constellation Graph
@@ -133,6 +135,11 @@ url: "https://github.com/user/project"
 status: active          # or 'completed'
 startDate: 2026-03-01
 completedDate: 2026-06-15  # only for completed projects
+vikunjaProjectId: 33    # optional — links to Vikunja for live task data
+groupOrder:             # optional — custom display order for task label groups
+  - Design
+  - Foundation
+  - Launch
 tasks:
   - title: "First task"
     completed: true
@@ -152,8 +159,11 @@ Optional rich MDX body content here — supports markdown, React components, gal
 
 - **Individual project pages** at `/project/:id` with full MDX content, hero image, and task list
 - **Projects list** (`/projects`) shows cards with expand/collapse for excerpt and tasks
-- **Completion %** is derived automatically from `completed` tasks vs total tasks
+- **Completion %** is derived from Vikunja live data when `vikunjaProjectId` is set, otherwise from MDX `completed` fields
 - **Task groups** are optional — add `group:` to organize tasks under headings with per-group sub-counts
+- **Vikunja integration** — when `vikunjaProjectId` is set, project pages fetch live task data from Vikunja, grouped by label with collapsible sections and colored progress bars
+- **Custom group order** — define `groupOrder` array in frontmatter to control display order (e.g., construction phases for a house build)
+- **Changelog** — `/changelog` page auto-generates a list of recently completed tasks from Vikunja, grouped by month and day
 - **Sidebar** shows only active projects with mini progress bars, linking to individual project pages
 - **Hero images** display at 1250px width on project detail pages
 - **External URL** shown as "Visit Project" link when set (hidden if `"#"`)
@@ -200,6 +210,10 @@ src/
   data/
     authors.ts          # Author profiles (id, name, avatar, bio, socials)
     categories.ts       # Category definitions, labels, colors, descriptions
+  hooks/
+    useTheme.tsx        # Dark/light theme context with localStorage persistence
+    useVikunja.ts       # Vikunja API integration — recursive project/task fetching
+    useConstellationControls.tsx  # Shared state for constellation graph settings
   lib/
     dateUtils.ts        # Local timezone date parsing to avoid UTC off-by-one bugs
     posts.ts            # Data access layer — loads all post .mdx via import.meta.glob
@@ -212,6 +226,8 @@ src/
     About.tsx           # Bio, interests, category cards with lightbox
     Contributors.tsx    # Author cards with avatar lightbox, bios, social links
     Constellation.tsx   # Interactive star constellation graph of post relationships
+    Changelog.tsx       # Auto-generated changelog from Vikunja completed tasks
+    Admin.tsx           # Comment activity dashboard + moderation links
     PostsList.tsx       # Category + tag filters, search-filtered post list (640px centered)
     PostDetail.tsx      # Full post view with hero image, lightbox, MDX rendering, prev/next nav
     ProjectsPage.tsx    # Project cards with expand/collapse (640px centered, 1250px hero)
@@ -430,6 +446,7 @@ See deployment guides:
 - [`REMARK42-SETUP.md`](./REMARK42-SETUP.md) — Comment system
 - [`HETZNER-SERVER-SETUP.md`](./HETZNER-SERVER-SETUP.md) — Server provisioning
 - [`CLOUDFLARE-CDN-SETUP.md`](./CLOUDFLARE-CDN-SETUP.md) — CDN setup
+- [`VIKUNJA-SETUP.md`](./VIKUNJA-SETUP.md) — Task manager setup and API integration
 
 ## Architecture Notes
 
