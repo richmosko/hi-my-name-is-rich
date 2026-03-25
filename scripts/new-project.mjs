@@ -39,6 +39,8 @@ excerpt: ""
 image: ""
 imageAspectRatio: "16/9"
 url: "#"
+authorId:
+  - rich
 status: active
 startDate: ${today}
 tasks:

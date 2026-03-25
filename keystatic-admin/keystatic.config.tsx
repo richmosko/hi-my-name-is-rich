@@ -60,10 +60,14 @@ export default config({
           description: 'Common ratios: 16/9 (default), 4/3, 1/1, 21/9, 6/4',
           defaultValue: '16/9',
         }),
-        authorId: fields.text({
+        authorId: fields.multiselect({
           label: 'Author(s)',
-          description: 'Single author: "rich" or multiple: ["rich","claude"]. Options: rich, claude, keith',
-          defaultValue: 'rich',
+          options: [
+            { label: 'Rich', value: 'rich' },
+            { label: 'Claude', value: 'claude' },
+            { label: 'Keith', value: 'keith' },
+          ],
+          defaultValue: ['rich'],
         }),
         tags: fields.array(fields.text({ label: 'Tag' }), {
           label: 'Tags',
@@ -133,6 +137,15 @@ export default config({
           label: 'Image Aspect Ratio',
           description: 'Common ratios: 16/9, 4/3, 1/1, 21/9',
           defaultValue: '16/9',
+        }),
+        authorId: fields.multiselect({
+          label: 'Author(s)',
+          options: [
+            { label: 'Rich', value: 'rich' },
+            { label: 'Claude', value: 'claude' },
+            { label: 'Keith', value: 'keith' },
+          ],
+          defaultValue: ['rich'],
         }),
         url: fields.url({ label: 'Project URL' }),
         status: fields.select({
