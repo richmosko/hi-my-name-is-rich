@@ -11,6 +11,7 @@ import PostDetail from './pages/PostDetail';
 import Contributors from './pages/Contributors';
 import Constellation from './pages/Constellation';
 import Admin from './pages/Admin';
+import Changelog from './pages/Changelog';
 
 export default function App() {
   return (
@@ -58,6 +59,7 @@ export default function App() {
           <Route path="project/:id" element={<ProjectDetail />} />
           <Route path="post/:slug" element={<PostDetail />} />
           <Route path="admin" element={<Admin />} />
+          <Route path="changelog" element={<Changelog />} />
         </Route>
       </Routes>
       </ConstellationProvider>
