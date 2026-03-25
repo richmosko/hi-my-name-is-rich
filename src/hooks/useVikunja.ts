@@ -15,7 +15,18 @@ export interface VikunjaTask {
   updated: string;
   priority: number;
   project_id: number;
+  bucket_id: number;
+  start_date: string;
+  end_date: string;
+  due_date: string;
+  percent_done: number;
   labels: { id: number; title: string; hex_color: string }[];
+}
+
+export interface VikunjaBucket {
+  id: number;
+  title: string;
+  tasks: VikunjaTask[];
 }
 
 interface VikunjaProject {
@@ -297,6 +308,63 @@ export function useVikunjaIssueCounts(): {
 
     return () => { cancelled = true; };
   }, []);
+
+  return state;
+}
+
+export interface VikunjaKanbanData {
+  buckets: VikunjaBucket[];
+  loading: boolean;
+  error: string | null;
+}
+
+/** Fetch Kanban buckets with tasks for a project */
+export function useVikunjaKanban(projectId: number | undefined): VikunjaKanbanData {
+  const [state, setState] = useState<VikunjaKanbanData>({
+    buckets: [], loading: !!projectId, error: null,
+  });
+
+  useEffect(() => {
+    if (!projectId || !VIKUNJA_HOST || !VIKUNJA_TOKEN) {
+      setState({ buckets: [], loading: false, error: null });
+      return;
+    }
+
+    let cancelled = false;
+    setState(s => ({ ...s, loading: true, error: null }));
+
+    (async () => {
+      try {
+        // Fetch project to find the Kanban view ID
+        const projectRes = await fetch(
+          `${VIKUNJA_API}/projects/${projectId}`,
+          { headers: { Authorization: `Bearer ${VIKUNJA_TOKEN}` } }
+        );
+        if (!projectRes.ok) throw new Error(`Failed to fetch project: ${projectRes.status}`);
+        const project = await projectRes.json();
+        const kanbanView = (project.views || []).find(
+          (v: { view_kind: string }) => v.view_kind === 'kanban'
+        );
+        if (!kanbanView) throw new Error('No Kanban view found for this project');
+
+        // Fetch buckets with tasks
+        const bucketsRes = await fetch(
+          `${VIKUNJA_API}/projects/${projectId}/views/${kanbanView.id}/tasks`,
+          { headers: { Authorization: `Bearer ${VIKUNJA_TOKEN}` } }
+        );
+        if (!bucketsRes.ok) throw new Error(`Failed to fetch buckets: ${bucketsRes.status}`);
+        const buckets: VikunjaBucket[] = await bucketsRes.json();
+
+        if (!cancelled) setState({ buckets, loading: false, error: null });
+      } catch (err) {
+        if (!cancelled) {
+          setState({ buckets: [], loading: false, error: err instanceof Error ? err.message : 'Failed to fetch' });
+        }
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [projectId]);
 
   return state;
 }
