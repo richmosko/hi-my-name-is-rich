@@ -240,7 +240,7 @@ function VikunjaTaskList({ tasks, groupOrder }: { tasks: VikunjaTask[]; groupOrd
   );
 }
 
-type ViewMode = 'labels' | 'kanban' | 'gantt';
+type ViewMode = 'labels' | 'pending' | 'kanban' | 'gantt';
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
@@ -400,23 +400,26 @@ export default function ProjectDetail() {
 
       {/* Task views — toggle between Labels, Kanban, Gantt */}
       {(vikunja.total > 0 || project.tasks.length > 0) && (
-        <div className={`w-full ${viewMode === 'labels' ? 'max-w-[640px]' : 'max-w-[1250px]'} transition-all duration-300`}>
+        <div className={`w-full ${viewMode === 'labels' || viewMode === 'pending' ? 'max-w-[640px]' : 'max-w-[1250px]'} transition-all duration-300`}>
           {/* View mode toggle — only show when Vikunja data available */}
           {vikunja.total > 0 && (
             <div className="flex gap-1.5 mb-4 justify-center">
-              {(['labels', 'kanban', 'gantt'] as ViewMode[]).map(mode => (
-                <button
-                  key={mode}
-                  onClick={() => setViewMode(mode)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors"
-                  style={{
-                    background: viewMode === mode ? 'var(--color-accent)' : 'var(--color-surface-secondary)',
-                    color: viewMode === mode ? '#fff' : 'var(--color-content-muted)',
-                  }}
-                >
-                  {mode === 'labels' ? 'Labels' : mode === 'kanban' ? 'Kanban' : 'Gantt'}
-                </button>
-              ))}
+              {(['labels', 'pending', 'kanban', 'gantt'] as ViewMode[]).map(mode => {
+                const label = { labels: 'Labels', pending: 'Pending', kanban: 'Kanban', gantt: 'Gantt' }[mode];
+                return (
+                  <button
+                    key={mode}
+                    onClick={() => setViewMode(mode)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors"
+                    style={{
+                      background: viewMode === mode ? 'var(--color-accent)' : 'var(--color-surface-secondary)',
+                      color: viewMode === mode ? '#fff' : 'var(--color-content-muted)',
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
           )}
 
@@ -426,6 +429,40 @@ export default function ProjectDetail() {
               <VikunjaTaskList tasks={vikunja.tasks} groupOrder={project.groupOrder} />
             ) : (
               <TaskList tasks={project.tasks} />
+            )
+          )}
+
+          {viewMode === 'pending' && (
+            vikunja.total > 0 ? (
+              <div className="flex flex-col gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-content-muted">
+                  Pending &middot; {vikunja.open}
+                </p>
+                <ul className="flex flex-col gap-1.5">
+                  {vikunja.tasks
+                    .filter(t => !t.done)
+                    .map(task => (
+                      <li key={task.id} className="flex items-center gap-2.5">
+                        <span className="shrink-0 w-4 h-4 rounded flex items-center justify-center border border-edge bg-surface-secondary" />
+                        <span className="text-sm text-content">{task.title}</span>
+                        {(task.labels || []).map(l => (
+                          <span
+                            key={l.id}
+                            className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                            style={{ backgroundColor: `#${l.hex_color}22`, color: `#${l.hex_color}` }}
+                          >
+                            {l.title}
+                          </span>
+                        ))}
+                      </li>
+                    ))}
+                </ul>
+                {vikunja.open === 0 && (
+                  <p className="text-sm text-content-muted py-4 text-center">All tasks complete!</p>
+                )}
+              </div>
+            ) : (
+              <TaskList tasks={project.tasks.filter(t => !t.completed)} />
             )
           )}
 
