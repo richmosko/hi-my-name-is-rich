@@ -3,8 +3,9 @@ import { projects } from '../lib/projects';
 import { getProjectCompletion } from '../types';
 import { mdxComponents } from '../components/MdxComponents';
 import { parseLocalDate } from '../lib/dateUtils';
-import { useVikunjaProject } from '../hooks/useVikunja';
+import { useVikunjaProject, type VikunjaTask } from '../hooks/useVikunja';
 import type { ProjectTask } from '../types';
+import { useState } from 'react';
 
 const VIKUNJA_HOST = import.meta.env.VITE_VIKUNJA_HOST || '';
 
@@ -125,6 +126,99 @@ function TaskList({ tasks }: { tasks: ProjectTask[] }) {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/** Group Vikunja tasks by label and render with collapsible sections */
+function VikunjaTaskList({ tasks }: { tasks: VikunjaTask[] }) {
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+
+  // Group tasks by first label (or "Ungrouped")
+  const groups = new Map<string, { color: string; tasks: VikunjaTask[] }>();
+  for (const task of tasks) {
+    const label = task.labels?.[0];
+    const key = label?.title || 'Ungrouped';
+    const color = label?.hex_color || '888888';
+    if (!groups.has(key)) groups.set(key, { color, tasks: [] });
+    groups.get(key)!.tasks.push(task);
+  }
+
+  // Sort groups: put groups with incomplete tasks first, then by name
+  const sorted = Array.from(groups.entries()).sort(([aKey, aVal], [bKey, bVal]) => {
+    const aOpen = aVal.tasks.filter(t => !t.done).length;
+    const bOpen = bVal.tasks.filter(t => !t.done).length;
+    // Active groups first (have open tasks)
+    if (aOpen > 0 && bOpen === 0) return -1;
+    if (aOpen === 0 && bOpen > 0) return 1;
+    return aKey.localeCompare(bKey);
+  });
+
+  const toggle = (key: string) => {
+    setCollapsed(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  };
+
+  return (
+    <div className="space-y-3">
+      <h3 className="text-lg font-semibold text-content">Tasks</h3>
+      {sorted.map(([groupName, { color, tasks: groupTasks }]) => {
+        const done = groupTasks.filter(t => t.done).length;
+        const total = groupTasks.length;
+        const pct = Math.round((done / total) * 100);
+        const isCollapsed = collapsed.has(groupName);
+        const allDone = done === total;
+
+        return (
+          <div key={groupName} className="rounded-xl overflow-hidden border border-edge">
+            <button
+              onClick={() => toggle(groupName)}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-left cursor-pointer hover:bg-surface-secondary/50 transition-colors"
+            >
+              <span
+                className="w-3 h-3 rounded-full flex-shrink-0"
+                style={{ background: `#${color}` }}
+              />
+              <span className={`font-medium text-sm flex-1 ${allDone ? 'text-content-muted' : 'text-content'}`}>
+                {groupName}
+              </span>
+              <span className="text-xs text-content-muted tabular-nums">
+                {done}/{total}
+              </span>
+              <div className="w-16 h-1.5 rounded-full bg-surface-secondary overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${allDone ? 'bg-emerald-500' : 'bg-accent'}`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              <svg
+                className={`w-4 h-4 text-content-muted transition-transform ${isCollapsed ? '' : 'rotate-180'}`}
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {!isCollapsed && (
+              <div className="px-4 pb-3 space-y-1">
+                {groupTasks.map(task => (
+                  <div key={task.id} className="flex items-center gap-2 py-1">
+                    <span className={`text-xs ${task.done ? 'text-emerald-500' : 'text-content-muted'}`}>
+                      {task.done ? '✓' : '○'}
+                    </span>
+                    <span className={`text-sm ${task.done ? 'text-content-muted line-through' : 'text-content-secondary'}`}>
+                      {task.title}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -283,12 +377,16 @@ export default function ProjectDetail() {
         </div>
       )}
 
-      {/* Task list */}
-      {project.tasks.length > 0 && (
+      {/* Task list — Vikunja live data when available, otherwise static MDX */}
+      {vikunja.total > 0 ? (
+        <div className="w-full max-w-[640px]">
+          <VikunjaTaskList tasks={vikunja.tasks} />
+        </div>
+      ) : project.tasks.length > 0 ? (
         <div className="w-full max-w-[640px]">
           <TaskList tasks={project.tasks} />
         </div>
-      )}
+      ) : null}
     </article>
   );
 }

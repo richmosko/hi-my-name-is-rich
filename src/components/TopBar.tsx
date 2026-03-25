@@ -24,6 +24,7 @@ const routeLabels: Record<string, string> = {
   '/constellation': 'Constellation',
   '/contributors': 'Contributors',
   '/admin': 'Admin',
+  '/changelog': 'Changelog',
 };
 
 function Slider({ label, value, min, max, step, onChange }: {
