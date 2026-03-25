@@ -6,7 +6,7 @@ readTime: "1 min read"
 categories:
   - musings
   - cool-shit
-featured: true
+featured: false
 image: >-
   /images/stock/cyberpunk-city-street-night-with-neon-lights-futuristic-aesthetic.jpg
 imageAspectRatio: 16/9
@@ -17,8 +17,19 @@ tags:
 ---
 # Giving it a go…
 
-So far so good.
+So far so good. I've integrated Keystatic CMS to the site (well Claude did anyway), so that I have the ability to add posts directly from a portal on the web site. It seems to be working well… and the interface seems pretty clean. I just pull up the [portal](https://edit.himynameisrich.com), add a new blog entry, and voíla! All the frontmatter fields are there to the right to edit and a (sort of) WYSIWYG editor sits in the main part of the browser frame. It's pretty easy. You can even upload a new image file while you are at it, and it will use a GitHub App to add and commit that file to the repository.
 
-Now getting more fancy:
+The mdx file format goodies are a little bit more tricky. The react components that Claude added all need to be registered with Keystatic in order to pass formatting checks… but once that is done it is pretty easy to just add a component from a convenient drop-down add box in the editing top row. So to add an image gallery for example, I just click the \[+]v drop down and select it and it gets inserted below:
+
+
 
 <Gallery path="/images/albums/RTW-Madrid" aspectRatio="16/9" />
+
+
+
+… and then you just keep editing below the placeholder for the image gallery. The basics are primitive, but you can get the jist of it below:
+
+
+
+<YouTube id="N3pywDv-0Tg" title="Keystatic in under 5 minutes ⚡️ - 😎 😎" />
+
