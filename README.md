@@ -185,7 +185,7 @@ Live task data from [Vikunja](https://vikunja.io/) (self-hosted) powers project 
   - **Gantt** — timeline chart placeholder for tasks with dates (1250px)
 - **Changelog** — `/changelog` page auto-generates a list of recently completed tasks, grouped by month and day
 - **Fallback** — when `vikunjaProjectId` is not set or Vikunja is unavailable, falls back to static MDX task data
-- See [`VIKUNJA-SETUP.md`](./VIKUNJA-SETUP.md) for deployment and API integration details
+- See [`VIKUNJA-SETUP.md`](./docs/VIKUNJA-SETUP.md) for deployment and API integration details
 
 ## Dark Mode
 
@@ -224,7 +224,7 @@ Posts include a comments section powered by [Remark42](https://remark42.com/), a
 - **Moderation** — admin panel, comment approval, spam scoring, user/IP blocking, word filters
 - **Env-driven** — set `VITE_REMARK42_HOST` to enable; without it, a dev placeholder is shown
 - **Per-post threads** — each post's slug is used as the unique page ID
-- See [`REMARK42-SETUP.md`](./REMARK42-SETUP.md) for full deployment instructions
+- See [`REMARK42-SETUP.md`](./docs/REMARK42-SETUP.md) for full deployment instructions
 
 ## Project Structure
 
@@ -488,11 +488,11 @@ Run `npm run help` to see all commands, or reference the table below:
 - **Cloudflare CDN**: Static assets cached at edge, `www` → apex redirect
 
 See deployment guides:
-- [`COOLIFY-DEPLOYMENT.md`](./COOLIFY-DEPLOYMENT.md) — Frontend deployment
-- [`REMARK42-SETUP.md`](./REMARK42-SETUP.md) — Comment system
-- [`HETZNER-SERVER-SETUP.md`](./HETZNER-SERVER-SETUP.md) — Server provisioning
-- [`CLOUDFLARE-CDN-SETUP.md`](./CLOUDFLARE-CDN-SETUP.md) — CDN setup
-- [`VIKUNJA-SETUP.md`](./VIKUNJA-SETUP.md) — Task manager setup and API integration
+- [`COOLIFY-DEPLOYMENT.md`](./docs/COOLIFY-DEPLOYMENT.md) — Frontend deployment
+- [`REMARK42-SETUP.md`](./docs/REMARK42-SETUP.md) — Comment system
+- [`HETZNER-SERVER-SETUP.md`](./docs/HETZNER-SERVER-SETUP.md) — Server provisioning
+- [`CLOUDFLARE-CDN-SETUP.md`](./docs/CLOUDFLARE-CDN-SETUP.md) — CDN setup
+- [`VIKUNJA-SETUP.md`](./docs/VIKUNJA-SETUP.md) — Task manager setup and API integration
 
 ## Architecture Notes
 
