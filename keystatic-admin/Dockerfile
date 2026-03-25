@@ -21,8 +21,15 @@ WORKDIR /app
 COPY --from=build /app/.next ./.next
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./
+COPY --from=build /app/keystatic.config.tsx ./
 
-# Runtime env vars (needed for GitHub OAuth)
+# Re-declare ARGs in runtime stage (they don't carry over from build stage)
+ARG KEYSTATIC_GITHUB_CLIENT_ID
+ARG KEYSTATIC_GITHUB_CLIENT_SECRET
+ARG KEYSTATIC_SECRET
+ARG NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG
+
+# Runtime env vars (needed for GitHub OAuth at request time)
 ENV KEYSTATIC_GITHUB_CLIENT_ID=$KEYSTATIC_GITHUB_CLIENT_ID
 ENV KEYSTATIC_GITHUB_CLIENT_SECRET=$KEYSTATIC_GITHUB_CLIENT_SECRET
 ENV KEYSTATIC_SECRET=$KEYSTATIC_SECRET
