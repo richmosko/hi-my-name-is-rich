@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { config, collection, singleton, fields } from '@keystatic/core';
 import { block, mark } from '@keystatic/core/content-components';
-import authorsData from '../src/data/authors.json';
 
-// Build author options from shared JSON (array format)
-const authorsArray = (authorsData as { authors: { id: string; name: string }[] }).authors;
-const authorOptions = authorsArray.map((author) => ({
-  label: author.name,
-  value: author.id,
-}));
+// Author options for the multiselect field.
+// Keep in sync with src/data/authors.json (managed via the Authors singleton).
+const authorOptions = [
+  { label: 'Rich Mosko', value: 'rich' },
+  { label: 'Claude', value: 'claude' },
+  { label: 'Keith Holleman', value: 'keith' },
+];
 
 // Detect GitHub mode: use NEXT_PUBLIC_ var since it's available on both
 // client and server in Next.js. Non-NEXT_PUBLIC_ vars (CLIENT_ID, SECRET)
