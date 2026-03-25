@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { projects } from '../lib/projects';
 import { getProjectCompletion } from '../types';
+import { authors } from '../data/authors';
 import { mdxComponents } from '../components/MdxComponents';
 import { parseLocalDate } from '../lib/dateUtils';
 import { useVikunjaProject, useVikunjaKanban, type VikunjaTask } from '../hooks/useVikunja';
@@ -304,6 +305,30 @@ export default function ProjectDetail() {
             <p className="text-sm text-content-secondary mt-1">
               {project.description}
             </p>
+
+            {/* Author(s) */}
+            {project.authorId && (() => {
+              const ids = Array.isArray(project.authorId) ? project.authorId : [project.authorId];
+              const projectAuthors = ids.map((id) => authors[id]).filter(Boolean);
+              if (projectAuthors.length === 0) return null;
+              return (
+                <div className="flex items-center gap-3 mt-2">
+                  <div className="flex -space-x-2">
+                    {projectAuthors.map((a) => (
+                      <img
+                        key={a.id}
+                        src={a.avatar}
+                        alt={a.name}
+                        className="w-[32px] h-[32px] rounded-full object-cover border-2 border-surface"
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm text-content-muted">
+                    {projectAuthors.map((a) => a.name).join(' & ')}
+                  </span>
+                </div>
+              );
+            })()}
           </div>
 
           <span
