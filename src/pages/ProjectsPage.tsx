@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { projects } from '../lib/projects';
 import { getProjectCompletion } from '../types';
 import { parseLocalDate } from '../lib/dateUtils';
+import { useVikunjaProject, useVikunjaIssueCounts } from '../hooks/useVikunja';
 import type { Project, ProjectTask } from '../types';
 
 function ProgressBar({ percent }: { percent: number }) {
@@ -129,11 +130,13 @@ function TaskList({ tasks }: { tasks: ProjectTask[] }) {
   );
 }
 
-function ProjectCard({ project }: { project: Project }) {
+function ProjectCard({ project, issueCounts }: { project: Project; issueCounts?: { bug: number; enhancement: number; question: number; total: number } }) {
   const [expanded, setExpanded] = useState(false);
-  const percent = getProjectCompletion(project);
+  const vikunja = useVikunjaProject(project.vikunjaProjectId);
+  const staticPercent = getProjectCompletion(project);
+  const percent = vikunja.total > 0 ? vikunja.percent : staticPercent;
   const isCompleted = project.status === 'completed';
-  const hasDetails = project.excerpt || project.tasks.length > 0;
+  const hasDetails = project.excerpt || project.tasks.length > 0 || vikunja.total > 0;
 
   return (
     <div
@@ -166,6 +169,22 @@ function ProjectCard({ project }: { project: Project }) {
             >
               {isCompleted ? 'Completed' : 'Active'}
             </span>
+            {/* Issue badges */}
+            {issueCounts && issueCounts.bug > 0 && (
+              <span className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: '#ef444422', color: '#ef4444' }}>
+                {issueCounts.bug} bug{issueCounts.bug > 1 ? 's' : ''}
+              </span>
+            )}
+            {issueCounts && issueCounts.enhancement > 0 && (
+              <span className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: '#3b82f622', color: '#3b82f6' }}>
+                {issueCounts.enhancement} enh
+              </span>
+            )}
+            {issueCounts && issueCounts.question > 0 && (
+              <span className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: '#a855f722', color: '#a855f7' }}>
+                {issueCounts.question} ?
+              </span>
+            )}
             {hasDetails && (
               <svg
                 className={`w-4 h-4 text-content-muted transition-transform duration-200 ${
@@ -238,8 +257,32 @@ function ProjectCard({ project }: { project: Project }) {
             </div>
           )}
 
-          {/* Task list — grouped or flat */}
-          {project.tasks.length > 0 && <TaskList tasks={project.tasks} />}
+          {/* Task list — Vikunja live or static MDX */}
+          {vikunja.total > 0 ? (
+            <div className="flex flex-col gap-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-content-muted">
+                Tasks &middot; {vikunja.done}/{vikunja.total}
+              </p>
+              {vikunja.subProjects.length > 0 ? (
+                <div className="flex flex-col gap-3">
+                  {vikunja.subProjects.map(sp => (
+                    <div key={sp.id} className="flex flex-col gap-1">
+                      <p className="text-xs font-semibold text-content-secondary tracking-wide">
+                        {sp.title}
+                        <span className="text-content-muted font-normal ml-1.5">
+                          &middot; {sp.done}/{sp.total}
+                        </span>
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-content-muted">{vikunja.done} done · {vikunja.open} open</p>
+              )}
+            </div>
+          ) : project.tasks.length > 0 ? (
+            <TaskList tasks={project.tasks} />
+          ) : null}
         </>
       )}
     </div>
@@ -249,6 +292,7 @@ function ProjectCard({ project }: { project: Project }) {
 export default function ProjectsPage() {
   const activeProjects = projects.filter((p) => p.status === 'active');
   const completedProjects = projects.filter((p) => p.status === 'completed');
+  const { counts: issueCounts } = useVikunjaIssueCounts();
 
   return (
     <div className="flex flex-col gap-8 items-center">
@@ -277,7 +321,7 @@ export default function ProjectsPage() {
           </h2>
           <div className="flex flex-col gap-6">
             {activeProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
+              <ProjectCard key={project.id} project={project} issueCounts={project.vikunjaProjectId ? issueCounts[project.vikunjaProjectId] : undefined} />
             ))}
           </div>
         </section>
@@ -291,7 +335,7 @@ export default function ProjectsPage() {
           </h2>
           <div className="flex flex-col gap-6">
             {completedProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
+              <ProjectCard key={project.id} project={project} issueCounts={project.vikunjaProjectId ? issueCounts[project.vikunjaProjectId] : undefined} />
             ))}
           </div>
         </section>
