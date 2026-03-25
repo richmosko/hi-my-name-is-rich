@@ -4,7 +4,7 @@ const VIKUNJA_HOST = import.meta.env.VITE_VIKUNJA_HOST || '';
 const VIKUNJA_TOKEN = import.meta.env.VITE_VIKUNJA_TOKEN || '';
 // In production, proxy through nginx to avoid CORS issues
 // /api/vikunja/ → tasks.himynameisrich.com/api/v1/
-const VIKUNJA_API = import.meta.env.PROD ? '/api/vikunja' : `${VIKUNJA_API}`;
+const VIKUNJA_API: string = import.meta.env.PROD ? '/api/vikunja' : `${VIKUNJA_HOST}/api/v1`;
 
 export interface VikunjaTask {
   id: number;
