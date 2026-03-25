@@ -1,4 +1,5 @@
 # Stage 1: Build the static site
+# Cache bust: 2026-03-25 - removed @keystatic/core
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package*.json ./
