@@ -132,7 +132,8 @@ function TaskList({ tasks }: { tasks: ProjectTask[] }) {
 
 /** Group Vikunja tasks by label and render with collapsible sections */
 function VikunjaTaskList({ tasks }: { tasks: VikunjaTask[] }) {
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  // Start with all groups collapsed
+  const [collapsed, setCollapsed] = useState<Set<string> | null>(null);
 
   // Group tasks by first label (or "Ungrouped")
   const groups = new Map<string, { color: string; tasks: VikunjaTask[] }>();
@@ -144,11 +145,16 @@ function VikunjaTaskList({ tasks }: { tasks: VikunjaTask[] }) {
     groups.get(key)!.tasks.push(task);
   }
 
+  // Initialize all groups as collapsed on first render
+  if (collapsed === null && groups.size > 0) {
+    setCollapsed(new Set(groups.keys()));
+  }
+  const collapsedSet = collapsed ?? new Set<string>();
+
   // Sort groups: put groups with incomplete tasks first, then by name
   const sorted = Array.from(groups.entries()).sort(([aKey, aVal], [bKey, bVal]) => {
     const aOpen = aVal.tasks.filter(t => !t.done).length;
     const bOpen = bVal.tasks.filter(t => !t.done).length;
-    // Active groups first (have open tasks)
     if (aOpen > 0 && bOpen === 0) return -1;
     if (aOpen === 0 && bOpen > 0) return 1;
     return aKey.localeCompare(bKey);
@@ -156,7 +162,7 @@ function VikunjaTaskList({ tasks }: { tasks: VikunjaTask[] }) {
 
   const toggle = (key: string) => {
     setCollapsed(prev => {
-      const next = new Set(prev);
+      const next = new Set(prev ?? []);
       if (next.has(key)) next.delete(key); else next.add(key);
       return next;
     });
@@ -169,7 +175,7 @@ function VikunjaTaskList({ tasks }: { tasks: VikunjaTask[] }) {
         const done = groupTasks.filter(t => t.done).length;
         const total = groupTasks.length;
         const pct = Math.round((done / total) * 100);
-        const isCollapsed = collapsed.has(groupName);
+        const isCollapsed = collapsedSet.has(groupName);
         const allDone = done === total;
 
         return (
