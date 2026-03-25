@@ -3,5 +3,7 @@ dist
 .git
 .github
 .claude
+docs/
+keystatic-admin/
 *.md
 !README.md
