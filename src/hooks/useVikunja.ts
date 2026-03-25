@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 
 const VIKUNJA_HOST = import.meta.env.VITE_VIKUNJA_HOST || '';
 const VIKUNJA_TOKEN = import.meta.env.VITE_VIKUNJA_TOKEN || '';
+// In production, proxy through nginx to avoid CORS issues
+// /api/vikunja/ → tasks.himynameisrich.com/api/v1/
+const VIKUNJA_API = import.meta.env.PROD ? '/api/vikunja' : `${VIKUNJA_API}`;
 
 export interface VikunjaTask {
   id: number;
@@ -48,7 +51,7 @@ export function useVikunjaProject(projectId: number | undefined): VikunjaProject
         let page = 1;
         while (true) {
           const res = await fetch(
-            `${VIKUNJA_HOST}/api/v1/projects/${projectId}/tasks?page=${page}&per_page=100`,
+            `${VIKUNJA_API}/projects/${projectId}/tasks?page=${page}&per_page=100`,
             { headers: { Authorization: `Bearer ${VIKUNJA_TOKEN}` } }
           );
           if (!res.ok) throw new Error(`Vikunja API error: ${res.status}`);
@@ -109,7 +112,7 @@ export function useVikunjaRecentTasks(limit = 50): {
     (async () => {
       try {
         const res = await fetch(
-          `${VIKUNJA_HOST}/api/v1/tasks/all?sort_by=updated&order_by=desc&per_page=${limit}`,
+          `${VIKUNJA_API}/tasks/all?sort_by=updated&order_by=desc&per_page=${limit}`,
           { headers: { Authorization: `Bearer ${VIKUNJA_TOKEN}` } }
         );
         if (!res.ok) throw new Error(`Vikunja API error: ${res.status}`);
