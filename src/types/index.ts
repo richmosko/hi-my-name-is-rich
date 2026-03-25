@@ -47,6 +47,7 @@ export interface Project {
   url?: string;
   image?: string;
   imageAspectRatio?: string;
+  authorId?: string | string[];
   status: 'active' | 'completed';
   startDate?: string;
   completedDate?: string;

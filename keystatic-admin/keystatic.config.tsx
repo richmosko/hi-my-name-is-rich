@@ -138,6 +138,15 @@ export default config({
           description: 'Common ratios: 16/9, 4/3, 1/1, 21/9',
           defaultValue: '16/9',
         }),
+        authorId: fields.multiselect({
+          label: 'Author(s)',
+          options: [
+            { label: 'Rich', value: 'rich' },
+            { label: 'Claude', value: 'claude' },
+            { label: 'Keith', value: 'keith' },
+          ],
+          defaultValue: ['rich'],
+        }),
         url: fields.url({ label: 'Project URL' }),
         status: fields.select({
           label: 'Status',
