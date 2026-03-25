@@ -436,23 +436,38 @@ export default function Admin() {
         </>
       )}
 
-      {/* Cloudflare analytics link */}
+      {/* Admin quick links */}
       <div className="mt-12 pt-6 border-t border-edge">
-        <h2 className="text-lg font-semibold text-content mb-2">Traffic Analytics</h2>
-        <p className="text-sm text-content-muted mb-3">
-          Traffic stats are available in the Cloudflare dashboard. Click below to view page views, visitors, and bandwidth.
-        </p>
-        <a
-          href="https://dash.cloudflare.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm text-accent hover:text-accent-hover inline-flex items-center gap-1"
-        >
-          Open Cloudflare Dashboard
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-        </a>
+        <h2 className="text-lg font-semibold text-content mb-4">Admin Links</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[
+            { name: 'Keystatic CMS', url: 'https://edit.himynameisrich.com/keystatic', description: 'Create and edit posts & projects' },
+            { name: 'Vikunja Tasks', url: 'https://tasks.himynameisrich.com', description: 'Bug tracking, task management, Kanban' },
+            { name: 'Coolify Dashboard', url: 'https://coolify.himynameisrich.com', description: 'Server deployments and services' },
+            { name: 'Cloudflare Analytics', url: 'https://dash.cloudflare.com', description: 'Traffic, page views, bandwidth' },
+            { name: 'GitHub Repo', url: 'https://github.com/richmosko/hi-my-name-is-rich', description: 'Source code, PRs, Actions' },
+            { name: 'Changelog', url: '/changelog', description: 'Recent task activity from Vikunja' },
+          ].map((link) => (
+            <a
+              key={link.name}
+              href={link.url}
+              target={link.url.startsWith('/') ? undefined : '_blank'}
+              rel={link.url.startsWith('/') ? undefined : 'noopener noreferrer'}
+              className="rounded-xl px-5 py-4 transition-opacity hover:opacity-80"
+              style={cardStyle}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-accent">{link.name}</span>
+                {!link.url.startsWith('/') && (
+                  <svg className="w-3 h-3 text-content-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                )}
+              </div>
+              <p className="text-xs text-content-muted mt-1">{link.description}</p>
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   );
