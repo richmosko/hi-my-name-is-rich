@@ -2,11 +2,10 @@
 import { config, collection, fields } from '@keystatic/core';
 import { block, mark } from '@keystatic/core/content-components';
 
-// Use local mode during build (no GitHub credentials needed).
-// At runtime, GitHub mode activates when the env vars are present.
-const hasGitHubConfig = typeof process !== 'undefined' &&
-  process.env?.KEYSTATIC_GITHUB_CLIENT_ID &&
-  process.env?.KEYSTATIC_GITHUB_CLIENT_SECRET;
+// Detect GitHub mode: use NEXT_PUBLIC_ var since it's available on both
+// client and server in Next.js. Non-NEXT_PUBLIC_ vars (CLIENT_ID, SECRET)
+// are only available server-side in the API route handler.
+const hasGitHubConfig = !!process.env.NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG;
 
 export default config({
   storage: hasGitHubConfig
