@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { config, collection, fields } from '@keystatic/core';
+import { config, collection, singleton, fields } from '@keystatic/core';
 import { block, mark } from '@keystatic/core/content-components';
 import authorsData from '../src/data/authors.json';
 
-// Build author options from shared JSON
-const authorOptions = Object.entries(authorsData).map(([id, author]) => ({
-  label: (author as { name: string }).name,
-  value: id,
+// Build author options from shared JSON (array format)
+const authorsArray = (authorsData as { authors: { id: string; name: string }[] }).authors;
+const authorOptions = authorsArray.map((author) => ({
+  label: author.name,
+  value: author.id,
 }));
 
 // Detect GitHub mode: use NEXT_PUBLIC_ var since it's available on both
@@ -178,6 +179,97 @@ export default config({
           }
         ),
         content: fields.mdx({ label: 'Content' }),
+      },
+    }),
+  },
+
+  singletons: {
+    authors: singleton({
+      label: 'Authors',
+      path: 'src/data/authors',
+      format: 'json',
+      schema: {
+        authors: fields.array(
+          fields.object({
+            id: fields.text({ label: 'ID (slug)', description: 'Unique identifier, e.g., "rich", "claude"' }),
+            name: fields.text({ label: 'Display Name' }),
+            bio: fields.text({ label: 'Bio', multiline: true }),
+            avatar: fields.text({ label: 'Avatar Path', description: 'e.g., /images/profiles/profile-rich.jpeg' }),
+            socials: fields.array(
+              fields.object({
+                platform: fields.select({
+                  label: 'Platform',
+                  options: [
+                    { label: 'GitHub', value: 'github' },
+                    { label: 'Instagram', value: 'instagram' },
+                    { label: 'LinkedIn', value: 'linkedin' },
+                    { label: 'Twitter/X', value: 'twitter' },
+                    { label: 'Website', value: 'website' },
+                  ],
+                  defaultValue: 'github',
+                }),
+                url: fields.url({ label: 'URL' }),
+                label: fields.text({ label: 'Display Label' }),
+              }),
+              {
+                label: 'Social Links',
+                itemLabel: (props) => props.fields.label.value || props.fields.platform.value || 'New link',
+              }
+            ),
+          }),
+          {
+            label: 'Authors',
+            itemLabel: (props) => `${props.fields.name.value || 'New author'} (${props.fields.id.value || '?'})`,
+          }
+        ),
+      },
+    }),
+
+    siteSettings: singleton({
+      label: 'Site Settings',
+      path: 'src/data/site-settings',
+      format: 'json',
+      schema: {
+        siteTitle: fields.text({ label: 'Site Title', defaultValue: 'Hi, My Name Is Rich' }),
+        siteTagline: fields.text({ label: 'Tagline', defaultValue: 'A personal blog about travel, design, and projects' }),
+        siteUrl: fields.url({ label: 'Site URL' }),
+        profileImage: fields.text({ label: 'Home Page Profile Image', description: 'Path to the main profile/hero image' }),
+        defaultHeroImage: fields.text({ label: 'Default Hero Image', description: 'Fallback image for posts without one', defaultValue: '/images/stock/northern-lights-snowy-mountains.jpg' }),
+        featuredPostCount: fields.integer({ label: 'Featured Posts on Home', defaultValue: 3 }),
+        metaDescription: fields.text({ label: 'Default Meta Description', multiline: true, description: 'Used for SEO when pages don\'t have their own description' }),
+        ogImage: fields.text({ label: 'Default OG Image', description: 'Default social sharing image path' }),
+        footerText: fields.text({ label: 'Footer Copyright Text', defaultValue: '© {year} Rich' }),
+        adminLinks: fields.array(
+          fields.object({
+            name: fields.text({ label: 'Link Name' }),
+            url: fields.url({ label: 'URL' }),
+            description: fields.text({ label: 'Description' }),
+          }),
+          {
+            label: 'Admin Dashboard Links',
+            itemLabel: (props) => props.fields.name.value || 'New link',
+          }
+        ),
+      },
+    }),
+
+    categories: singleton({
+      label: 'Categories',
+      path: 'src/data/categories-config',
+      format: 'json',
+      schema: {
+        categories: fields.array(
+          fields.object({
+            id: fields.text({ label: 'Category ID (slug)', description: 'e.g., "travel", "cool-shit"' }),
+            label: fields.text({ label: 'Display Label' }),
+            description: fields.text({ label: 'Description', multiline: true }),
+            color: fields.text({ label: 'Tailwind Color', description: 'e.g., "emerald", "purple", "amber"' }),
+          }),
+          {
+            label: 'Categories',
+            itemLabel: (props) => props.fields.label.value || 'New category',
+          }
+        ),
       },
     }),
   },
