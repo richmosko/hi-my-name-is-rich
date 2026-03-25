@@ -143,6 +143,22 @@ export default config({
           label: 'Vikunja Project ID',
           description: 'Links to Vikunja task tracker for live task stats',
         }),
+        groupOrder: fields.array(fields.text({ label: 'Group' }), {
+          label: 'Group Display Order',
+          description: 'Order in which task groups are displayed on the project page',
+          itemLabel: (props) => props.value || 'New group',
+        }),
+        tasks: fields.array(
+          fields.object({
+            title: fields.text({ label: 'Task Title' }),
+            completed: fields.checkbox({ label: 'Completed', defaultValue: false }),
+            group: fields.text({ label: 'Group' }),
+          }),
+          {
+            label: 'Tasks (legacy — use Vikunja for live tracking)',
+            itemLabel: (props) => `${props.fields.completed.value ? '✅' : '⬜'} ${props.fields.title.value || 'New task'}`,
+          }
+        ),
         content: fields.mdx({ label: 'Content' }),
       },
     }),
