@@ -50,9 +50,10 @@ export default config({
         }),
         imageUpload: fields.image({
           label: 'Upload New Image',
-          directory: 'public/images/stock',
-          publicPath: '/images/stock/',
-          description: 'Upload a new image — it will be committed to the repo. After uploading, copy the path to "Hero Image Path" above.',
+          directory: 'public/images/posts',
+          publicPath: '/images/posts/',
+          transformFilename: (originalFilename) => originalFilename,
+          description: 'Upload a new image — committed to /images/posts/{slug}/. Leave "Hero Image Path" empty to use this automatically.',
         }),
         imageAspectRatio: fields.text({
           label: 'Image Aspect Ratio',
@@ -123,9 +124,10 @@ export default config({
         }),
         imageUpload: fields.image({
           label: 'Upload New Image',
-          directory: 'public/images/stock',
-          publicPath: '/images/stock/',
-          description: 'Upload a new image — committed to repo. Copy path to "Hero Image Path" after.',
+          directory: 'public/images/projects',
+          publicPath: '/images/projects/',
+          transformFilename: (originalFilename) => originalFilename,
+          description: 'Upload a new image — committed to /images/projects/{slug}/.',
         }),
         imageAspectRatio: fields.text({
           label: 'Image Aspect Ratio',
