@@ -1,6 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { config, collection, fields } from '@keystatic/core';
 import { block, mark } from '@keystatic/core/content-components';
+import authorsData from '../src/data/authors.json';
+
+// Build author options from shared JSON
+const authorOptions = Object.entries(authorsData).map(([id, author]) => ({
+  label: (author as { name: string }).name,
+  value: id,
+}));
 
 // Detect GitHub mode: use NEXT_PUBLIC_ var since it's available on both
 // client and server in Next.js. Non-NEXT_PUBLIC_ vars (CLIENT_ID, SECRET)
@@ -62,11 +69,7 @@ export default config({
         }),
         authorId: fields.multiselect({
           label: 'Author(s)',
-          options: [
-            { label: 'Rich', value: 'rich' },
-            { label: 'Claude', value: 'claude' },
-            { label: 'Keith', value: 'keith' },
-          ],
+          options: authorOptions,
           defaultValue: ['rich'],
         }),
         tags: fields.array(fields.text({ label: 'Tag' }), {
@@ -140,11 +143,7 @@ export default config({
         }),
         authorId: fields.multiselect({
           label: 'Author(s)',
-          options: [
-            { label: 'Rich', value: 'rich' },
-            { label: 'Claude', value: 'claude' },
-            { label: 'Keith', value: 'keith' },
-          ],
+          options: authorOptions,
           defaultValue: ['rich'],
         }),
         url: fields.url({ label: 'Project URL' }),
