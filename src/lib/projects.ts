@@ -11,6 +11,7 @@ interface ProjectMdxModule {
     excerpt?: string;
     url?: string;
     image?: string;
+    imageUpload?: string;
     imageAspectRatio?: string;
     status: 'active' | 'completed';
     startDate?: string;
@@ -47,7 +48,7 @@ function parseProject(filePath: string, mod: ProjectMdxModule): Project {
     description: frontmatter.description,
     excerpt: frontmatter.excerpt,
     url: frontmatter.url,
-    image: frontmatter.image || undefined,
+    image: frontmatter.image || frontmatter.imageUpload || undefined,
     imageAspectRatio: frontmatter.imageAspectRatio,
     status: frontmatter.status,
     startDate: frontmatter.startDate,

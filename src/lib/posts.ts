@@ -12,6 +12,7 @@ interface MdxModule {
     categories: Category[];
     featured?: boolean;
     image?: string;
+    imageUpload?: string;
     imageAspectRatio?: string;
     authorId: string | string[];
     tags?: string[];
@@ -42,7 +43,7 @@ function parsePost(filePath: string, mod: MdxModule): BlogPost {
         ? [frontmatter.categories as unknown as Category]
         : [],
     featured: frontmatter.featured ?? false,
-    image: frontmatter.image || undefined,
+    image: frontmatter.image || frontmatter.imageUpload || undefined,
     imageAspectRatio: frontmatter.imageAspectRatio,
     authorId: frontmatter.authorId,
     tags: frontmatter.tags ?? [],
