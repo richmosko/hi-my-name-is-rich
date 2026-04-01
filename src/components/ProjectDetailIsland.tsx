@@ -100,7 +100,7 @@ function VikunjaTaskList({ tasks, groupOrder }: { tasks: VikunjaTask[]; groupOrd
   );
 }
 
-export default function ProjectDetailIsland({ vikunjaProjectId, status, groupOrder }: ProjectDetailIslandProps) {
+export default function ProjectDetailIsland({ vikunjaProjectId, groupOrder }: ProjectDetailIslandProps) {
   const vikunja = useVikunjaProject(vikunjaProjectId);
   const kanban = useVikunjaKanban(vikunjaProjectId);
   const [viewMode, setViewMode] = useState<ViewMode>('labels');

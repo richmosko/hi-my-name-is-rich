@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { config, collection, singleton, fields } from '@keystatic/core';
 import { block, mark } from '@keystatic/core/content-components';
 

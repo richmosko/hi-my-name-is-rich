@@ -83,7 +83,7 @@ export default function PostsListIsland({ posts, category, initialQuery = '', in
   const clientQuery = urlParams?.get('q') || initialQuery;
   const clientTag = urlParams?.get('tag') || initialTag;
 
-  const [query, setQuery] = useState(clientQuery);
+  const [query] = useState(clientQuery);
   const [activeTags, setActiveTags] = useState<string[]>(clientTag ? [clientTag] : []);
   const [activeCategories, setActiveCategories] = useState<string[]>([]);
   const [sort, setSort] = useState<SortMode>('newest');
@@ -108,7 +108,7 @@ export default function PostsListIsland({ posts, category, initialQuery = '', in
     // Category filter (OR logic)
     if (activeCategories.length > 0) {
       results = results.filter(p =>
-        activeCategories.some(cat => p.categories.includes(cat as any))
+        activeCategories.some(cat => p.categories.includes(cat as string))
       );
     }
 

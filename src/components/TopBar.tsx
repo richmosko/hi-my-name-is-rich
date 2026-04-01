@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useSyncExternalStore } from 'react';
 import { useStore } from '@nanostores/react';
 import { useTheme } from '../hooks/useTheme';
 import ConstellationIcon from './ConstellationIcon';
@@ -20,8 +20,7 @@ const routeLabels: Record<string, string> = {
 
 export default function TopBar({ pathname = '/' }: { pathname?: string }) {
   const { theme, toggleTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
   const constellationActive = useStore($constellationActive);
 
   const isPostDetail = pathname.startsWith('/post/');

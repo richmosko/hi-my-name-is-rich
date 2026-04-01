@@ -2,7 +2,7 @@ import { useStore } from '@nanostores/react';
 import { useTheme } from '../hooks/useTheme';
 import {
   $showWikilinks, $showTags, $zoom, $forces,
-  $nodeCount, $edgeCount, $wikilinkCount, $tagCount,
+  $wikilinkCount, $tagCount,
   DEFAULT_FORCES, resetAll,
 } from '../stores/constellation';
 

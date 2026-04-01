@@ -30,7 +30,7 @@ export const GET: APIRoute = async ({ params, request }) => {
         'Cache-Control': 'no-cache',
       },
     });
-  } catch (err) {
+  } catch {
     return new Response(JSON.stringify({ error: 'Vikunja proxy error' }), {
       status: 502,
       headers: { 'Content-Type': 'application/json' },

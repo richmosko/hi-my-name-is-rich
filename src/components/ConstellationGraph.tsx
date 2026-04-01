@@ -5,7 +5,7 @@ import { useTheme } from '../hooks/useTheme';
 import {
   $showWikilinks, $showTags, $zoom, $forces, $cameraResetCounter,
   $constellationActive, $nodeCount, $edgeCount, $wikilinkCount, $tagCount,
-  DEFAULT_FORCES,
+
 } from '../stores/constellation';
 import {
   type GraphNode,
@@ -564,7 +564,6 @@ export default function ConstellationGraph({
     };
     canvas.addEventListener('wheel', onWheel, { passive: false });
     return () => canvas.removeEventListener('wheel', onWheel);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [interactive]);
 
   // Touch support
@@ -605,7 +604,6 @@ export default function ConstellationGraph({
       $zoom.set(newZoom);
       touchStartRef.current.dist = newDist;
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [interactive, screenToWorld]);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
