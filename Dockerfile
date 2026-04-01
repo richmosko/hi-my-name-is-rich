@@ -1,9 +1,8 @@
-# Stage 1: Build the static site
-# Cache bust: 2026-03-25 - removed @keystatic/core
+# Stage 1: Build the Astro site
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 COPY . .
 ARG VITE_REMARK42_HOST
 ARG VITE_VIKUNJA_HOST
@@ -13,8 +12,24 @@ ENV VITE_VIKUNJA_HOST=$VITE_VIKUNJA_HOST
 ENV VITE_VIKUNJA_TOKEN=$VITE_VIKUNJA_TOKEN
 RUN npm run build
 
-# Stage 2: Serve with nginx
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
+# Stage 2: Run with Node.js (Astro standalone server)
+FROM node:22-alpine
+WORKDIR /app
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/package.json ./
+
+# Keystatic GitHub OAuth (runtime)
+ARG KEYSTATIC_GITHUB_CLIENT_ID
+ARG KEYSTATIC_GITHUB_CLIENT_SECRET
+ARG KEYSTATIC_SECRET
+ARG NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG
+ENV KEYSTATIC_GITHUB_CLIENT_ID=$KEYSTATIC_GITHUB_CLIENT_ID
+ENV KEYSTATIC_GITHUB_CLIENT_SECRET=$KEYSTATIC_GITHUB_CLIENT_SECRET
+ENV KEYSTATIC_SECRET=$KEYSTATIC_SECRET
+ENV NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG=$NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG
+
+ENV HOST=0.0.0.0
+ENV PORT=4321
+EXPOSE 4321
+CMD ["node", "dist/server/entry.mjs"]
