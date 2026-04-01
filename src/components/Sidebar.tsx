@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { projects } from '../lib/projects';
-import { getProjectCompletion } from '../types';
 import ConstellationIcon from './ConstellationIcon';
-import { useVikunjaIssueCounts } from '../hooks/useVikunja';
 
 const navItems = [
   { label: 'Home', path: '/' },
@@ -24,7 +22,6 @@ export default function Sidebar({ pathname = '/' }: { pathname?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState('');
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const { counts: issueCounts } = useVikunjaIssueCounts();
 
   // Close sidebar on route change (render-time state adjustment)
   if (pathname !== prevPathname) {
@@ -147,53 +144,17 @@ export default function Sidebar({ pathname = '/' }: { pathname?: string }) {
           <ul className="flex flex-col gap-1 pl-2">
             {projects
               .filter((p) => p.status === 'active')
-              .map((project) => {
-                const percent = getProjectCompletion(project);
-                const issues = project.vikunjaProjectId ? issueCounts[project.vikunjaProjectId] : null;
-                return (
-                  <li key={project.id}>
-                    <a
-                      href={`/project/${project.id}`}
-                      className="block px-3 py-2 rounded-lg hover:bg-surface-secondary
-                                 transition-colors duration-150"
-                    >
-                      <span className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-content truncate">
-                          {project.name}
-                        </span>
-                        <span className="flex items-center gap-1.5 ml-2 flex-shrink-0">
-                          {/* Issue badges */}
-                          {issues && issues.bug > 0 && (
-                            <span className="text-[10px] font-bold px-1 py-0 rounded-full" style={{ background: '#ef444422', color: '#ef4444' }}>
-                              {issues.bug}
-                            </span>
-                          )}
-                          {issues && issues.enhancement > 0 && (
-                            <span className="text-[10px] font-bold px-1 py-0 rounded-full" style={{ background: '#3b82f622', color: '#3b82f6' }}>
-                              {issues.enhancement}
-                            </span>
-                          )}
-                          {issues && issues.question > 0 && (
-                            <span className="text-[10px] font-bold px-1 py-0 rounded-full" style={{ background: '#a855f722', color: '#a855f7' }}>
-                              {issues.question}
-                            </span>
-                          )}
-                          <span className="text-xs font-medium text-content-muted tabular-nums">
-                            {percent}%
-                          </span>
-                        </span>
-                      </span>
-                      {/* Mini progress bar */}
-                      <span className="block mt-1.5 w-full h-1 rounded-full bg-surface-secondary overflow-hidden">
-                        <span
-                          className="block h-full rounded-full bg-accent transition-all duration-500"
-                          style={{ width: `${percent}%` }}
-                        />
-                      </span>
-                    </a>
-                  </li>
-                );
-              })}
+              .map((project) => (
+                <li key={project.id}>
+                  <a
+                    href={`/project/${project.id}`}
+                    className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150
+                       ${pathname === `/project/${project.id}` ? 'text-content' : 'text-content-muted hover:text-content'}`}
+                  >
+                    {project.name}
+                  </a>
+                </li>
+              ))}
           </ul>
         </div>
 
