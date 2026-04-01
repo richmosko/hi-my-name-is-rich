@@ -78,8 +78,13 @@ interface PostsListIslandProps {
 type SortMode = 'newest' | 'oldest' | 'title-az' | 'title-za';
 
 export default function PostsListIsland({ posts, category, initialQuery = '', initialTag = '' }: PostsListIslandProps) {
-  const [query, setQuery] = useState(initialQuery);
-  const [activeTags, setActiveTags] = useState<string[]>(initialTag ? [initialTag] : []);
+  // Read URL params client-side (Astro pre-renders with empty params)
+  const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const clientQuery = urlParams?.get('q') || initialQuery;
+  const clientTag = urlParams?.get('tag') || initialTag;
+
+  const [query, setQuery] = useState(clientQuery);
+  const [activeTags, setActiveTags] = useState<string[]>(clientTag ? [clientTag] : []);
   const [activeCategories, setActiveCategories] = useState<string[]>([]);
   const [sort, setSort] = useState<SortMode>('newest');
 

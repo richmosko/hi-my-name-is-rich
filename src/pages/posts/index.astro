@@ -31,12 +31,20 @@ const tag = Astro.url.searchParams.get('tag') || '';
 
 <MainLayout title="All Posts">
   <div class="flex flex-col gap-8 items-center">
-    <div class="w-full max-w-[640px]">
-      <h1 class="text-2xl sm:text-3xl font-bold text-content">
-        {q ? `Search Results: ${q}` : 'All Posts'}
-      </h1>
+    <div class="w-full max-w-[640px]" id="posts-header">
+      <h1 class="text-2xl sm:text-3xl font-bold text-content">All Posts</h1>
       <p class="text-content-muted mt-1 text-xs">{sortedPosts.length} posts</p>
     </div>
+    <script is:inline>
+      // Update header if URL has search query (client-side only)
+      (function() {
+        var q = new URLSearchParams(window.location.search).get('q');
+        if (q) {
+          var h1 = document.querySelector('#posts-header h1');
+          if (h1) h1.textContent = 'Search Results: ' + q;
+        }
+      })();
+    </script>
 
     <!-- Hero image -->
     <div class="w-full max-w-[1250px] rounded-2xl overflow-hidden">
