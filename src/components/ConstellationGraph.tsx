@@ -1,8 +1,12 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useStore } from '@nanostores/react';
 import graphData from '../lib/graph-index.json';
 import { useTheme } from '../hooks/useTheme';
-import { useConstellationControls } from '../hooks/useConstellationControls';
+import {
+  $showWikilinks, $showTags, $zoom, $forces, $cameraResetCounter,
+  $constellationActive, $nodeCount, $edgeCount, $wikilinkCount, $tagCount,
+
+} from '../stores/constellation';
 import {
   type GraphNode,
   type GraphEdge,
@@ -69,10 +73,13 @@ export default function ConstellationGraph({
 }: ConstellationGraphProps & { autoFit?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const controls = useConstellationControls();
+  const storeShowWikilinks = useStore($showWikilinks);
+  const storeShowTags = useStore($showTags);
+  const storeZoom = useStore($zoom);
+  const storeForces = useStore($forces);
+  const resetCounter = useStore($cameraResetCounter);
 
   // Graph data refs
   const nodesRef = useRef<GraphNode[]>([]);
@@ -97,16 +104,21 @@ export default function ConstellationGraph({
   const themeRef = useRef(isDark);
   themeRef.current = isDark;
 
-  // Props refs for render loop
+  // Sync store values to refs for render loop (render loop can't call useStore)
   const showWikilinksRef = useRef(showWikilinks);
-  showWikilinksRef.current = showWikilinks;
+  showWikilinksRef.current = interactive ? storeShowWikilinks : showWikilinks;
   const showTagsRef = useRef(showTags);
-  showTagsRef.current = showTags;
+  showTagsRef.current = interactive ? storeShowTags : showTags;
+  const zoomRef = useRef(storeZoom);
+  zoomRef.current = storeZoom;
+  const forcesRef = useRef(storeForces);
+  forcesRef.current = storeForces;
 
-  // Register animated camera reset callback with context
+  // Animated camera reset when store counter increments
+  const prevResetRef = useRef(resetCounter);
   useEffect(() => {
-    if (!controls) return;
-    controls.onCameraResetRef.current = () => {
+    if (resetCounter > prevResetRef.current) {
+      prevResetRef.current = resetCounter;
       const nodes = nodesRef.current;
       const { w, h } = sizeRef.current;
       let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
@@ -119,10 +131,19 @@ export default function ConstellationGraph({
       const camX = autoFit ? w / 2 - graphCx : 0;
       const camY = autoFit ? h / 2 - graphCy : 0;
       cameraTargetRef.current = { x: camX, y: camY, zoom };
-    };
-    return () => { controls.onCameraResetRef.current = null; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    }
+  }, [resetCounter, autoFit, initialZoom]);
+
+  // Set constellation stats when interactive (full page)
+  useEffect(() => {
+    if (!interactive) return;
+    $constellationActive.set(true);
+    $nodeCount.set(graphData.nodes.length);
+    $edgeCount.set(graphData.edges.length);
+    $wikilinkCount.set(graphData.edges.filter(e => e.type === 'wikilink').length);
+    $tagCount.set(graphData.edges.filter(e => e.type === 'tag').length);
+    return () => { $constellationActive.set(false); };
+  }, [interactive]);
 
   const screenToWorld = useCallback((clientX: number, clientY: number) => {
     const canvas = canvasRef.current;
@@ -185,7 +206,16 @@ export default function ConstellationGraph({
       for (let i = 0; i < 300; i++) { tick(nodes, edges, 1000, 1000, alpha); alpha *= 0.98; }
 
       if (autoFit) {
-        // Nodes stay in sim space (centered ~500,500). Use camera to map to viewport.
+        // Shift all nodes so centroid = canvas center, then compute zoom
+        let sumX = 0, sumY = 0;
+        for (const n of nodes) { sumX += n.x; sumY += n.y; }
+        const cx = sumX / nodes.length;
+        const cy = sumY / nodes.length;
+        const dx = rect.width / 2 - cx;
+        const dy = rect.height / 2 - cy;
+        for (const n of nodes) { n.x += dx; n.y += dy; }
+
+        // Compute zoom from bounding box
         let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
         for (const n of nodes) {
           minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x);
@@ -193,14 +223,10 @@ export default function ConstellationGraph({
         }
         const graphW = maxX - minX || 1;
         const graphH = maxY - minY || 1;
-        const graphCx = (minX + maxX) / 2;
-        const graphCy = (minY + maxY) / 2;
-        const zoom = Math.min(rect.width / graphW, rect.height / graphH) * 0.85;
-        // Camera offset: shift so graph center appears at viewport center
-        const camX = rect.width / 2 - graphCx;
-        const camY = rect.height / 2 - graphCy;
-        cameraRef.current = { x: camX, y: camY, zoom };
-        if (controls) { controls.zoomRef.current = zoom; controls.setZoom(zoom); }
+        const zoom = Math.min(rect.width / graphW, rect.height / graphH) * 0.8;
+        // Camera at (0,0) since nodes are already centered on canvas
+        cameraRef.current = { x: 0, y: 0, zoom };
+        $zoom.set(zoom);
       }
     };
 
@@ -241,19 +267,23 @@ export default function ConstellationGraph({
       const hoverFade = hoverFadeRef.current;
       const activeHover = hovered || lastHoveredRef.current;
 
-      // Read force settings from context (or use defaults)
-      const f = controls?.forcesRef.current;
-      const multipliers: ForceMultipliers = f ? {
+      // Read force settings from store
+      const f = forcesRef.current;
+      const multipliers: ForceMultipliers = {
         linkStrength: f.linkStrength,
-        tagStrength: f.tagStrength / 0.3, // normalize: slider 0.3 = 1x base
+        tagStrength: f.tagStrength / 0.3,
         repulsion: f.repulsion,
-        gravity: f.gravity / 0.1,         // normalize: slider 0.1 = 1x base
-        drift: f.drift / 0.1,             // normalize: slider 0.1 = 1x base
-      } : {};
+        gravity: f.gravity / 0.1,
+        drift: f.drift / 0.1,
+      };
 
       const alpha = draggedNode ? 0.3 : 0.015;
       // Use 1000x1000 sim frame — matches init, gravity + boundary at (500,500)
-      tick(nodes, edges, 1000, 1000, alpha, multipliers);
+      // Use canvas dimensions when autoFit shifted nodes to canvas center,
+      // otherwise use sim frame (1000x1000)
+      const tickW = autoFit ? w : 1000;
+      const tickH = autoFit ? h : 1000;
+      tick(nodes, edges, tickW, tickH, alpha, multipliers);
       if (draggedNode) { draggedNode.vx = 0; draggedNode.vy = 0; }
 
       // Animated camera transition (for Reset All)
@@ -273,16 +303,14 @@ export default function ConstellationGraph({
           cam.y = target.y;
           cam.zoom = target.zoom;
           cameraTargetRef.current = null;
+          // Sync final zoom to store when animation completes
+          $zoom.set(cam.zoom);
         }
-        // Sync zoom to context during animation
-        if (controls) { controls.zoomRef.current = cam.zoom; controls.setZoom(cam.zoom); }
       } else {
-        // Sync zoom from context (slider) → camera (no animation in progress)
-        if (controls?.zoomRef.current !== undefined) {
-          const contextZoom = controls.zoomRef.current;
-          if (Math.abs(contextZoom - cam.zoom) > 0.01) {
-            cam.zoom = contextZoom;
-          }
+        // Sync zoom from store (slider) → camera (no animation in progress)
+        const storeZ = zoomRef.current;
+        if (Math.abs(storeZ - cam.zoom) > 0.01) {
+          cam.zoom = storeZ;
         }
       }
 
@@ -510,9 +538,9 @@ export default function ConstellationGraph({
     if (canvasRef.current) canvasRef.current.style.cursor = hoveredRef.current ? 'pointer' : 'grab';
     if (downPos) {
       const dx = Math.abs(e.clientX - downPos.x), dy = Math.abs(e.clientY - downPos.y);
-      if (dx < 5 && dy < 5) { const node = wasDragging || getNodeAt(e.clientX, e.clientY); if (node) navigate(`/post/${node.id}`); }
+      if (dx < 5 && dy < 5) { const node = wasDragging || getNodeAt(e.clientX, e.clientY); if (node) window.location.href = `/post/${node.id}`; }
     }
-  }, [interactive, getNodeAt, navigate]);
+  }, [interactive, getNodeAt]);
 
   const handleMouseLeave = useCallback(() => {
     if (!interactive) return;
@@ -532,11 +560,10 @@ export default function ConstellationGraph({
       const newZoom = Math.max(0.2, Math.min(6, cam.zoom * (e.deltaY > 0 ? 0.92 : 1.08)));
       cam.zoom = newZoom;
       // Sync to context so TopBar slider reflects wheel changes
-      if (controls) { controls.zoomRef.current = newZoom; controls.setZoom(newZoom); }
+      $zoom.set(newZoom);
     };
     canvas.addEventListener('wheel', onWheel, { passive: false });
     return () => canvas.removeEventListener('wheel', onWheel);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [interactive]);
 
   // Touch support
@@ -574,10 +601,9 @@ export default function ConstellationGraph({
       const newDist = Math.sqrt(dx * dx + dy * dy);
       const newZoom = Math.max(0.2, Math.min(6, cameraRef.current.zoom * (newDist / touchStartRef.current.dist)));
       cameraRef.current.zoom = newZoom;
-      if (controls) { controls.zoomRef.current = newZoom; controls.setZoom(newZoom); }
+      $zoom.set(newZoom);
       touchStartRef.current.dist = newDist;
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [interactive, screenToWorld]);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
@@ -585,11 +611,11 @@ export default function ConstellationGraph({
     if (e.changedTouches.length === 1 && touchStartRef.current) {
       const dx = Math.abs(e.changedTouches[0].clientX - touchStartRef.current.x);
       const dy = Math.abs(e.changedTouches[0].clientY - touchStartRef.current.y);
-      if (dx < 10 && dy < 10) { const node = touchStartRef.current.node || getNodeAt(e.changedTouches[0].clientX, e.changedTouches[0].clientY); if (node) navigate(`/post/${node.id}`); }
+      if (dx < 10 && dy < 10) { const node = touchStartRef.current.node || getNodeAt(e.changedTouches[0].clientX, e.changedTouches[0].clientY); if (node) window.location.href = `/post/${node.id}`; }
     }
     if (draggedNodeRef.current) draggedNodeRef.current.pinned = false;
     draggedNodeRef.current = null; panRef.current = null; hoveredRef.current = null; touchStartRef.current = null;
-  }, [interactive, getNodeAt, navigate]);
+  }, [interactive, getNodeAt]);
 
 
   return (

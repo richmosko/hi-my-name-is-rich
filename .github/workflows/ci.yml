@@ -19,10 +19,10 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Lint
         run: npm run lint
 
-      - name: Type-check & build
+      - name: Build
         run: npm run build

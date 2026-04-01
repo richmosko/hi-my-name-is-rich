@@ -1,16 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
 import { projects } from '../lib/projects';
-import { getProjectCompletion } from '../types';
 import ConstellationIcon from './ConstellationIcon';
-import { useVikunjaIssueCounts } from '../hooks/useVikunja';
 
 const navItems = [
   { label: 'Home', path: '/' },
   { label: 'About', path: '/about' },
   { label: 'Contributors', path: '/contributors' },
   { label: 'Constellation', path: '/constellation' },
-  { label: 'Changelog', path: '/changelog' },
 ];
 
 const categoryItems = [
@@ -22,16 +18,14 @@ const categoryItems = [
   { label: 'Food', path: '/food' },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ pathname = '/' }: { pathname?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState('');
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const location = useLocation();
-  const { counts: issueCounts } = useVikunjaIssueCounts();
 
   // Close sidebar on route change (render-time state adjustment)
-  if (location.pathname !== prevPathname) {
-    setPrevPathname(location.pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     setIsOpen(false);
   }
 
@@ -94,34 +88,23 @@ export default function Sidebar() {
         <ul className="flex flex-col gap-1">
           {navItems.map((item) => (
             <li key={item.path}>
-              <NavLink
-                to={item.path}
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className={({ isActive }) =>
-                  `block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150
-                   ${
-                     isActive
-                       ? 'text-content'
-                       : 'text-content-muted hover:text-content'
-                   }`
-                }
+              <a
+                href={item.path}
+                className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150
+                   ${pathname === item.path ? 'text-content' : 'text-content-muted hover:text-content'}`}
               >
                 {item.label}
                 {item.path === '/constellation' && <ConstellationIcon className="w-3.5 h-3.5 inline-block ml-1.5 -mt-0.5" />}
-              </NavLink>
+              </a>
             </li>
           ))}
         </ul>
 
         {/* Posts section — with category sub-links */}
         <div className="mt-8 pt-6 border-t border-edge">
-          <NavLink
-            to="/posts"
-            className={({ isActive }) =>
-              `flex items-center justify-between px-3 mb-3 group ${
-                isActive ? '' : ''
-              }`
-            }
+          <a
+            href="/posts"
+            className="flex items-center justify-between px-3 mb-3 group"
           >
             <span className="text-xs font-semibold uppercase tracking-wider text-content group-hover:text-accent transition-colors">
               Posts
@@ -129,23 +112,17 @@ export default function Sidebar() {
             <span className="text-xs text-content-muted group-hover:text-accent transition-colors">
               &rarr;
             </span>
-          </NavLink>
+          </a>
           <ul className="flex flex-col gap-1 pl-2">
             {categoryItems.map((item) => (
               <li key={item.path}>
-                <NavLink
-                  to={item.path}
-                  className={({ isActive }) =>
-                    `block px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150
-                     ${
-                       isActive
-                         ? 'text-content'
-                         : 'text-content-muted hover:text-content'
-                     }`
-                  }
+                <a
+                  href={item.path}
+                  className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150
+                     ${pathname === item.path ? 'text-content' : 'text-content-muted hover:text-content'}`}
                 >
                   {item.label}
-                </NavLink>
+                </a>
               </li>
             ))}
           </ul>
@@ -153,13 +130,9 @@ export default function Sidebar() {
 
         {/* Projects section — active projects with progress */}
         <div className="mt-8 pt-6 border-t border-edge">
-          <NavLink
-            to="/projects"
-            className={({ isActive }) =>
-              `flex items-center justify-between px-3 mb-3 group ${
-                isActive ? '' : ''
-              }`
-            }
+          <a
+            href="/projects"
+            className="flex items-center justify-between px-3 mb-3 group"
           >
             <span className="text-xs font-semibold uppercase tracking-wider text-content group-hover:text-accent transition-colors">
               Projects
@@ -167,57 +140,21 @@ export default function Sidebar() {
             <span className="text-xs text-content-muted group-hover:text-accent transition-colors">
               &rarr;
             </span>
-          </NavLink>
+          </a>
           <ul className="flex flex-col gap-1 pl-2">
             {projects
               .filter((p) => p.status === 'active')
-              .map((project) => {
-                const percent = getProjectCompletion(project);
-                const issues = project.vikunjaProjectId ? issueCounts[project.vikunjaProjectId] : null;
-                return (
-                  <li key={project.id}>
-                    <NavLink
-                      to={`/project/${project.id}`}
-                      className="block px-3 py-2 rounded-lg hover:bg-surface-secondary
-                                 transition-colors duration-150"
-                    >
-                      <span className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-content truncate">
-                          {project.name}
-                        </span>
-                        <span className="flex items-center gap-1.5 ml-2 flex-shrink-0">
-                          {/* Issue badges */}
-                          {issues && issues.bug > 0 && (
-                            <span className="text-[10px] font-bold px-1 py-0 rounded-full" style={{ background: '#ef444422', color: '#ef4444' }}>
-                              {issues.bug}
-                            </span>
-                          )}
-                          {issues && issues.enhancement > 0 && (
-                            <span className="text-[10px] font-bold px-1 py-0 rounded-full" style={{ background: '#3b82f622', color: '#3b82f6' }}>
-                              {issues.enhancement}
-                            </span>
-                          )}
-                          {issues && issues.question > 0 && (
-                            <span className="text-[10px] font-bold px-1 py-0 rounded-full" style={{ background: '#a855f722', color: '#a855f7' }}>
-                              {issues.question}
-                            </span>
-                          )}
-                          <span className="text-xs font-medium text-content-muted tabular-nums">
-                            {percent}%
-                          </span>
-                        </span>
-                      </span>
-                      {/* Mini progress bar */}
-                      <span className="block mt-1.5 w-full h-1 rounded-full bg-surface-secondary overflow-hidden">
-                        <span
-                          className="block h-full rounded-full bg-accent transition-all duration-500"
-                          style={{ width: `${percent}%` }}
-                        />
-                      </span>
-                    </NavLink>
-                  </li>
-                );
-              })}
+              .map((project) => (
+                <li key={project.id}>
+                  <a
+                    href={`/project/${project.id}`}
+                    className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150
+                       ${pathname === `/project/${project.id}` ? 'text-content' : 'text-content-muted hover:text-content'}`}
+                  >
+                    {project.name}
+                  </a>
+                </li>
+              ))}
           </ul>
         </div>
 

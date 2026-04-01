@@ -1,0 +1,20 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+---
+
+<MainLayout title="Changelog">
+  <div class="max-w-[640px] mx-auto">
+    <h1 class="text-2xl sm:text-3xl font-bold text-content mb-2">Changelog</h1>
+    <p class="text-content-secondary text-sm mb-8">
+      Recent task activity across all projects, powered by Vikunja.
+    </p>
+
+    <!-- Changelog content will be a React island that fetches from Vikunja -->
+    <div id="changelog-content">
+      <p class="text-sm text-content-muted py-8 text-center">
+        Changelog data is loaded from the Vikunja API.
+        Ensure <code>VITE_VIKUNJA_HOST</code> and <code>VITE_VIKUNJA_TOKEN</code> are configured.
+      </p>
+    </div>
+  </div>
+</MainLayout>

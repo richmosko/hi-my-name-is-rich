@@ -1,0 +1,61 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getCollection } from 'astro:content';
+import ProjectProgress from '../../components/ProjectProgress';
+
+const projects = await getCollection('projects');
+const activeProjects = projects.filter(p => p.data.status === 'active');
+const completedProjects = projects.filter(p => p.data.status === 'completed');
+---
+
+<MainLayout title="Projects">
+  <div class="flex flex-col gap-8 items-center">
+    <div class="w-full max-w-[640px]">
+      <h1 class="text-2xl sm:text-3xl font-bold text-content">Projects</h1>
+      <p class="text-content-secondary mt-2 text-sm">
+        What I'm building, tinkering with, and have shipped.
+      </p>
+    </div>
+
+    <!-- Hero image -->
+    <div class="w-full max-w-[1250px] rounded-2xl overflow-hidden">
+      <img
+        src="/images/stock/profile-rich-welding.jpg"
+        alt="Rich welding in the workshop"
+        class="w-full h-auto object-cover aspect-[21/9]"
+      />
+    </div>
+
+    <!-- Active projects -->
+    {activeProjects.length > 0 && (
+      <section class="w-full max-w-[640px] flex flex-col gap-6">
+        <h2 class="text-xl font-semibold text-content">In Progress</h2>
+        {activeProjects.map(project => (
+          <ProjectProgress
+            client:load
+            vikunjaProjectId={project.data.vikunjaProjectId ?? undefined}
+            projectName={project.data.name}
+            projectUrl={`/project/${project.id}`}
+            description={project.data.description}
+          />
+        ))}
+      </section>
+    )}
+
+    <!-- Completed projects -->
+    {completedProjects.length > 0 && (
+      <section class="w-full max-w-[640px] flex flex-col gap-6">
+        <h2 class="text-xl font-semibold text-content-muted">Completed</h2>
+        {completedProjects.map(project => (
+          <ProjectProgress
+            client:load
+            vikunjaProjectId={project.data.vikunjaProjectId ?? undefined}
+            projectName={project.data.name}
+            projectUrl={`/project/${project.id}`}
+            description={project.data.description}
+          />
+        ))}
+      </section>
+    )}
+  </div>
+</MainLayout>

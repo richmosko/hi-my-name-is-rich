@@ -1,0 +1,121 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getCollection, render } from 'astro:content';
+import { authors } from '../../data/authors';
+import { parseLocalDate } from '../../lib/dateUtils';
+import ProjectProgressBar from '../../components/ProjectProgressBar';
+import ProjectDetailIsland from '../../components/ProjectDetailIsland';
+import { mdxComponents } from '../../components/MdxComponents';
+import LightboxImage from '../../components/LightboxImage';
+import HydrateMdx from '../../components/HydrateMdx.astro';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map(project => ({
+    params: { id: project.id },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+
+// Resolve authors
+const authorIds = Array.isArray(project.data.authorId) ? project.data.authorId : project.data.authorId ? [project.data.authorId] : ['rich'];
+const projectAuthors = authorIds.map(id => authors[id]).filter(Boolean);
+
+const heroImage = project.data.image || project.data.imageUpload || undefined;
+const aspectRatio = project.data.imageAspectRatio || '16/9';
+---
+
+<MainLayout
+  title={project.data.name}
+  description={project.data.description}
+  image={heroImage}
+>
+  <article class="flex flex-col gap-8 items-center">
+    <!-- Header -->
+    <header class="w-full max-w-[640px] flex flex-col gap-6">
+      <!-- Back link -->
+      <a href="/projects" class="text-sm text-content-muted hover:text-accent transition-colors inline-flex items-center gap-1">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to projects
+      </a>
+
+      <!-- Author + dates -->
+      <div class="flex items-center gap-4">
+        {projectAuthors.length > 0 && (
+          <div class="flex items-center gap-3">
+            <div class="flex -space-x-2">
+              {projectAuthors.map(author => (
+                <img src={author.avatar} alt={author.name} class="w-[48px] h-[48px] rounded-full object-cover border-2 border-surface" />
+              ))}
+            </div>
+            <span class="text-base font-medium text-content">
+              {projectAuthors.map(a => a.name).join(' & ')}
+            </span>
+          </div>
+        )}
+        {project.data.startDate && (
+          <time class="text-sm font-medium text-content-muted">
+            Started {parseLocalDate(project.data.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </time>
+        )}
+      </div>
+
+      <!-- Title + description -->
+      <div>
+        <h1 class="text-3xl sm:text-4xl font-bold text-content mb-2">
+          {project.data.name}
+        </h1>
+        <p class="text-content-secondary">{project.data.description}</p>
+      </div>
+
+      <!-- Progress bar (compact, in header) -->
+      <ProjectProgressBar
+        client:load
+        vikunjaProjectId={project.data.vikunjaProjectId ?? undefined}
+        status={project.data.status}
+      />
+
+      {project.data.url && project.data.url !== '#' && (
+        <a href={project.data.url} target="_blank" rel="noopener noreferrer" class="text-sm text-accent hover:text-accent-hover">
+          Visit Project →
+        </a>
+      )}
+    </header>
+
+    <!-- Hero image (wider) -->
+    {heroImage && heroImage !== '' && (
+      <div class="w-full max-w-[1250px]">
+        <img
+          src={heroImage}
+          alt={project.data.name}
+          class="w-full rounded-2xl object-cover"
+          style={`aspect-ratio: ${aspectRatio}`}
+        />
+      </div>
+    )}
+
+    <!-- MDX Content -->
+    <div class="w-full max-w-[640px] flex flex-col gap-4 text-content-secondary leading-relaxed">
+      <Content components={{
+        ...mdxComponents,
+        img: LightboxImage,
+      }} />
+    </div>
+
+    <!-- Hydrate interactive MDX components -->
+    <HydrateMdx />
+
+    <!-- Full task views from Vikunja (below content) -->
+    <ProjectDetailIsland
+      client:load
+      vikunjaProjectId={project.data.vikunjaProjectId ?? undefined}
+      status={project.data.status}
+      groupOrder={project.data.groupOrder}
+    />
+  </article>
+</MainLayout>

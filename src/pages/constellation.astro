@@ -1,0 +1,16 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import ConstellationGraph from '../components/ConstellationGraph';
+---
+
+<MainLayout title="Constellation" noFooter fullScreen>
+  <ConstellationGraph
+    client:load
+    autoFit
+    interactive
+    showWikilinks={true}
+    showTags={true}
+    className="w-full"
+    style={{ height: 'calc(100dvh - 65px)' }}
+  />
+</MainLayout>

@@ -1,0 +1,35 @@
+---
+import Layout from './Layout.astro';
+import TopBar from '../components/TopBar';
+import Sidebar from '../components/Sidebar';
+import SearchPanel from '../components/SearchOverlay';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  /** Hide footer (e.g., constellation page) */
+  noFooter?: boolean;
+  /** Full-screen mode: no padding, overflow hidden */
+  fullScreen?: boolean;
+}
+
+const { title, description, image, noFooter = false, fullScreen = false } = Astro.props;
+const pathname = Astro.url.pathname;
+---
+
+<Layout title={title} description={description} image={image}>
+  <div class={`min-h-screen flex flex-col bg-surface ${fullScreen ? 'overflow-hidden h-screen' : ''}`}>
+    <!-- Interactive components as React islands -->
+    <Sidebar client:load pathname={pathname} />
+    <SearchPanel client:idle pathname={pathname} />
+    <TopBar client:load pathname={pathname} />
+
+    <main class={`flex-1 w-full min-h-0 ${fullScreen ? 'py-0 h-full' : 'max-w-[1440px] px-5 sm:px-10 lg:px-[95px] py-8 sm:py-12'}`}>
+      <slot />
+    </main>
+
+    {!noFooter && <Footer />}
+  </div>
+</Layout>

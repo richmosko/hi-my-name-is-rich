@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { authors } from '../data/authors';
 import { categoryColors, categoryConfig } from '../data/categories';
 import { parseLocalDate } from '../lib/dateUtils';
@@ -18,10 +17,10 @@ export default function PostCard({ post, variant = 'default' }: PostCardProps) {
   const isCompact = variant === 'compact';
 
   return (
-    <Link
-      to={`/post/${post.slug}`}
+    <a
+      href={`/post/${post.slug}`}
       className={`group flex flex-col items-start ${
-        isLarge ? 'lg:h-full gap-4' : isCompact ? 'gap-2' : 'gap-4'
+        isLarge ? 'lg:h-full lg:justify-between gap-4' : isCompact ? 'gap-2' : 'gap-4'
       }`}
     >
       {/* Thumbnail */}
@@ -29,7 +28,7 @@ export default function PostCard({ post, variant = 'default' }: PostCardProps) {
         <div
           className={`w-full overflow-hidden rounded-xl ${
             isLarge
-              ? 'aspect-[6/4] lg:aspect-auto lg:flex-1 lg:min-h-0'
+              ? 'aspect-[6/4]'
               : isCompact
                 ? 'aspect-[16/9]'
                 : 'aspect-[6/4]'
@@ -107,6 +106,6 @@ export default function PostCard({ post, variant = 'default' }: PostCardProps) {
           </time>
         </div>
       </div>
-    </Link>
+    </a>
   );
 }

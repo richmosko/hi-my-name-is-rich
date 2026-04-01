@@ -1,0 +1,87 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import '../index.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+}
+
+const siteTitle = 'Hi, My Name Is Rich';
+const siteDescription = 'A personal blog by Rich Mosko about travel, design, projects, and life.';
+const siteImage = '/images/profiles/profile-rich-watercolor-bg.png';
+
+const { title, description, image } = Astro.props;
+const fullTitle = title ? `${title} | ${siteTitle}` : siteTitle;
+const metaDescription = description || siteDescription;
+const ogImage = image || siteImage;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+
+    <!-- SEO -->
+    <title>{fullTitle}</title>
+    <meta name="description" content={metaDescription} />
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={metaDescription} />
+    <meta property="og:image" content={ogImage} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={metaDescription} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Theme detection (prevent flash) — runs on every navigation -->
+    <script is:inline>
+      (function() {
+        var t = localStorage.getItem('theme');
+        var isDark = t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
+
+    <!-- Re-apply theme after View Transition swap -->
+    <script is:inline>
+      document.addEventListener('astro:after-swap', function() {
+        var t = localStorage.getItem('theme');
+        var isDark = t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      });
+    </script>
+
+    <!-- View Transitions -->
+    <ClientRouter />
+  </head>
+  <body class="min-h-screen bg-surface text-content font-sans" style="scrollbar-gutter: stable;">
+    <slot />
+  </body>
+</html>

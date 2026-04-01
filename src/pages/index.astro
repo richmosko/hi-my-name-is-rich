@@ -1,0 +1,173 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { getCollection } from 'astro:content';
+import { parseLocalDate } from '../lib/dateUtils';
+import { authors } from '../data/authors';
+import { categoryColors, categoryConfig } from '../data/categories';
+import PostCard from '../components/PostCard';
+import siteSettings from '../data/site-settings.json';
+
+const posts = await getCollection('posts');
+
+// Sort posts newest first (with slug as tiebreaker)
+const sortedPosts = posts.sort((a, b) => {
+  const diff = new Date(b.data.date).getTime() - new Date(a.data.date).getTime();
+  return diff !== 0 ? diff : a.id.localeCompare(b.id);
+});
+
+// Featured: only posts with featured: true
+const featuredPosts = sortedPosts.filter((p) => p.data.featured).slice(0, 3);
+
+// Latest: top 4 newest posts
+const latestPosts = sortedPosts.slice(0, 4);
+
+const rich = authors['rich'];
+
+// Convert to BlogPost format for PostCard
+function toBlogPost(p: typeof sortedPosts[0]) {
+  return {
+    id: p.id,
+    slug: p.id,
+    title: p.data.title,
+    excerpt: p.data.excerpt,
+    date: p.data.date,
+    readTime: p.data.readTime || '1 min read',
+    categories: p.data.categories as string[],
+    featured: p.data.featured,
+    image: p.data.image || p.data.imageUpload || undefined,
+    imageAspectRatio: p.data.imageAspectRatio,
+    authorId: p.data.authorId,
+    tags: p.data.tags || [],
+  };
+}
+---
+
+<MainLayout>
+  <div class="flex flex-col gap-10 sm:gap-16">
+    <!-- Hero section -->
+    <section class="flex flex-col-reverse lg:flex-row items-center lg:items-start gap-8 lg:gap-10">
+      <!-- Text — left side on desktop, below image on mobile -->
+      <div class="flex-1 flex flex-col gap-4 sm:gap-6">
+        <h1 class="text-3xl sm:text-4xl font-bold text-content leading-tight">
+          Hi, my name is Rich.
+        </h1>
+        <p class="text-base sm:text-xl font-light text-content-secondary leading-relaxed">
+          Former <span class="text-lg sm:text-2xl font-normal">Hardware Designer</span>,
+          part-time <span class="text-lg sm:text-2xl font-normal">Adventurer</span>,
+          and full-time <span class="text-lg sm:text-2xl font-normal">Loafer</span> and
+          <span class="text-lg sm:text-2xl font-normal">Fudgel</span>. This is a place
+          for me to share what I'm learning, building, and thinking about.
+        </p>
+        <p class="text-base sm:text-xl font-light text-content-secondary leading-relaxed">
+          I am by no means an expert... at pretty much anything. But I am
+          naturally <span class="text-lg sm:text-2xl font-normal">curious</span>, and
+          find myself with a lot of time to ponder the meaning of
+          things. This project is meant to be a {' '}
+          <span class="text-lg sm:text-2xl font-normal">learning</span> and {' '}
+          <span class="text-lg sm:text-2xl font-normal">growing</span> experience for
+          me. It's pretty much not useful to anyone whatsoever 😂... but if
+          you've stumbled here by accident: {' '}
+          <span class="text-lg sm:text-2xl font-semibold">Welcome Friend!</span> {' '}
+          Hopefully I'm able to share a bit of positivity and joy.
+        </p>
+        <div class="pt-2 flex flex-col gap-1">
+          <a href="/about" class="text-sm font-medium text-content-muted hover:text-content transition-colors duration-150">
+            More about me &rarr;
+          </a>
+        </div>
+      </div>
+
+      <!-- Profile image — right side on desktop, top on mobile -->
+      <div class="w-[60%] sm:w-[40%] max-w-[414px]">
+        <img
+          src="/images/profiles/profile-rich.jpeg"
+          alt="Rich Mosko"
+          class="w-full aspect-square rounded-2xl object-cover shadow-sm"
+        />
+      </div>
+    </section>
+
+    <!-- Featured Posts -->
+    {featuredPosts.length > 0 && (
+      <section class="flex flex-col gap-8 sm:gap-10">
+        <h2 class="text-2xl sm:text-3xl font-semibold text-content text-center">Featured Posts</h2>
+
+        <div class="flex flex-col lg:flex-row lg:items-stretch gap-6 sm:gap-8">
+          {/* Left — large card, 6/4 aspect on mobile, stretches to match right on desktop */}
+          <div class="lg:w-2/3">
+            <PostCard post={toBlogPost(featuredPosts[0])} variant="large" />
+          </div>
+
+          {/* Right — two stacked compact cards, 16/9 aspect (1/3 width) */}
+          {featuredPosts.length > 1 && (
+            <div class="lg:w-1/3 flex flex-col gap-6 sm:gap-8">
+              {featuredPosts.slice(1).map((post) => (
+                <PostCard post={toBlogPost(post)} variant="compact" />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    )}
+
+    <!-- Latest Posts -->
+    <section class="flex flex-col gap-8 sm:gap-10">
+      <h2 class="text-2xl sm:text-3xl font-semibold text-content text-center">Latest Posts</h2>
+
+      <div class="flex flex-col gap-6">
+        {latestPosts.map((post) => {
+          const image = post.data.image || post.data.imageUpload || '/images/stock/northern-lights-snowy-mountains.jpg';
+          const authorIds = Array.isArray(post.data.authorId) ? post.data.authorId : [post.data.authorId];
+          const postAuthors = authorIds.map((id: string) => authors[id]).filter(Boolean);
+
+          return (
+            <a href={`/post/${post.id}`} class="group flex gap-4 sm:gap-5 items-start">
+              <div class="shrink-0 h-[80px] sm:h-[100px] aspect-[6/4] overflow-hidden rounded-lg">
+                <img src={image} alt={post.data.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              </div>
+              <div class="flex-1 flex flex-col justify-between self-stretch min-w-0">
+                <h3 class="text-base sm:text-lg font-medium text-content leading-snug group-hover:text-accent transition-colors line-clamp-2">
+                  {post.data.title}
+                </h3>
+                <div class="flex flex-wrap gap-1.5">
+                  {(post.data.categories as string[]).map((cat: string) => {
+                    const config = categoryConfig[cat as keyof typeof categoryConfig];
+                    return config ? (
+                      <span class={`px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColors[cat as keyof typeof categoryColors] ?? 'bg-surface-secondary text-content-muted'}`}>
+                        {config.label}
+                      </span>
+                    ) : null;
+                  })}
+                  {(post.data.tags || []).map((tag: string) => (
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-secondary text-content-muted">{tag}</span>
+                  ))}
+                </div>
+                <div class="flex items-center gap-3">
+                  {postAuthors.length > 0 && (
+                    <div class="flex items-center gap-2">
+                      <div class="flex -space-x-1">
+                        {postAuthors.map((a: typeof postAuthors[0]) => (
+                          <img src={a.avatar} alt={a.name} class="w-6 h-6 rounded-full object-cover border border-surface" />
+                        ))}
+                      </div>
+                      <span class="text-sm font-medium text-content">
+                        {postAuthors.map((a: typeof postAuthors[0]) => a.name).join(' & ')}
+                      </span>
+                    </div>
+                  )}
+                  <time datetime={post.data.date} class="text-sm font-medium text-accent">
+                    {parseLocalDate(post.data.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </time>
+                </div>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+
+      <a href="/posts" class="text-sm font-medium text-content-muted hover:text-content transition-colors duration-150">
+        More posts &rarr;
+      </a>
+    </section>
+  </div>
+</MainLayout>

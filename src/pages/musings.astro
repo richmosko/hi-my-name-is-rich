@@ -1,0 +1,53 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { getCollection } from 'astro:content';
+import PostsListIsland from '../components/PostsListIsland';
+import { categoryConfig } from '../data/categories';
+
+const category = 'musings';
+const config = categoryConfig[category as keyof typeof categoryConfig];
+const posts = await getCollection('posts');
+const filtered = posts
+  .filter(p => (p.data.categories as string[]).includes(category))
+  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+
+const blogPosts = filtered.map(p => ({
+  id: p.id,
+  slug: p.id,
+  title: p.data.title,
+  excerpt: p.data.excerpt,
+  date: p.data.date,
+  readTime: p.data.readTime || '1 min read',
+  categories: p.data.categories as string[],
+  featured: p.data.featured,
+  image: p.data.image || p.data.imageUpload || undefined,
+  imageAspectRatio: p.data.imageAspectRatio,
+  authorId: p.data.authorId,
+  tags: p.data.tags || [],
+}));
+---
+
+<MainLayout title={config?.label || 'musings'}>
+  <div class="flex flex-col gap-8 items-center">
+    <div class="w-full max-w-[640px]">
+      <h1 class="text-2xl sm:text-3xl font-bold text-content">{config?.label || 'musings'}</h1>
+      {config?.description && <p class="text-content-secondary mt-2 text-sm">{config.description}</p>}
+      <p class="text-content-muted mt-1 text-xs">{filtered.length} posts</p>
+    </div>
+
+    <!-- Hero image -->
+    <div class="w-full max-w-[1250px] rounded-2xl overflow-hidden">
+      <img
+        src={config?.heroImage || "/images/stock/profile-rich-writing.jpg"}
+        alt="Writing"
+        class="w-full h-auto object-cover aspect-[21/9]"
+      />
+    </div>
+
+    <PostsListIsland
+      client:load
+      posts={blogPosts}
+      category={category}
+    />
+  </div>
+</MainLayout>

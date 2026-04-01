@@ -1,9 +1,4 @@
-interface YouTubeProps {
-  id: string;
-  title?: string;
-}
-
-export default function YouTube({ id, title = 'YouTube video' }: YouTubeProps) {
+export default function YouTube({ id, title = 'YouTube video' }: { id: string; title?: string }) {
   return (
     <div className="w-full aspect-video rounded-xl overflow-hidden bg-surface-secondary my-4">
       <iframe

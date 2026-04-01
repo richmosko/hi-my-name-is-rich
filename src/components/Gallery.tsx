@@ -7,6 +7,26 @@ interface GalleryImage {
   caption?: string;
 }
 
+interface ManifestData {
+  images: Array<{ src: string; alt?: string; caption?: string }>;
+}
+
+// Load ALL manifests at build time so Gallery works without fetch/useEffect.
+// This is critical for Astro SSR where useEffect doesn't fire server-side.
+const manifestModules = import.meta.glob<ManifestData>(
+  '/public/images/**/manifest.json',
+  { eager: true, import: 'default' }
+);
+
+// Build a lookup: "/images/albums/RTW-Madrid" → ManifestData
+const manifestCache: Record<string, ManifestData> = {};
+for (const [filePath, data] of Object.entries(manifestModules)) {
+  // filePath: "/public/images/albums/RTW-Madrid/manifest.json"
+  // key:      "/images/albums/RTW-Madrid"
+  const key = filePath.replace('/public', '').replace('/manifest.json', '');
+  manifestCache[key] = data;
+}
+
 interface GalleryProps {
   path?: string;
   images?: GalleryImage[] | string[];
@@ -23,8 +43,19 @@ export default function Gallery({ path, images: imagesProp, aspectRatio = '4/3',
     );
   }, [imagesProp]);
 
+  // Try build-time manifest first, then fall back to runtime fetch
+  const buildTimeImages = useMemo(() => {
+    if (!path || imagesProp) return null;
+    const manifest = manifestCache[path];
+    if (!manifest) return null;
+    return manifest.images.map((img) => ({
+      ...img,
+      src: `${path}/${img.src}`,
+    }));
+  }, [path, imagesProp]);
+
   const [fetchedImages, setFetchedImages] = useState<GalleryImage[]>([]);
-  const [loading, setLoading] = useState(() => !!path && !imagesProp);
+  const [loading, setLoading] = useState(() => !!path && !imagesProp && !buildTimeImages);
   const [error, setError] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -32,18 +63,18 @@ export default function Gallery({ path, images: imagesProp, aspectRatio = '4/3',
   const [canScrollRight, setCanScrollRight] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const images = resolvedPropImages ?? fetchedImages;
+  const images = resolvedPropImages ?? buildTimeImages ?? fetchedImages;
 
-  // Fetch manifest from path
+  // Runtime fetch fallback (only if build-time manifest wasn't found)
   useEffect(() => {
-    if (!path || imagesProp) return;
+    if (!path || imagesProp || buildTimeImages) return;
     let cancelled = false;
     fetch(`${path}/manifest.json`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to load manifest');
         return res.json();
       })
-      .then((data: { images: Array<{ src: string; alt?: string; caption?: string }> }) => {
+      .then((data: ManifestData) => {
         if (cancelled) return;
         const resolved = data.images.map((img) => ({
           ...img,
@@ -58,7 +89,7 @@ export default function Gallery({ path, images: imagesProp, aspectRatio = '4/3',
         setLoading(false);
       });
     return () => { cancelled = true; };
-  }, [path, imagesProp]);
+  }, [path, imagesProp, buildTimeImages]);
 
   // Track scroll position for arrow visibility + active dot
   const updateScrollState = useCallback(() => {
@@ -111,10 +142,23 @@ export default function Gallery({ path, images: imagesProp, aspectRatio = '4/3',
     );
   }
 
-  if (images.length === 0) return null;
+  if (images.length === 0) {
+    if (loading && path) {
+      return (
+        <div className="w-full h-[200px] rounded-xl bg-surface-secondary animate-pulse flex items-center justify-center text-content-muted text-sm">
+          Loading gallery...
+        </div>
+      );
+    }
+    return null;
+  }
 
   return (
-    <div className={`relative my-4 ${fullWidth ? 'w-screen left-1/2 -translate-x-1/2 max-w-[950px]' : ''}`}>
+    <div
+      data-gallery-path={path || ''}
+      data-gallery-aspect={aspectRatio}
+      className={`relative my-4 ${fullWidth ? 'w-screen left-1/2 -translate-x-1/2 max-w-[950px]' : ''}`}
+    >
       {/* Scroll container */}
       <div
         ref={scrollRef}

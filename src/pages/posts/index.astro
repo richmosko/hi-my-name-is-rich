@@ -1,0 +1,66 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getCollection } from 'astro:content';
+import PostsListIsland from '../../components/PostsListIsland';
+
+const posts = await getCollection('posts');
+const sortedPosts = posts.sort(
+  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
+);
+
+// Convert to BlogPost format
+const blogPosts = sortedPosts.map(p => ({
+  id: p.id,
+  slug: p.id,
+  title: p.data.title,
+  excerpt: p.data.excerpt,
+  date: p.data.date,
+  readTime: p.data.readTime || '1 min read',
+  categories: p.data.categories as string[],
+  featured: p.data.featured,
+  image: p.data.image || p.data.imageUpload || undefined,
+  imageAspectRatio: p.data.imageAspectRatio,
+  authorId: p.data.authorId,
+  tags: p.data.tags || [],
+}));
+
+// Get search params from URL
+const q = Astro.url.searchParams.get('q') || '';
+const tag = Astro.url.searchParams.get('tag') || '';
+---
+
+<MainLayout title="All Posts">
+  <div class="flex flex-col gap-8 items-center">
+    <div class="w-full max-w-[640px]" id="posts-header">
+      <h1 class="text-2xl sm:text-3xl font-bold text-content">All Posts</h1>
+      <p class="text-content-muted mt-1 text-xs">{sortedPosts.length} posts</p>
+    </div>
+    <script is:inline>
+      // Update header if URL has search query (client-side only)
+      (function() {
+        var q = new URLSearchParams(window.location.search).get('q');
+        if (q) {
+          var h1 = document.querySelector('#posts-header h1');
+          if (h1) h1.textContent = 'Search Results: ' + q;
+        }
+      })();
+    </script>
+
+    <!-- Hero image -->
+    <div class="w-full max-w-[1250px] rounded-2xl overflow-hidden">
+      <img
+        src="/images/stock/profile-rich-writing.jpg"
+        alt="Writing"
+        class="w-full h-auto object-cover aspect-[21/9]"
+      />
+    </div>
+
+    <!-- Interactive post list with filters -->
+    <PostsListIsland
+      client:load
+      posts={blogPosts}
+      initialQuery={q}
+      initialTag={tag}
+    />
+  </div>
+</MainLayout>

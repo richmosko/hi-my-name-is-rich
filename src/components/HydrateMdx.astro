@@ -1,0 +1,60 @@
+---
+/**
+ * Wrapper that hydrates interactive MDX components (Gallery, Video, LightboxImage)
+ * after the page loads. Astro's MDX <Content> renders React components as static
+ * HTML without client-side hydration. This script finds components by data attributes
+ * and re-mounts them with React.
+ */
+---
+
+<script>
+  import { createElement } from 'react';
+  import { createRoot } from 'react-dom/client';
+  import Gallery from './Gallery';
+  import Video from './Video';
+  import LightboxImage from './LightboxImage';
+
+  function hydrateComponents() {
+    // Hydrate Gallery components
+    document.querySelectorAll('[data-gallery-path]').forEach((el) => {
+      if ((el as HTMLElement).dataset.hydrated) return;
+      (el as HTMLElement).dataset.hydrated = 'true';
+      const path = el.getAttribute('data-gallery-path') || '';
+      const aspectRatio = el.getAttribute('data-gallery-aspect') || '4/3';
+      const root = createRoot(el);
+      root.render(createElement(Gallery, { path, aspectRatio }));
+    });
+
+    // Hydrate Video components
+    document.querySelectorAll('[data-video-src]').forEach((el) => {
+      if ((el as HTMLElement).dataset.hydrated) return;
+      (el as HTMLElement).dataset.hydrated = 'true';
+      const src = el.getAttribute('data-video-src') || '';
+      const caption = el.getAttribute('data-video-caption') || undefined;
+      const root = createRoot(el);
+      root.render(createElement(Video, { src, caption }));
+    });
+
+    // Hydrate all images inside MDX content as LightboxImage
+    // Target images inside the content article (not header images, not avatars)
+    document.querySelectorAll('article img:not([data-no-lightbox])').forEach((el) => {
+      if ((el as HTMLElement).dataset.hydrated) return;
+      (el as HTMLElement).dataset.hydrated = 'true';
+      const src = el.getAttribute('src') || '';
+      const alt = el.getAttribute('alt') || '';
+      const className = el.getAttribute('class') || '';
+      const wrapper = document.createElement('span');
+      wrapper.style.display = 'contents';
+      el.parentNode?.insertBefore(wrapper, el);
+      el.remove();
+      const root = createRoot(wrapper);
+      root.render(createElement(LightboxImage, { src, alt, className }));
+    });
+  }
+
+  // Run on initial load (small delay to let server HTML settle)
+  setTimeout(hydrateComponents, 100);
+
+  // Re-run after View Transition swaps
+  document.addEventListener('astro:after-swap', () => setTimeout(hydrateComponents, 100));
+</script>

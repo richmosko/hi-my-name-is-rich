@@ -1,0 +1,37 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import siteSettings from '../data/site-settings.json';
+
+// Admin links from site settings
+const adminLinks = siteSettings.adminLinks || [];
+---
+
+<MainLayout title="Admin">
+  <div class="max-w-[900px] mx-auto py-8 px-4">
+    <!-- Quick links -->
+    <h1 class="text-3xl font-bold text-content mb-6">Admin Dashboard</h1>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      {adminLinks.map(link => (
+        <a
+          href={link.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="rounded-xl border border-edge p-5 hover:border-accent transition-colors"
+        >
+          <h3 class="font-semibold text-content text-sm">{link.name}</h3>
+          <p class="text-xs text-content-muted mt-1">{link.description}</p>
+        </a>
+      ))}
+    </div>
+
+    <!-- Remark42 comment activity (React island for API calls) -->
+    <div id="admin-comments">
+      <h2 class="text-xl font-semibold text-content mb-4">Recent Comments</h2>
+      <p class="text-sm text-content-muted">
+        Comment moderation is available directly on each post page via the Remark42 widget.
+        Sign in as admin on any post to access moderation controls.
+      </p>
+    </div>
+  </div>
+</MainLayout>

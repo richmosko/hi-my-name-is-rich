@@ -1,19 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { posts, searchPosts } from '../lib/posts';
 
-export default function SearchPanel() {
+export default function SearchPanel({ pathname = '/' }: { pathname?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [prevPathname, setPrevPathname] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
-  const location = useLocation();
 
   // Close on route change and reset query when closing
-  if (location.pathname !== prevPathname) {
-    setPrevPathname(location.pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     if (isOpen) setIsOpen(false);
   }
   if (!isOpen && query) {
@@ -41,7 +38,7 @@ export default function SearchPanel() {
   const totalCount = results.length;
 
   function handleViewAll() {
-    navigate(`/posts?q=${encodeURIComponent(query.trim())}`);
+    window.location.href = `/posts?q=${encodeURIComponent(query.trim())}`;
     setIsOpen(false);
   }
 
@@ -137,9 +134,9 @@ export default function SearchPanel() {
                   {totalCount} result{totalCount !== 1 ? 's' : ''}
                 </p>
                 {topResults.map((post) => (
-                  <Link
+                  <a
                     key={post.id}
-                    to={`/post/${post.slug}`}
+                    href={`/post/${post.slug}`}
                     onClick={() => setIsOpen(false)}
                     className="block py-3 border-b border-edge/50 last:border-b-0 hover:bg-surface-secondary -mx-2 px-2 rounded transition-colors"
                   >
@@ -149,7 +146,7 @@ export default function SearchPanel() {
                     <p className="text-xs text-content-muted line-clamp-1 mt-1">
                       {post.excerpt}
                     </p>
-                  </Link>
+                  </a>
                 ))}
                 {totalCount > 8 && (
                   <button
