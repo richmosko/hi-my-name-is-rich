@@ -6,7 +6,7 @@ import ConstellationGraph from '../components/ConstellationGraph';
 <MainLayout title="Constellation" noFooter fullScreen>
   <div class="relative w-full overflow-hidden" style="height: calc(100dvh - 65px)">
     <ConstellationGraph
-      client:only="react"
+      client:load
       autoFit
       interactive
       showWikilinks={true}
