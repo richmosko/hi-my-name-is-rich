@@ -64,14 +64,6 @@ export default function TopBar({ pathname = '/' }: { pathname?: string }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
   const constellationActive = useStore($constellationActive);
-  const showWikilinks = useStore($showWikilinks);
-  const showTags = useStore($showTags);
-  const zoom = useStore($zoom);
-  const forces = useStore($forces);
-  const nodeCount = useStore($nodeCount);
-  const edgeCount = useStore($edgeCount);
-  const wikilinkCount = useStore($wikilinkCount);
-  const tagCount = useStore($tagCount);
 
   const isPostDetail = pathname.startsWith('/post/');
   const isProjectDetail = pathname.startsWith('/project/');
@@ -128,7 +120,7 @@ export default function TopBar({ pathname = '/' }: { pathname?: string }) {
         {/* Constellation stats — inline after breadcrumb */}
         {isConstellationPage && (
           <span className="text-xs text-content-muted leading-none mb-[1px] ml-1 hidden sm:inline">
-            ({nodeCount} posts · {edgeCount} connections)
+            ({$nodeCount.get()} posts · {$edgeCount.get()} connections)
           </span>
         )}
 
@@ -148,9 +140,17 @@ export default function TopBar({ pathname = '/' }: { pathname?: string }) {
               </svg>
             </button>
 
-            {/* Dropdown */}
-            {dropdownOpen && (
-              <div
+            {/* Dropdown — read stores imperatively to avoid re-render loops */}
+            {dropdownOpen && (() => {
+              const showWikilinks = $showWikilinks.get();
+              const showTags = $showTags.get();
+              const zoom = $zoom.get();
+              const forces = $forces.get();
+              const nodeCount = $nodeCount.get();
+              const edgeCount = $edgeCount.get();
+              const wikilinkCount = $wikilinkCount.get();
+              const tagCount = $tagCount.get();
+              return (<div
                 className="fixed right-6 top-14 px-4 py-3 rounded-xl text-xs space-y-2 min-w-[280px] z-50"
                 onTouchStart={(e) => e.stopPropagation()}
                 onTouchMove={(e) => e.stopPropagation()}
@@ -310,8 +310,8 @@ export default function TopBar({ pathname = '/' }: { pathname?: string }) {
                 >
                   Drag nodes · Scroll to zoom · Drag space to pan
                 </div>
-              </div>
-            )}
+              </div>);
+            })()}
           </div>
         )}
 
