@@ -1,14 +1,14 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import { getCollection } from 'astro:content';
-import PostCard from '../../components/PostCard';
+import PostsListIsland from '../../components/PostsListIsland';
 
 const posts = await getCollection('posts');
 const sortedPosts = posts.sort(
   (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
 );
 
-// Convert to the BlogPost format that PostCard expects
+// Convert to BlogPost format
 const blogPosts = sortedPosts.map(p => ({
   id: p.id,
   slug: p.id,
@@ -23,12 +23,18 @@ const blogPosts = sortedPosts.map(p => ({
   authorId: p.data.authorId,
   tags: p.data.tags || [],
 }));
+
+// Get search params from URL
+const q = Astro.url.searchParams.get('q') || '';
+const tag = Astro.url.searchParams.get('tag') || '';
 ---
 
 <MainLayout title="All Posts">
   <div class="flex flex-col gap-8 items-center">
     <div class="w-full max-w-[640px]">
-      <h1 class="text-2xl sm:text-3xl font-bold text-content">All Posts</h1>
+      <h1 class="text-2xl sm:text-3xl font-bold text-content">
+        {q ? `Search Results: ${q}` : 'All Posts'}
+      </h1>
       <p class="text-content-secondary mt-2 text-sm">{sortedPosts.length} posts</p>
     </div>
 
@@ -41,11 +47,12 @@ const blogPosts = sortedPosts.map(p => ({
       />
     </div>
 
-    <!-- Post list -->
-    <div class="w-full max-w-[640px] flex flex-col gap-6">
-      {blogPosts.map(post => (
-        <PostCard post={post} />
-      ))}
-    </div>
+    <!-- Interactive post list with filters -->
+    <PostsListIsland
+      client:load
+      posts={blogPosts}
+      initialQuery={q}
+      initialTag={tag}
+    />
   </div>
 </MainLayout>

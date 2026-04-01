@@ -3,6 +3,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 import { authors } from '../data/authors';
 import { categoryConfig } from '../data/categories';
 import LightboxImage from '../components/LightboxImage';
+import siteSettings from '../data/site-settings.json';
 
 const rich = authors['rich'];
 ---
@@ -13,17 +14,28 @@ const rich = authors['rich'];
       <h1 class="text-2xl sm:text-3xl font-bold text-content">About</h1>
     </div>
 
-    <!-- Profile image -->
-    <div class="w-full max-w-[640px]">
-      <LightboxImage client:visible src="/images/profiles/profile-rich-watercolor-bg.png" alt="Rich Mosko" />
+    <!-- Hero image — wider -->
+    <div class="w-full max-w-[1250px] rounded-2xl overflow-hidden">
+      <LightboxImage
+        client:visible
+        src={siteSettings.profileImage}
+        alt="Rich Mosko"
+        className="w-full h-auto object-cover"
+      />
     </div>
 
     <!-- Bio -->
     <div class="w-full max-w-[640px] prose-custom">
-      <p class="text-content-secondary">{rich?.bio}</p>
+      <h2 class="text-2xl font-semibold text-content mb-4">Hi, I'm Rich.</h2>
+      <p class="text-content-secondary leading-relaxed mb-4">{rich?.bio}</p>
+      <p class="text-content-secondary leading-relaxed">
+        This blog is where I share stories, projects, and ideas. Whether it's recounting
+        adventures from a year-long round-the-world trip, documenting a house build in
+        Tahoe, or exploring new technologies — it's all here.
+      </p>
     </div>
 
-    <!-- Categories grid -->
+    <!-- Interests / Categories -->
     <div class="w-full max-w-[640px]">
       <h2 class="text-xl font-semibold text-content mb-4">What I Write About</h2>
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -38,5 +50,24 @@ const rich = authors['rich'];
         ))}
       </div>
     </div>
+
+    <!-- Social links -->
+    {rich?.socials && rich.socials.length > 0 && (
+      <div class="w-full max-w-[640px]">
+        <h2 class="text-xl font-semibold text-content mb-4">Find Me Online</h2>
+        <div class="flex gap-4">
+          {rich.socials.map(social => (
+            <a
+              href={social.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="px-4 py-2 rounded-lg border border-edge hover:border-accent text-sm text-content hover:text-accent transition-colors"
+            >
+              {social.label}
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
   </div>
 </MainLayout>

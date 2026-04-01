@@ -2,90 +2,120 @@
 import MainLayout from '../layouts/MainLayout.astro';
 import { getCollection } from 'astro:content';
 import { parseLocalDate } from '../lib/dateUtils';
+import { authors } from '../data/authors';
+import { categoryConfig } from '../data/categories';
+import PostCard from '../components/PostCard';
+import ConstellationGraph from '../components/ConstellationGraph';
+import siteSettings from '../data/site-settings.json';
 
 const posts = await getCollection('posts');
-const projects = await getCollection('projects');
 
-// Sort posts newest first
-const sortedPosts = posts.sort(
-  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
-);
+// Sort posts newest first (with slug as tiebreaker)
+const sortedPosts = posts.sort((a, b) => {
+  const diff = new Date(b.data.date).getTime() - new Date(a.data.date).getTime();
+  return diff !== 0 ? diff : a.id.localeCompare(b.id);
+});
 
-const featuredPosts = sortedPosts.filter((p) => p.data.featured).slice(0, 3);
-const latestPosts = sortedPosts.slice(0, 5);
+// Featured: latest post + up to 2 non-duplicate featured posts
+const latestPost = sortedPosts[0];
+const featuredOthers = sortedPosts
+  .filter((p) => p.data.featured && p.id !== latestPost?.id)
+  .slice(0, 2);
+
+const rich = authors['rich'];
+
+// Convert to BlogPost format for PostCard
+function toBlogPost(p: typeof sortedPosts[0]) {
+  return {
+    id: p.id,
+    slug: p.id,
+    title: p.data.title,
+    excerpt: p.data.excerpt,
+    date: p.data.date,
+    readTime: p.data.readTime || '1 min read',
+    categories: p.data.categories as string[],
+    featured: p.data.featured,
+    image: p.data.image || p.data.imageUpload || undefined,
+    imageAspectRatio: p.data.imageAspectRatio,
+    authorId: p.data.authorId,
+    tags: p.data.tags || [],
+  };
+}
 ---
 
-<MainLayout title="Home">
-  <div class="flex flex-col gap-8 items-center">
-    <div class="max-w-[640px] w-full">
-      <h1 class="text-4xl font-bold text-content mb-4">Hi, my name is Rich.</h1>
-      <p class="text-content-secondary mb-8">
-        This site is powered by Astro 6. Content collections loaded successfully.
-      </p>
-    </div>
+<MainLayout>
+  <div class="flex flex-col gap-10 items-center">
+    <!-- Profile + Intro -->
+    <div class="flex flex-col items-center gap-6 max-w-[640px] w-full">
+      <img
+        src={siteSettings.profileImage}
+        alt={rich?.name || 'Profile'}
+        class="w-[40vw] max-w-[414px] rounded-3xl"
+      />
 
-    <!-- Stats -->
-    <div class="grid grid-cols-3 gap-4 max-w-[640px] w-full">
-      <div class="rounded-xl border border-edge p-4">
-        <div class="text-2xl font-bold text-accent">{posts.length}</div>
-        <div class="text-sm text-content-muted">Posts</div>
+      <div>
+        <h1 class="text-4xl sm:text-5xl font-bold text-content mb-4">
+          Hi, my name is Rich.
+        </h1>
+        <p class="text-content-secondary text-lg leading-relaxed">
+          Former <strong>Hardware Designer</strong>, part-time
+          <strong>Adventurer</strong>, and full-time <strong>Loafer</strong> and
+          <strong>Fudgel</strong>. This is a place for me to share what I'm learning,
+          building, and thinking about.
+        </p>
       </div>
-      <div class="rounded-xl border border-edge p-4">
-        <div class="text-2xl font-bold text-accent">{projects.length}</div>
-        <div class="text-sm text-content-muted">Projects</div>
-      </div>
-      <div class="rounded-xl border border-edge p-4">
-        <div class="text-2xl font-bold text-accent">{featuredPosts.length}</div>
-        <div class="text-sm text-content-muted">Featured</div>
+
+      <!-- Links -->
+      <div class="flex gap-6 w-full">
+        <a href="/about" class="text-accent hover:text-accent-hover text-sm font-medium transition-colors">
+          More about me →
+        </a>
+        <a href="/posts" class="text-accent hover:text-accent-hover text-sm font-medium transition-colors">
+          Latest posts →
+        </a>
       </div>
     </div>
 
     <!-- Featured Posts -->
-    <div class="max-w-[640px] w-full">
-      <h2 class="text-2xl font-semibold text-content mb-4">Featured Posts</h2>
-      <div class="flex flex-col gap-3">
-        {featuredPosts.map((post) => (
-          <a href={`/post/${post.id}`} class="rounded-xl border border-edge p-4 hover:border-accent transition-colors">
-            <h3 class="font-semibold text-content">{post.data.title}</h3>
-            <p class="text-sm text-content-muted mt-1">{post.data.excerpt}</p>
-            <div class="text-xs text-content-muted mt-2">
-              {parseLocalDate(post.data.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-            </div>
-          </a>
-        ))}
+    <div class="w-full max-w-[1250px]">
+      <h2 class="text-2xl font-semibold text-content mb-6 text-center">Featured Posts</h2>
+
+      <div class="flex flex-col lg:flex-row gap-6">
+        {/* Large card — latest post */}
+        {latestPost && (
+          <div class="lg:w-2/3">
+            <PostCard post={toBlogPost(latestPost)} variant="large" />
+          </div>
+        )}
+
+        {/* Stacked compact cards */}
+        {featuredOthers.length > 0 && (
+          <div class="lg:w-1/3 flex flex-col gap-6">
+            {featuredOthers.map((post) => (
+              <PostCard post={toBlogPost(post)} variant="compact" />
+            ))}
+          </div>
+        )}
       </div>
     </div>
 
-    <!-- Latest Posts -->
-    <div class="max-w-[640px] w-full">
-      <h2 class="text-2xl font-semibold text-content mb-4">Latest Posts</h2>
-      <ul class="space-y-3">
-        {latestPosts.map((post) => (
-          <li>
-            <a href={`/post/${post.id}`} class="flex justify-between items-baseline hover:text-accent transition-colors">
-              <span class="text-content font-medium">{post.data.title}</span>
-              <span class="text-sm text-content-muted">
-                {parseLocalDate(post.data.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-              </span>
-            </a>
-          </li>
-        ))}
-      </ul>
-    </div>
-
-    <!-- Projects -->
-    <div class="max-w-[640px] w-full">
-      <h2 class="text-2xl font-semibold text-content mb-4">Projects</h2>
-      <ul class="space-y-3">
-        {projects.map((project) => (
-          <li>
-            <a href={`/project/${project.id}`} class="flex justify-between items-baseline hover:text-accent transition-colors">
-              <span class="text-content font-medium">{project.data.name}</span>
-              <span class="text-sm text-content-muted">{project.data.status}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
+    <!-- Constellation Graph Preview -->
+    <div class="w-full max-w-[1250px]">
+      <div class="flex items-center gap-3 mb-4 justify-center">
+        <a href="/constellation" class="text-2xl font-semibold text-content hover:text-accent transition-colors">
+          Constellation Graph
+        </a>
+      </div>
+      <div class="rounded-xl overflow-hidden" style="height: min(500px, 50vh)">
+        <ConstellationGraph
+          client:visible
+          autoFit
+          interactive={false}
+          showWikilinks={true}
+          showTags={true}
+          style={{ width: '100%', height: '100%' }}
+        />
+      </div>
     </div>
   </div>
 </MainLayout>

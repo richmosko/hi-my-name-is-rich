@@ -52,14 +52,30 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
       rel="stylesheet"
     />
 
-    <!-- Theme detection (prevent flash) -->
+    <!-- Theme detection (prevent flash) — runs on every navigation -->
     <script is:inline>
       (function() {
         var t = localStorage.getItem('theme');
-        if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        var isDark = t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) {
           document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
         }
       })();
+    </script>
+
+    <!-- Re-apply theme after View Transition swap -->
+    <script is:inline>
+      document.addEventListener('astro:after-swap', function() {
+        var t = localStorage.getItem('theme');
+        var isDark = t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      });
     </script>
 
     <!-- View Transitions -->
