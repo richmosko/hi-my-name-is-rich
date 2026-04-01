@@ -36,6 +36,7 @@ const completedProjects = projects.filter(p => p.data.status === 'completed');
             vikunjaProjectId={project.data.vikunjaProjectId ?? undefined}
             projectName={project.data.name}
             projectUrl={`/project/${project.id}`}
+            description={project.data.description}
           />
         ))}
       </section>
@@ -51,6 +52,7 @@ const completedProjects = projects.filter(p => p.data.status === 'completed');
             vikunjaProjectId={project.data.vikunjaProjectId ?? undefined}
             projectName={project.data.name}
             projectUrl={`/project/${project.id}`}
+            description={project.data.description}
           />
         ))}
       </section>
