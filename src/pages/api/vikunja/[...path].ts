@@ -2,8 +2,7 @@ import type { APIRoute } from 'astro';
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ params }) => {
-  // Server-side env vars (not prefixed with PUBLIC_)
+export const GET: APIRoute = async ({ params, request }) => {
   const host = import.meta.env.VIKUNJA_HOST || import.meta.env.VITE_VIKUNJA_HOST || '';
   const token = import.meta.env.VIKUNJA_TOKEN || import.meta.env.VITE_VIKUNJA_TOKEN || '';
 
@@ -14,7 +13,11 @@ export const GET: APIRoute = async ({ params }) => {
     });
   }
 
-  const url = `${host}/api/v1/${params.path}`;
+  // Forward query params from the original request
+  const requestUrl = new URL(request.url);
+  const queryString = requestUrl.search;
+  const url = `${host}/api/v1/${params.path}${queryString}`;
+
   try {
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
