@@ -20,7 +20,7 @@ export default function PostCard({ post, variant = 'default' }: PostCardProps) {
     <a
       href={`/post/${post.slug}`}
       className={`group flex flex-col items-start ${
-        isLarge ? 'lg:h-full gap-4' : isCompact ? 'gap-2' : 'gap-4'
+        isLarge ? 'lg:h-full lg:justify-between gap-4' : isCompact ? 'gap-2' : 'gap-4'
       }`}
     >
       {/* Thumbnail */}
@@ -28,7 +28,7 @@ export default function PostCard({ post, variant = 'default' }: PostCardProps) {
         <div
           className={`w-full overflow-hidden rounded-xl ${
             isLarge
-              ? 'aspect-[6/4] lg:aspect-auto lg:flex-1 lg:min-h-[200px]'
+              ? 'aspect-[6/4]'
               : isCompact
                 ? 'aspect-[16/9]'
                 : 'aspect-[6/4]'
