@@ -54,6 +54,8 @@ export default defineConfig({
   },
 
   markdown: {
+    // Disable Shiki syntax highlighting — we style code blocks via MdxComponents
+    syntaxHighlight: false,
     remarkPlugins: [
       remarkGfm,
       [
