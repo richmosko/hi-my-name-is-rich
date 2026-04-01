@@ -5,6 +5,7 @@ export interface CategoryConfig {
   description: string;
   colors: string;
   badgeColors: string;
+  heroImage?: string;
 }
 
 export const categoryConfig: Record<Category, CategoryConfig> = {
