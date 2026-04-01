@@ -44,37 +44,52 @@ function toBlogPost(p: typeof sortedPosts[0]) {
 ---
 
 <MainLayout>
-  <div class="flex flex-col gap-10 items-center">
-    <!-- Profile + Intro -->
-    <div class="flex flex-col items-center gap-6 max-w-[640px] w-full">
-      <img
-        src={siteSettings.profileImage}
-        alt={rich?.name || 'Profile'}
-        class="w-[40vw] max-w-[414px] rounded-3xl"
-      />
-
-      <div>
-        <h1 class="text-4xl sm:text-5xl font-bold text-content mb-4">
+  <div class="flex flex-col gap-10 sm:gap-16">
+    <!-- Hero section -->
+    <section class="flex flex-col-reverse lg:flex-row items-center lg:items-start gap-8 lg:gap-10">
+      <!-- Text — left side on desktop, below image on mobile -->
+      <div class="flex-1 flex flex-col gap-4 sm:gap-6">
+        <h1 class="text-3xl sm:text-4xl font-bold text-content leading-tight">
           Hi, my name is Rich.
         </h1>
-        <p class="text-content-secondary text-lg leading-relaxed">
-          Former <strong>Hardware Designer</strong>, part-time
-          <strong>Adventurer</strong>, and full-time <strong>Loafer</strong> and
-          <strong>Fudgel</strong>. This is a place for me to share what I'm learning,
-          building, and thinking about.
+        <p class="text-base sm:text-xl font-light text-content-secondary leading-relaxed">
+          Former <span class="text-lg sm:text-2xl font-normal">Hardware Designer</span>,
+          part-time <span class="text-lg sm:text-2xl font-normal">Adventurer</span>,
+          and full-time <span class="text-lg sm:text-2xl font-normal">Loafer</span> and
+          <span class="text-lg sm:text-2xl font-normal">Fudgel</span>. This is a place
+          for me to share what I'm learning, building, and thinking about.
         </p>
+        <p class="text-base sm:text-xl font-light text-content-secondary leading-relaxed">
+          I am by no means an expert... at pretty much anything. But I am
+          naturally <span class="text-lg sm:text-2xl font-normal">curious</span>, and
+          find myself with a lot of time to ponder the meaning of
+          things. This project is meant to be a
+          <span class="text-lg sm:text-2xl font-normal">learning</span> and
+          <span class="text-lg sm:text-2xl font-normal">growing</span> experience for
+          me. It's pretty much not useful to anyone whatsoever... but if
+          you've stumbled here by accident:
+          <span class="text-lg sm:text-2xl font-semibold">Welcome Friend!</span>
+          Hopefully I'm able to share a bit of positivity and joy.
+        </p>
+        <div class="pt-2 flex flex-col gap-1">
+          <a href="/about" class="text-sm font-medium text-content-muted hover:text-content transition-colors duration-150">
+            More about me &rarr;
+          </a>
+          <a href="/posts" class="text-sm font-medium text-content-muted hover:text-content transition-colors duration-150">
+            Latest posts &rarr;
+          </a>
+        </div>
       </div>
 
-      <!-- Links -->
-      <div class="flex gap-6 w-full">
-        <a href="/about" class="text-accent hover:text-accent-hover text-sm font-medium transition-colors">
-          More about me →
-        </a>
-        <a href="/posts" class="text-accent hover:text-accent-hover text-sm font-medium transition-colors">
-          Latest posts →
-        </a>
+      <!-- Profile image — right side on desktop, top on mobile -->
+      <div class="w-[60%] sm:w-[40%] max-w-[414px]">
+        <img
+          src="/images/profiles/profile-rich.jpeg"
+          alt="Rich Mosko"
+          class="w-full aspect-square rounded-2xl object-cover shadow-sm"
+        />
       </div>
-    </div>
+    </section>
 
     <!-- Featured Posts -->
     <div class="w-full max-w-[1250px]">
