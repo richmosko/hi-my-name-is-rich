@@ -92,9 +92,9 @@ function toBlogPost(p: typeof sortedPosts[0]) {
       <section class="flex flex-col gap-8 sm:gap-10">
         <h2 class="text-2xl sm:text-3xl font-semibold text-content text-center">Featured Posts</h2>
 
-        <div class="flex flex-col lg:flex-row gap-6 sm:gap-8">
-          {/* Left — large card, 6/4 aspect on mobile, fills height on desktop (2/3 width) */}
-          <div class="lg:w-2/3 lg:h-full">
+        <div class="flex flex-col lg:flex-row lg:items-stretch gap-6 sm:gap-8">
+          {/* Left — large card, 6/4 aspect on mobile, stretches to match right on desktop */}
+          <div class="lg:w-2/3">
             <PostCard post={toBlogPost(featuredPosts[0])} variant="large" />
           </div>
 
