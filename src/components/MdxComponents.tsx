@@ -88,7 +88,7 @@ export const mdxComponents: MDXComponents = {
   },
   pre: (props) => (
     <pre
-      className="my-2 bg-[#1e1e1e] text-[#d4d4d4] rounded-lg p-4 overflow-x-auto"
+      className="my-2 bg-surface-secondary text-content rounded-lg p-4 overflow-x-auto"
       {...props}
     />
   ),
