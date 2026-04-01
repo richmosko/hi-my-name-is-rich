@@ -510,7 +510,7 @@ export default function ConstellationGraph({
       const dx = Math.abs(e.clientX - downPos.x), dy = Math.abs(e.clientY - downPos.y);
       if (dx < 5 && dy < 5) { const node = wasDragging || getNodeAt(e.clientX, e.clientY); if (node) window.location.href = `/post/${node.id}`; }
     }
-  }, [interactive, getNodeAt, navigate]);
+  }, [interactive, getNodeAt]);
 
   const handleMouseLeave = useCallback(() => {
     if (!interactive) return;
@@ -587,7 +587,7 @@ export default function ConstellationGraph({
     }
     if (draggedNodeRef.current) draggedNodeRef.current.pinned = false;
     draggedNodeRef.current = null; panRef.current = null; hoveredRef.current = null; touchStartRef.current = null;
-  }, [interactive, getNodeAt, navigate]);
+  }, [interactive, getNodeAt]);
 
 
   return (
