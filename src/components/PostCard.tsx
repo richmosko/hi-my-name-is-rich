@@ -20,7 +20,7 @@ export default function PostCard({ post, variant = 'default' }: PostCardProps) {
     <a
       href={`/post/${post.slug}`}
       className={`group flex flex-col items-start ${
-        isLarge ? 'lg:h-full gap-4' : isCompact ? 'gap-2' : 'gap-4'
+        isLarge ? 'lg:h-full lg:justify-between gap-4' : isCompact ? 'gap-2' : 'gap-4'
       }`}
     >
       {/* Thumbnail */}
