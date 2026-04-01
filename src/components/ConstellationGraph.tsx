@@ -183,7 +183,16 @@ export default function ConstellationGraph({
       for (let i = 0; i < 300; i++) { tick(nodes, edges, 1000, 1000, alpha); alpha *= 0.98; }
 
       if (autoFit) {
-        // Nodes stay in sim space (centered ~500,500). Use camera to map to viewport.
+        // Shift all nodes so centroid = canvas center, then compute zoom
+        let sumX = 0, sumY = 0;
+        for (const n of nodes) { sumX += n.x; sumY += n.y; }
+        const cx = sumX / nodes.length;
+        const cy = sumY / nodes.length;
+        const dx = rect.width / 2 - cx;
+        const dy = rect.height / 2 - cy;
+        for (const n of nodes) { n.x += dx; n.y += dy; }
+
+        // Compute zoom from bounding box
         let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
         for (const n of nodes) {
           minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x);
@@ -191,13 +200,9 @@ export default function ConstellationGraph({
         }
         const graphW = maxX - minX || 1;
         const graphH = maxY - minY || 1;
-        const graphCx = (minX + maxX) / 2;
-        const graphCy = (minY + maxY) / 2;
-        const zoom = Math.min(rect.width / graphW, rect.height / graphH) * 0.85;
-        // Camera offset: shift so graph center appears at viewport center
-        const camX = rect.width / 2 - graphCx;
-        const camY = rect.height / 2 - graphCy;
-        cameraRef.current = { x: camX, y: camY, zoom };
+        const zoom = Math.min(rect.width / graphW, rect.height / graphH) * 0.8;
+        // Camera at (0,0) since nodes are already centered on canvas
+        cameraRef.current = { x: 0, y: 0, zoom };
         if (controls) { controls.zoomRef.current = zoom; controls.setZoom(zoom); }
       }
     };
@@ -251,7 +256,11 @@ export default function ConstellationGraph({
 
       const alpha = draggedNode ? 0.3 : 0.015;
       // Use 1000x1000 sim frame — matches init, gravity + boundary at (500,500)
-      tick(nodes, edges, 1000, 1000, alpha, multipliers);
+      // Use canvas dimensions when autoFit shifted nodes to canvas center,
+      // otherwise use sim frame (1000x1000)
+      const tickW = autoFit ? w : 1000;
+      const tickH = autoFit ? h : 1000;
+      tick(nodes, edges, tickW, tickH, alpha, multipliers);
       if (draggedNode) { draggedNode.vx = 0; draggedNode.vy = 0; }
 
       // Animated camera transition (for Reset All)
