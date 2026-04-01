@@ -28,7 +28,7 @@ export default function PostCard({ post, variant = 'default' }: PostCardProps) {
         <div
           className={`w-full overflow-hidden rounded-xl ${
             isLarge
-              ? 'aspect-[6/4] lg:aspect-auto lg:flex-1 lg:min-h-0'
+              ? 'aspect-[6/4]'
               : isCompact
                 ? 'aspect-[16/9]'
                 : 'aspect-[6/4]'
