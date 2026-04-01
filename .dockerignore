@@ -7,3 +7,4 @@ docs/
 keystatic-admin/
 *.md
 !README.md
+.astro/
