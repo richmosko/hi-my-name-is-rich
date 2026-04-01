@@ -303,9 +303,9 @@ export default function ConstellationGraph({
           cam.y = target.y;
           cam.zoom = target.zoom;
           cameraTargetRef.current = null;
+          // Sync final zoom to store when animation completes
+          $zoom.set(cam.zoom);
         }
-        // Sync zoom to context during animation
-        $zoom.set(cam.zoom);
       } else {
         // Sync zoom from store (slider) → camera (no animation in progress)
         const storeZ = zoomRef.current;

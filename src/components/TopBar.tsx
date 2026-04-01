@@ -61,6 +61,8 @@ function Slider({ label, value, min, max, step, onChange }: {
 
 export default function TopBar({ pathname = '/' }: { pathname?: string }) {
   const { theme, toggleTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   const constellationActive = useStore($constellationActive);
   const showWikilinks = useStore($showWikilinks);
   const showTags = useStore($showTags);
@@ -75,7 +77,7 @@ export default function TopBar({ pathname = '/' }: { pathname?: string }) {
   const isProjectDetail = pathname.startsWith('/project/');
   const currentLabel = isPostDetail ? 'Posts' : isProjectDetail ? 'Projects' : (routeLabels[pathname] ?? '');
 
-  const isConstellationPage = pathname === '/constellation' && constellationActive;
+  const isConstellationPage = mounted && pathname === '/constellation' && constellationActive;
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
