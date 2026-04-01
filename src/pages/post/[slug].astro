@@ -5,9 +5,6 @@ import { parseLocalDate } from '../../lib/dateUtils';
 import { authors } from '../../data/authors';
 import { categoryConfig } from '../../data/categories';
 import LightboxImage from '../../components/LightboxImage';
-import Gallery from '../../components/Gallery';
-import Video from '../../components/Video';
-import YouTube from '../../components/YouTube';
 import Comments from '../../components/Comments';
 import { mdxComponents } from '../../components/MdxComponents';
 import { categoryColors } from '../../data/categories';
@@ -135,9 +132,6 @@ const formattedDate = parseLocalDate(post.data.date).toLocaleDateString('en-US',
       <Content components={{
         ...mdxComponents,
         img: LightboxImage,
-        Gallery,
-        Video,
-        YouTube,
       }} />
       </div>
 

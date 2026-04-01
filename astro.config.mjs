@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import AutoImport from 'astro-auto-import';
 import react from '@astrojs/react';
 import mdx from '@astrojs/mdx';
 import node from '@astrojs/node';
@@ -33,6 +34,15 @@ export default defineConfig({
   adapter: node({ mode: 'standalone' }),
 
   integrations: [
+    AutoImport({
+      imports: [
+        // Auto-import interactive components into every MDX file
+        // so they hydrate properly (useEffect, useState work)
+        './src/components/Gallery.tsx',
+        './src/components/Video.tsx',
+        './src/components/YouTube.tsx',
+      ],
+    }),
     react(),
     mdx(),
     sitemap(),
