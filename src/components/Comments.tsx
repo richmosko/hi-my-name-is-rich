@@ -11,7 +11,7 @@ declare global {
   }
 }
 
-const REMARK42_HOST = import.meta.env.VITE_REMARK42_HOST || '';
+const REMARK42_HOST = import.meta.env.PUBLIC_REMARK42_HOST || import.meta.env.VITE_REMARK42_HOST || '';
 
 interface CommentsProps {
   pageId: string;
