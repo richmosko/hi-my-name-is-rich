@@ -154,7 +154,11 @@ export default function Gallery({ path, images: imagesProp, aspectRatio = '4/3',
   }
 
   return (
-    <div className={`relative my-4 ${fullWidth ? 'w-screen left-1/2 -translate-x-1/2 max-w-[950px]' : ''}`}>
+    <div
+      data-gallery-path={path || ''}
+      data-gallery-aspect={aspectRatio}
+      className={`relative my-4 ${fullWidth ? 'w-screen left-1/2 -translate-x-1/2 max-w-[950px]' : ''}`}
+    >
       {/* Scroll container */}
       <div
         ref={scrollRef}

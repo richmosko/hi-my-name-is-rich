@@ -6,6 +6,7 @@ import { authors } from '../../data/authors';
 import { categoryConfig } from '../../data/categories';
 import LightboxImage from '../../components/LightboxImage';
 import Comments from '../../components/Comments';
+import HydrateMdx from '../../components/HydrateMdx.astro';
 import { mdxComponents } from '../../components/MdxComponents';
 import { categoryColors } from '../../data/categories';
 
@@ -134,6 +135,9 @@ const formattedDate = parseLocalDate(post.data.date).toLocaleDateString('en-US',
         img: LightboxImage,
       }} />
       </div>
+
+      <!-- Hydrate interactive MDX components (Gallery, Video, Lightbox) -->
+      <HydrateMdx />
 
       <!-- Prev/Next navigation -->
       <nav class="w-full max-w-[640px] flex justify-between items-center border-t border-edge pt-6 mt-4">

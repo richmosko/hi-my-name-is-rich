@@ -1,0 +1,51 @@
+---
+/**
+ * Wrapper that hydrates interactive MDX components (Gallery, Video, LightboxImage)
+ * after the page loads. Astro's MDX <Content> renders React components as static
+ * HTML without client-side hydration. This script finds components by data attributes
+ * and re-mounts them with React.
+ */
+---
+
+<script>
+  import { createElement } from 'react';
+  import { createRoot } from 'react-dom/client';
+  import Gallery from './Gallery';
+  import Video from './Video';
+  import LightboxImage from './LightboxImage';
+
+  function hydrateComponents() {
+    // Hydrate Gallery components
+    document.querySelectorAll('[data-gallery-path]').forEach((el) => {
+      const path = el.getAttribute('data-gallery-path') || '';
+      const aspectRatio = el.getAttribute('data-gallery-aspect') || '4/3';
+      const root = createRoot(el);
+      root.render(createElement(Gallery, { path, aspectRatio }));
+    });
+
+    // Hydrate Video components
+    document.querySelectorAll('[data-video-src]').forEach((el) => {
+      const src = el.getAttribute('data-video-src') || '';
+      const caption = el.getAttribute('data-video-caption') || undefined;
+      const root = createRoot(el);
+      root.render(createElement(Video, { src, caption }));
+    });
+
+    // Hydrate LightboxImage components
+    document.querySelectorAll('img[data-lightbox]').forEach((el) => {
+      const src = el.getAttribute('src') || '';
+      const alt = el.getAttribute('alt') || '';
+      const wrapper = document.createElement('div');
+      el.parentNode?.insertBefore(wrapper, el);
+      el.remove();
+      const root = createRoot(wrapper);
+      root.render(createElement(LightboxImage, { src, alt }));
+    });
+  }
+
+  // Run on initial load
+  hydrateComponents();
+
+  // Re-run after View Transition swaps
+  document.addEventListener('astro:after-swap', hydrateComponents);
+</script>
