@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
 import { useConstellationControls } from '../hooks/useConstellationControls';
 import ConstellationIcon from './ConstellationIcon';
@@ -55,8 +54,7 @@ function Slider({ label, value, min, max, step, onChange }: {
   );
 }
 
-export default function TopBar() {
-  const { pathname } = useLocation();
+export default function TopBar({ pathname = '/' }: { pathname?: string }) {
   const { theme, toggleTheme } = useTheme();
   const constellation = useConstellationControls();
 
@@ -91,11 +89,11 @@ export default function TopBar() {
     <header className="sticky top-0 z-40 w-full bg-surface/80 backdrop-blur-md border-b border-edge">
       <div className="flex items-end h-16 pl-[60px] pr-6 pb-3 gap-3">
         {/* Home icon */}
-        <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="icon-hover text-content-muted" aria-label="Home">
+        <a href="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="icon-hover text-content-muted" aria-label="Home">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
           </svg>
-        </Link>
+        </a>
 
         {/* Site title */}
         <h1 className="text-xl font-semibold text-content-muted tracking-tight leading-none">
@@ -304,13 +302,13 @@ export default function TopBar() {
 
         {/* Constellation link icon — hidden on constellation page (gear replaces it) */}
         {!isConstellationPage && (
-          <Link
-            to="/constellation"
+          <a
+            href="/constellation"
             className="fixed right-[5.5rem] top-5 z-50 icon-hover text-content-muted"
             aria-label="Constellation Graph"
           >
             <ConstellationIcon className="w-5 h-5" />
-          </Link>
+          </a>
         )}
 
         {/* Theme toggle */}

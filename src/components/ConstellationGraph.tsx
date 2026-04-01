@@ -1,5 +1,4 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import graphData from '../lib/graph-index.json';
 import { useTheme } from '../hooks/useTheme';
 import { useConstellationControls } from '../hooks/useConstellationControls';
@@ -69,7 +68,6 @@ export default function ConstellationGraph({
 }: ConstellationGraphProps & { autoFit?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const controls = useConstellationControls();
@@ -510,7 +508,7 @@ export default function ConstellationGraph({
     if (canvasRef.current) canvasRef.current.style.cursor = hoveredRef.current ? 'pointer' : 'grab';
     if (downPos) {
       const dx = Math.abs(e.clientX - downPos.x), dy = Math.abs(e.clientY - downPos.y);
-      if (dx < 5 && dy < 5) { const node = wasDragging || getNodeAt(e.clientX, e.clientY); if (node) navigate(`/post/${node.id}`); }
+      if (dx < 5 && dy < 5) { const node = wasDragging || getNodeAt(e.clientX, e.clientY); if (node) window.location.href = `/post/${node.id}`; }
     }
   }, [interactive, getNodeAt, navigate]);
 
@@ -585,7 +583,7 @@ export default function ConstellationGraph({
     if (e.changedTouches.length === 1 && touchStartRef.current) {
       const dx = Math.abs(e.changedTouches[0].clientX - touchStartRef.current.x);
       const dy = Math.abs(e.changedTouches[0].clientY - touchStartRef.current.y);
-      if (dx < 10 && dy < 10) { const node = touchStartRef.current.node || getNodeAt(e.changedTouches[0].clientX, e.changedTouches[0].clientY); if (node) navigate(`/post/${node.id}`); }
+      if (dx < 10 && dy < 10) { const node = touchStartRef.current.node || getNodeAt(e.changedTouches[0].clientX, e.changedTouches[0].clientY); if (node) window.location.href = `/post/${node.id}`; }
     }
     if (draggedNodeRef.current) draggedNodeRef.current.pinned = false;
     draggedNodeRef.current = null; panRef.current = null; hoveredRef.current = null; touchStartRef.current = null;

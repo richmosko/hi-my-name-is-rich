@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
 import { projects } from '../lib/projects';
 import { getProjectCompletion } from '../types';
 import ConstellationIcon from './ConstellationIcon';
@@ -22,16 +21,15 @@ const categoryItems = [
   { label: 'Food', path: '/food' },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ pathname = '/' }: { pathname?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState('');
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const location = useLocation();
   const { counts: issueCounts } = useVikunjaIssueCounts();
 
   // Close sidebar on route change (render-time state adjustment)
-  if (location.pathname !== prevPathname) {
-    setPrevPathname(location.pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     setIsOpen(false);
   }
 
@@ -94,34 +92,23 @@ export default function Sidebar() {
         <ul className="flex flex-col gap-1">
           {navItems.map((item) => (
             <li key={item.path}>
-              <NavLink
-                to={item.path}
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className={({ isActive }) =>
-                  `block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150
-                   ${
-                     isActive
-                       ? 'text-content'
-                       : 'text-content-muted hover:text-content'
-                   }`
-                }
+              <a
+                href={item.path}
+                className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150
+                   ${pathname === item.path ? 'text-content' : 'text-content-muted hover:text-content'}`}
               >
                 {item.label}
                 {item.path === '/constellation' && <ConstellationIcon className="w-3.5 h-3.5 inline-block ml-1.5 -mt-0.5" />}
-              </NavLink>
+              </a>
             </li>
           ))}
         </ul>
 
         {/* Posts section — with category sub-links */}
         <div className="mt-8 pt-6 border-t border-edge">
-          <NavLink
-            to="/posts"
-            className={({ isActive }) =>
-              `flex items-center justify-between px-3 mb-3 group ${
-                isActive ? '' : ''
-              }`
-            }
+          <a
+            href="/posts"
+            className="flex items-center justify-between px-3 mb-3 group"
           >
             <span className="text-xs font-semibold uppercase tracking-wider text-content group-hover:text-accent transition-colors">
               Posts
@@ -129,23 +116,17 @@ export default function Sidebar() {
             <span className="text-xs text-content-muted group-hover:text-accent transition-colors">
               &rarr;
             </span>
-          </NavLink>
+          </a>
           <ul className="flex flex-col gap-1 pl-2">
             {categoryItems.map((item) => (
               <li key={item.path}>
-                <NavLink
-                  to={item.path}
-                  className={({ isActive }) =>
-                    `block px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150
-                     ${
-                       isActive
-                         ? 'text-content'
-                         : 'text-content-muted hover:text-content'
-                     }`
-                  }
+                <a
+                  href={item.path}
+                  className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150
+                     ${pathname === item.path ? 'text-content' : 'text-content-muted hover:text-content'}`}
                 >
                   {item.label}
-                </NavLink>
+                </a>
               </li>
             ))}
           </ul>
@@ -153,13 +134,9 @@ export default function Sidebar() {
 
         {/* Projects section — active projects with progress */}
         <div className="mt-8 pt-6 border-t border-edge">
-          <NavLink
-            to="/projects"
-            className={({ isActive }) =>
-              `flex items-center justify-between px-3 mb-3 group ${
-                isActive ? '' : ''
-              }`
-            }
+          <a
+            href="/projects"
+            className="flex items-center justify-between px-3 mb-3 group"
           >
             <span className="text-xs font-semibold uppercase tracking-wider text-content group-hover:text-accent transition-colors">
               Projects
@@ -167,7 +144,7 @@ export default function Sidebar() {
             <span className="text-xs text-content-muted group-hover:text-accent transition-colors">
               &rarr;
             </span>
-          </NavLink>
+          </a>
           <ul className="flex flex-col gap-1 pl-2">
             {projects
               .filter((p) => p.status === 'active')
@@ -176,8 +153,8 @@ export default function Sidebar() {
                 const issues = project.vikunjaProjectId ? issueCounts[project.vikunjaProjectId] : null;
                 return (
                   <li key={project.id}>
-                    <NavLink
-                      to={`/project/${project.id}`}
+                    <a
+                      href={`/project/${project.id}`}
                       className="block px-3 py-2 rounded-lg hover:bg-surface-secondary
                                  transition-colors duration-150"
                     >
@@ -214,7 +191,7 @@ export default function Sidebar() {
                           style={{ width: `${percent}%` }}
                         />
                       </span>
-                    </NavLink>
+                    </a>
                   </li>
                 );
               })}
