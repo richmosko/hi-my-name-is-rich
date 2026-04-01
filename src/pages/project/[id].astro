@@ -73,18 +73,18 @@ const aspectRatio = project.data.imageAspectRatio || '16/9';
         <p class="text-content-secondary">{project.data.description}</p>
       </div>
 
-      {project.data.url && project.data.url !== '#' && (
-        <a href={project.data.url} target="_blank" rel="noopener noreferrer" class="text-sm text-accent hover:text-accent-hover">
-          Visit Project →
-        </a>
-      )}
-
       <!-- Progress bar (compact, in header) -->
       <ProjectProgressBar
         client:load
         vikunjaProjectId={project.data.vikunjaProjectId ?? undefined}
         status={project.data.status}
       />
+
+      {project.data.url && project.data.url !== '#' && (
+        <a href={project.data.url} target="_blank" rel="noopener noreferrer" class="text-sm text-accent hover:text-accent-hover">
+          Visit Project →
+        </a>
+      )}
     </header>
 
     <!-- Hero image (wider) -->
