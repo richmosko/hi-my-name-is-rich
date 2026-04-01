@@ -1,0 +1,49 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import authorsData from '../data/authors.json';
+import LightboxImage from '../components/LightboxImage';
+
+const authorsList = authorsData.authors;
+---
+
+<MainLayout title="Contributors">
+  <div class="flex flex-col gap-8 items-center">
+    <div class="w-full max-w-[640px]">
+      <h1 class="text-2xl sm:text-3xl font-bold text-content">Contributors</h1>
+      <p class="text-content-secondary mt-2 text-sm">The people behind this site.</p>
+    </div>
+
+    <div class="w-full max-w-[640px] flex flex-col gap-8">
+      {authorsList.map(author => (
+        <div class="rounded-2xl border border-edge p-6 flex gap-5">
+          <div class="shrink-0">
+            <LightboxImage
+              client:visible
+              src={author.avatar}
+              alt={author.name}
+              className="w-20 h-20 rounded-full object-cover"
+            />
+          </div>
+          <div>
+            <h2 class="text-lg font-semibold text-content">{author.name}</h2>
+            <p class="text-sm text-content-secondary mt-1">{author.bio}</p>
+            {author.socials && author.socials.length > 0 && (
+              <div class="flex gap-3 mt-3">
+                {author.socials.map(social => (
+                  <a
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-xs text-accent hover:text-accent-hover"
+                  >
+                    {social.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</MainLayout>

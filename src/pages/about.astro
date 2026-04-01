@@ -1,0 +1,42 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { authors } from '../data/authors';
+import { categoryConfig } from '../data/categories';
+import LightboxImage from '../components/LightboxImage';
+
+const rich = authors['rich'];
+---
+
+<MainLayout title="About" description={rich?.bio}>
+  <div class="flex flex-col gap-8 items-center">
+    <div class="w-full max-w-[640px]">
+      <h1 class="text-2xl sm:text-3xl font-bold text-content">About</h1>
+    </div>
+
+    <!-- Profile image -->
+    <div class="w-full max-w-[640px]">
+      <LightboxImage client:visible src="/images/profiles/profile-rich-watercolor-bg.png" alt="Rich Mosko" />
+    </div>
+
+    <!-- Bio -->
+    <div class="w-full max-w-[640px] prose-custom">
+      <p class="text-content-secondary">{rich?.bio}</p>
+    </div>
+
+    <!-- Categories grid -->
+    <div class="w-full max-w-[640px]">
+      <h2 class="text-xl font-semibold text-content mb-4">What I Write About</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {Object.entries(categoryConfig).map(([key, config]) => (
+          <a
+            href={`/${key}`}
+            class={`rounded-xl p-4 border transition-colors hover:border-accent ${config.colors}`}
+          >
+            <h3 class="font-semibold text-sm text-content">{config.label}</h3>
+            <p class="text-xs text-content-muted mt-1">{config.description}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </div>
+</MainLayout>

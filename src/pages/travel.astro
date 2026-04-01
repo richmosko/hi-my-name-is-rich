@@ -1,0 +1,43 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { getCollection } from 'astro:content';
+import PostCard from '../components/PostCard';
+import { categoryConfig } from '../data/categories';
+
+const category = 'travel';
+const config = categoryConfig[category as keyof typeof categoryConfig];
+const posts = await getCollection('posts');
+const filtered = posts
+  .filter(p => (p.data.categories as string[]).includes(category))
+  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+
+const blogPosts = filtered.map(p => ({
+  id: p.id,
+  slug: p.id,
+  title: p.data.title,
+  excerpt: p.data.excerpt,
+  date: p.data.date,
+  readTime: p.data.readTime || '1 min read',
+  categories: p.data.categories as string[],
+  featured: p.data.featured,
+  image: p.data.image || p.data.imageUpload || undefined,
+  imageAspectRatio: p.data.imageAspectRatio,
+  authorId: p.data.authorId,
+  tags: p.data.tags || [],
+}));
+---
+
+<MainLayout title={config?.label || 'travel'}>
+  <div class="flex flex-col gap-8 items-center">
+    <div class="w-full max-w-[640px]">
+      <h1 class="text-2xl sm:text-3xl font-bold text-content">{config?.label || 'travel'}</h1>
+      {config?.description && <p class="text-content-secondary mt-2 text-sm">{config.description}</p>}
+      <p class="text-content-muted mt-1 text-xs">{filtered.length} posts</p>
+    </div>
+    <div class="w-full max-w-[640px] flex flex-col gap-6">
+      {blogPosts.map(post => (
+        <PostCard post={post} />
+      ))}
+    </div>
+  </div>
+</MainLayout>
