@@ -28,7 +28,7 @@ export const mdxComponents: MDXComponents = {
   h6: (props) => (
     <h6 className="text-sm font-medium text-content-muted mt-2" {...props} />
   ),
-  p: (props) => <p {...props} />,
+  p: (props) => <p className="text-content-secondary leading-relaxed" {...props} />,
   strong: (props) => (
     <strong className="text-content font-semibold" {...props} />
   ),

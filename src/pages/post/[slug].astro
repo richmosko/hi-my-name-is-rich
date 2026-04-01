@@ -7,8 +7,10 @@ import { categoryConfig } from '../../data/categories';
 import LightboxImage from '../../components/LightboxImage';
 import Gallery from '../../components/Gallery';
 import Video from '../../components/Video';
-import YouTube from '../../components/YouTube.astro';
+import YouTube from '../../components/YouTube';
 import Comments from '../../components/Comments';
+import { mdxComponents } from '../../components/MdxComponents';
+import { categoryColors } from '../../data/categories';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
@@ -50,97 +52,112 @@ const formattedDate = parseLocalDate(post.data.date).toLocaleDateString('en-US',
   description={post.data.excerpt}
   image={heroImage}
 >
-  <div class="flex flex-col gap-6 items-center">
-    <article class="w-full max-w-[640px]">
+  <article class="flex flex-col gap-8 items-center">
+    <!-- Header — at text width -->
+    <header class="w-full max-w-[640px] flex flex-col gap-6">
       <!-- Back link -->
-      <a href="/posts" class="inline-flex items-center gap-1.5 text-sm text-content-muted hover:text-accent mb-6 transition-colors">
-        <span>‹</span> Back to posts
+      <a href="/posts" class="text-sm text-content-muted hover:text-accent transition-colors inline-flex items-center gap-1">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to posts
       </a>
 
-      <!-- Author + date -->
-      <div class="flex items-center gap-3 mb-4">
-        <div class="flex -space-x-2">
-          {postAuthors.map(author => (
-            <img
-              src={author.avatar}
-              alt={author.name}
-              class="w-10 h-10 rounded-full border-2 border-surface"
-            />
-          ))}
-        </div>
-        <div>
-          <div class="text-sm font-medium text-content">
-            {postAuthors.map(a => a.name).join(' & ')}
+      <!-- Author + date (inline row) -->
+      <div class="flex items-center gap-4">
+        {postAuthors.length > 0 && (
+          <div class="flex items-center gap-3">
+            <div class="flex -space-x-2">
+              {postAuthors.map(author => (
+                <img
+                  src={author.avatar}
+                  alt={author.name}
+                  class="w-[48px] h-[48px] rounded-full object-cover border-2 border-surface"
+                />
+              ))}
+            </div>
+            <span class="text-base font-medium text-content">
+              {postAuthors.map(a => a.name).join(' & ')}
+            </span>
           </div>
-          <time class="text-xs text-content-muted">{formattedDate}</time>
-        </div>
+        )}
+        <time datetime={post.data.date} class="text-sm font-medium text-content-muted">
+          {formattedDate}
+        </time>
       </div>
 
       <!-- Title -->
-      <h1 class="text-3xl sm:text-4xl font-bold text-content mb-4">
+      <h1 class="text-3xl sm:text-4xl font-bold text-content">
         {post.data.title}
       </h1>
 
-      <!-- Read time + categories + tags -->
-      <div class="flex flex-wrap items-center gap-2 mb-6 text-sm">
-        <span class="text-content-muted">{post.data.readTime}</span>
-        {categories.map(cat => {
-          const config = categoryConfig[cat as keyof typeof categoryConfig];
-          return config ? (
-            <a href={`/${cat}`} class={`px-2.5 py-0.5 rounded-full text-xs font-medium ${config.badgeColors}`}>
-              {config.label}
-            </a>
-          ) : (
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">{cat}</span>
-          );
-        })}
-        {(post.data.tags || []).map(tag => (
-          <a href={`/posts?tag=${encodeURIComponent(tag)}`} class="text-xs text-content-muted hover:text-accent">
-            {tag}
-          </a>
-        ))}
+      <!-- Read time + categories + tags (grey background bar) -->
+      <div class="flex items-center justify-between bg-surface-secondary rounded-xl px-3 py-2.5">
+        <span class="text-sm font-medium text-content-muted">
+          {post.data.readTime}
+        </span>
+        <div class="flex flex-wrap gap-2">
+          {categories.map(cat => {
+            const config = categoryConfig[cat as keyof typeof categoryConfig];
+            return config ? (
+              <a href={`/${cat}`} class={`px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColors[cat as keyof typeof categoryColors] ?? 'bg-surface-secondary text-content-muted'}`}>
+                {config.label}
+              </a>
+            ) : (
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-secondary text-content-muted">{cat}</span>
+            );
+          })}
+          {(post.data.tags || []).map(tag => (
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-secondary text-content-muted">
+              {tag}
+            </span>
+          ))}
+        </div>
       </div>
-    </article>
+    </header>
 
-    <!-- Hero image (wider) -->
-    {heroImage && (
-      <div class="w-full max-w-[1250px]">
-        <img
-          src={heroImage}
-          alt={post.data.title}
-          class="w-full rounded-2xl object-cover"
-          style={`aspect-ratio: ${aspectRatio}`}
-        />
-      </div>
-    )}
+    <!-- Content area: hero + MDX + nav — wider gaps -->
+    <div class="w-full flex flex-col gap-10 items-center">
+      <!-- Hero image (wider) -->
+      {heroImage && (
+        <div class="w-full max-w-[1250px]">
+          <img
+            src={heroImage}
+            alt={post.data.title}
+            class="w-full rounded-2xl object-cover"
+            style={`aspect-ratio: ${aspectRatio}`}
+          />
+        </div>
+      )}
 
-    <!-- MDX Content -->
-    <article class="w-full max-w-[640px] prose-custom">
+      <!-- MDX Content -->
+      <div class="w-full max-w-[640px] flex flex-col gap-4 text-content-secondary leading-relaxed">
       <Content components={{
+        ...mdxComponents,
         img: LightboxImage,
         Gallery,
         Video,
         YouTube,
       }} />
-    </article>
+      </div>
 
-    <!-- Prev/Next navigation -->
-    <nav class="w-full max-w-[640px] flex justify-between items-center pt-6 border-t border-edge">
-      {prevPost ? (
-        <a href={`/post/${prevPost.id}`} class="text-sm text-content-muted hover:text-accent transition-colors">
-          ← Previous Post
-        </a>
-      ) : <span />}
-      {nextPost ? (
-        <a href={`/post/${nextPost.id}`} class="text-sm text-content-muted hover:text-accent transition-colors">
-          Next Post →
-        </a>
-      ) : <span />}
-    </nav>
+      <!-- Prev/Next navigation -->
+      <nav class="w-full max-w-[640px] flex justify-between items-center border-t border-edge pt-6 mt-4">
+        {prevPost ? (
+          <a href={`/post/${prevPost.id}`} class="text-sm text-content-muted hover:text-accent transition-colors">
+            ← Previous Post
+          </a>
+        ) : <span />}
+        {nextPost ? (
+          <a href={`/post/${nextPost.id}`} class="text-sm text-content-muted hover:text-accent transition-colors">
+            Next Post →
+          </a>
+        ) : <span />}
+      </nav>
 
-    <!-- Comments -->
-    <div class="w-full max-w-[640px]">
-      <Comments client:visible pageId={post.id} />
+      <!-- Comments -->
+      <div class="w-full max-w-[640px]">
+        <Comments client:visible pageId={post.id} />
+      </div>
     </div>
-  </div>
 </MainLayout>

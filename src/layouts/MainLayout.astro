@@ -26,7 +26,7 @@ const pathname = Astro.url.pathname;
     <SearchPanel client:idle pathname={pathname} />
     <TopBar client:load pathname={pathname} />
 
-    <main class={`flex-1 w-full min-h-0 ${fullScreen ? 'py-0 h-full' : 'max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-[95px] py-8 sm:py-12'}`}>
+    <main class={`flex-1 w-full min-h-0 ${fullScreen ? 'py-0 h-full' : 'max-w-[1440px] px-5 sm:px-10 lg:px-[95px] py-8 sm:py-12'}`}>
       <slot />
     </main>
 

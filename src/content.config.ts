@@ -10,7 +10,15 @@ const yamlString = z.union([
 
 const yamlDate = z.union([
   z.string(),
-  z.date().transform((d) => d.toISOString()),
+  // YAML parses bare dates (2026-03-24) as Date at UTC midnight.
+  // Format WITHOUT timezone so parseLocalDate treats it as local time,
+  // matching the original Vite behavior.
+  z.date().transform((d) => {
+    const y = d.getUTCFullYear();
+    const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }),
   z.null().transform(() => undefined),
 ]).optional();
 
@@ -31,7 +39,13 @@ const posts = defineCollection({
     excerpt: z.string(),
     date: z.union([
       z.string(),
-      z.date().transform((d) => d.toISOString()),
+      // Keep bare dates as local (YYYY-MM-DD), preserve full timestamps as-is
+      z.date().transform((d) => {
+        const y = d.getUTCFullYear();
+        const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(d.getUTCDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      }),
     ]),
     readTime: yamlString.default('1 min read'),
     categories: yamlStringArray,

@@ -111,7 +111,16 @@ export default function Gallery({ path, images: imagesProp, aspectRatio = '4/3',
     );
   }
 
-  if (images.length === 0) return null;
+  if (images.length === 0) {
+    if (loading && path) {
+      return (
+        <div className="w-full h-[200px] rounded-xl bg-surface-secondary animate-pulse flex items-center justify-center text-content-muted text-sm">
+          Loading gallery...
+        </div>
+      );
+    }
+    return null;
+  }
 
   return (
     <div className={`relative my-4 ${fullWidth ? 'w-screen left-1/2 -translate-x-1/2 max-w-[950px]' : ''}`}>
