@@ -4,6 +4,9 @@ import { getCollection, render } from 'astro:content';
 import { authors } from '../../data/authors';
 import { parseLocalDate } from '../../lib/dateUtils';
 import ProjectDetailIsland from '../../components/ProjectDetailIsland';
+import { mdxComponents } from '../../components/MdxComponents';
+import LightboxImage from '../../components/LightboxImage';
+import HydrateMdx from '../../components/HydrateMdx.astro';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects');
@@ -95,7 +98,13 @@ const aspectRatio = project.data.imageAspectRatio || '16/9';
 
     <!-- MDX Content -->
     <article class="w-full max-w-[640px] flex flex-col gap-4 text-content-secondary leading-relaxed">
-      <Content />
+      <Content components={{
+        ...mdxComponents,
+        img: LightboxImage,
+      }} />
     </article>
+
+    <!-- Hydrate interactive MDX components -->
+    <HydrateMdx />
   </div>
 </MainLayout>
