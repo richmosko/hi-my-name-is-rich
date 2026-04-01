@@ -70,13 +70,15 @@ export const mdxComponents: MDXComponents = {
       typeof props.className === 'string' &&
       props.className.startsWith('language-');
     if (isBlock) {
+      // Fenced code block — styled by the <pre> wrapper, code is transparent
       return (
         <code
-          className={`block bg-[#1e1e1e] text-[#d4d4d4] rounded-lg p-4 text-sm font-mono overflow-x-auto whitespace-pre ${props.className}`}
+          className={`block text-sm font-mono overflow-x-auto whitespace-pre ${props.className}`}
           {...props}
         />
       );
     }
+    // Inline code — subtle background matching surface-secondary
     return (
       <code
         className="bg-surface-secondary text-content rounded px-1.5 py-0.5 text-sm font-mono"
@@ -84,7 +86,12 @@ export const mdxComponents: MDXComponents = {
       />
     );
   },
-  pre: (props) => <pre className="my-2" {...props} />,
+  pre: (props) => (
+    <pre
+      className="my-2 bg-[#1e1e1e] text-[#d4d4d4] rounded-lg p-4 overflow-x-auto"
+      {...props}
+    />
+  ),
   hr: (props) => <hr className="border-t border-edge my-6" {...props} />,
   a: ({ href, className, ...props }) => (
     <a
