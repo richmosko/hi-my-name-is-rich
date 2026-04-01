@@ -1,7 +1,12 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { useStore } from '@nanostores/react';
 import graphData from '../lib/graph-index.json';
 import { useTheme } from '../hooks/useTheme';
-import { useConstellationControls } from '../hooks/useConstellationControls';
+import {
+  $showWikilinks, $showTags, $zoom, $forces, $cameraResetCounter,
+  $constellationActive, $nodeCount, $edgeCount, $wikilinkCount, $tagCount,
+  DEFAULT_FORCES,
+} from '../stores/constellation';
 import {
   type GraphNode,
   type GraphEdge,
@@ -70,7 +75,11 @@ export default function ConstellationGraph({
   const containerRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const controls = useConstellationControls();
+  const storeShowWikilinks = useStore($showWikilinks);
+  const storeShowTags = useStore($showTags);
+  const storeZoom = useStore($zoom);
+  const storeForces = useStore($forces);
+  const resetCounter = useStore($cameraResetCounter);
 
   // Graph data refs
   const nodesRef = useRef<GraphNode[]>([]);
@@ -95,16 +104,21 @@ export default function ConstellationGraph({
   const themeRef = useRef(isDark);
   themeRef.current = isDark;
 
-  // Props refs for render loop
+  // Sync store values to refs for render loop (render loop can't call useStore)
   const showWikilinksRef = useRef(showWikilinks);
-  showWikilinksRef.current = showWikilinks;
+  showWikilinksRef.current = interactive ? storeShowWikilinks : showWikilinks;
   const showTagsRef = useRef(showTags);
-  showTagsRef.current = showTags;
+  showTagsRef.current = interactive ? storeShowTags : showTags;
+  const zoomRef = useRef(storeZoom);
+  zoomRef.current = storeZoom;
+  const forcesRef = useRef(storeForces);
+  forcesRef.current = storeForces;
 
-  // Register animated camera reset callback with context
+  // Animated camera reset when store counter increments
+  const prevResetRef = useRef(resetCounter);
   useEffect(() => {
-    if (!controls) return;
-    controls.onCameraResetRef.current = () => {
+    if (resetCounter > prevResetRef.current) {
+      prevResetRef.current = resetCounter;
       const nodes = nodesRef.current;
       const { w, h } = sizeRef.current;
       let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
@@ -117,10 +131,19 @@ export default function ConstellationGraph({
       const camX = autoFit ? w / 2 - graphCx : 0;
       const camY = autoFit ? h / 2 - graphCy : 0;
       cameraTargetRef.current = { x: camX, y: camY, zoom };
-    };
-    return () => { controls.onCameraResetRef.current = null; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    }
+  }, [resetCounter, autoFit, initialZoom]);
+
+  // Set constellation stats when interactive (full page)
+  useEffect(() => {
+    if (!interactive) return;
+    $constellationActive.set(true);
+    $nodeCount.set(graphData.nodes.length);
+    $edgeCount.set(graphData.edges.length);
+    $wikilinkCount.set(graphData.edges.filter(e => e.type === 'wikilink').length);
+    $tagCount.set(graphData.edges.filter(e => e.type === 'tag').length);
+    return () => { $constellationActive.set(false); };
+  }, [interactive]);
 
   const screenToWorld = useCallback((clientX: number, clientY: number) => {
     const canvas = canvasRef.current;
@@ -203,7 +226,7 @@ export default function ConstellationGraph({
         const zoom = Math.min(rect.width / graphW, rect.height / graphH) * 0.8;
         // Camera at (0,0) since nodes are already centered on canvas
         cameraRef.current = { x: 0, y: 0, zoom };
-        if (controls) { controls.zoomRef.current = zoom; controls.setZoom(zoom); }
+        $zoom.set(zoom);
       }
     };
 
@@ -244,15 +267,15 @@ export default function ConstellationGraph({
       const hoverFade = hoverFadeRef.current;
       const activeHover = hovered || lastHoveredRef.current;
 
-      // Read force settings from context (or use defaults)
-      const f = controls?.forcesRef.current;
-      const multipliers: ForceMultipliers = f ? {
+      // Read force settings from store
+      const f = forcesRef.current;
+      const multipliers: ForceMultipliers = {
         linkStrength: f.linkStrength,
-        tagStrength: f.tagStrength / 0.3, // normalize: slider 0.3 = 1x base
+        tagStrength: f.tagStrength / 0.3,
         repulsion: f.repulsion,
-        gravity: f.gravity / 0.1,         // normalize: slider 0.1 = 1x base
-        drift: f.drift / 0.1,             // normalize: slider 0.1 = 1x base
-      } : {};
+        gravity: f.gravity / 0.1,
+        drift: f.drift / 0.1,
+      };
 
       const alpha = draggedNode ? 0.3 : 0.015;
       // Use 1000x1000 sim frame — matches init, gravity + boundary at (500,500)
@@ -282,14 +305,12 @@ export default function ConstellationGraph({
           cameraTargetRef.current = null;
         }
         // Sync zoom to context during animation
-        if (controls) { controls.zoomRef.current = cam.zoom; controls.setZoom(cam.zoom); }
+        $zoom.set(cam.zoom);
       } else {
-        // Sync zoom from context (slider) → camera (no animation in progress)
-        if (controls?.zoomRef.current !== undefined) {
-          const contextZoom = controls.zoomRef.current;
-          if (Math.abs(contextZoom - cam.zoom) > 0.01) {
-            cam.zoom = contextZoom;
-          }
+        // Sync zoom from store (slider) → camera (no animation in progress)
+        const storeZ = zoomRef.current;
+        if (Math.abs(storeZ - cam.zoom) > 0.01) {
+          cam.zoom = storeZ;
         }
       }
 
@@ -539,7 +560,7 @@ export default function ConstellationGraph({
       const newZoom = Math.max(0.2, Math.min(6, cam.zoom * (e.deltaY > 0 ? 0.92 : 1.08)));
       cam.zoom = newZoom;
       // Sync to context so TopBar slider reflects wheel changes
-      if (controls) { controls.zoomRef.current = newZoom; controls.setZoom(newZoom); }
+      $zoom.set(newZoom);
     };
     canvas.addEventListener('wheel', onWheel, { passive: false });
     return () => canvas.removeEventListener('wheel', onWheel);
@@ -581,7 +602,7 @@ export default function ConstellationGraph({
       const newDist = Math.sqrt(dx * dx + dy * dy);
       const newZoom = Math.max(0.2, Math.min(6, cameraRef.current.zoom * (newDist / touchStartRef.current.dist)));
       cameraRef.current.zoom = newZoom;
-      if (controls) { controls.zoomRef.current = newZoom; controls.setZoom(newZoom); }
+      $zoom.set(newZoom);
       touchStartRef.current.dist = newDist;
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

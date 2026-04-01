@@ -1,7 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
+import { useStore } from '@nanostores/react';
 import { useTheme } from '../hooks/useTheme';
-import { useConstellationControls } from '../hooks/useConstellationControls';
 import ConstellationIcon from './ConstellationIcon';
+import {
+  $showWikilinks, $showTags, $zoom, $forces, $constellationActive,
+  $nodeCount, $edgeCount, $wikilinkCount, $tagCount,
+  DEFAULT_FORCES, resetAll,
+} from '../stores/constellation';
 
 const STAR_COLORS: Record<string, string> = {
   travel: '#34d399',
@@ -56,13 +61,21 @@ function Slider({ label, value, min, max, step, onChange }: {
 
 export default function TopBar({ pathname = '/' }: { pathname?: string }) {
   const { theme, toggleTheme } = useTheme();
-  const constellation = useConstellationControls();
+  const constellationActive = useStore($constellationActive);
+  const showWikilinks = useStore($showWikilinks);
+  const showTags = useStore($showTags);
+  const zoom = useStore($zoom);
+  const forces = useStore($forces);
+  const nodeCount = useStore($nodeCount);
+  const edgeCount = useStore($edgeCount);
+  const wikilinkCount = useStore($wikilinkCount);
+  const tagCount = useStore($tagCount);
 
   const isPostDetail = pathname.startsWith('/post/');
   const isProjectDetail = pathname.startsWith('/project/');
   const currentLabel = isPostDetail ? 'Posts' : isProjectDetail ? 'Projects' : (routeLabels[pathname] ?? '');
 
-  const isConstellationPage = pathname === '/constellation' && constellation?.active;
+  const isConstellationPage = pathname === '/constellation' && constellationActive;
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -111,9 +124,9 @@ export default function TopBar({ pathname = '/' }: { pathname?: string }) {
         )}
 
         {/* Constellation stats — inline after breadcrumb */}
-        {isConstellationPage && constellation && (
+        {isConstellationPage && (
           <span className="text-xs text-content-muted leading-none mb-[1px] ml-1 hidden sm:inline">
-            ({constellation.nodeCount} posts · {constellation.edgeCount} connections)
+            ({nodeCount} posts · {edgeCount} connections)
           </span>
         )}
 
@@ -121,7 +134,7 @@ export default function TopBar({ pathname = '/' }: { pathname?: string }) {
         <div className="flex-1" />
 
         {/* Constellation: gear icon (replaces sparkle) at same position */}
-        {isConstellationPage && constellation && (
+        {isConstellationPage && (
           <div ref={dropdownRef} className="contents">
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -155,10 +168,10 @@ export default function TopBar({ pathname = '/' }: { pathname?: string }) {
                   </span>
                   <button
                     onClick={() => {
-                      constellation.resetForces();
-                      constellation.setShowWikilinks(true);
-                      constellation.setShowTags(true);
-                      constellation.requestCameraReset();
+                      $forces.set({ ...DEFAULT_FORCES });
+                      $showWikilinks.set(true);
+                      $showTags.set(true);
+                      resetAll();
                     }}
                     className="text-[10px] px-2 py-1 rounded font-medium cursor-pointer"
                     style={{
@@ -177,26 +190,26 @@ export default function TopBar({ pathname = '/' }: { pathname?: string }) {
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={constellation.showWikilinks}
-                    onChange={() => constellation.setShowWikilinks(!constellation.showWikilinks)}
+                    checked={showWikilinks}
+                    onChange={() => $showWikilinks.set(!showWikilinks)}
                   />
                   <span
                     className="inline-block w-6 border-t"
                     style={{ borderColor: theme === 'dark' ? 'rgba(180,180,220,0.5)' : 'rgba(80,80,120,0.35)' }}
                   />
-                  <span>Links ({constellation.wikilinkCount})</span>
+                  <span>Links ({wikilinkCount})</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={constellation.showTags}
-                    onChange={() => constellation.setShowTags(!constellation.showTags)}
+                    checked={showTags}
+                    onChange={() => $showTags.set(!showTags)}
                   />
                   <span
                     className="inline-block w-6 border-t"
                     style={{ borderColor: theme === 'dark' ? 'rgba(150,150,180,0.35)' : 'rgba(100,100,140,0.25)' }}
                   />
-                  <span>Shared Tags ({constellation.tagCount})</span>
+                  <span>Shared Tags ({tagCount})</span>
                 </label>
 
                 {/* Zoom */}
@@ -209,9 +222,9 @@ export default function TopBar({ pathname = '/' }: { pathname?: string }) {
                   </div>
                   <Slider
                     label="Level"
-                    value={constellation.zoom}
+                    value={zoom}
                     min={0.2} max={4} step={0.1}
-                    onChange={(v) => constellation.setZoom(v)}
+                    onChange={(v) => $zoom.set(v)}
                   />
                 </div>
 
@@ -225,7 +238,7 @@ export default function TopBar({ pathname = '/' }: { pathname?: string }) {
                       Forces
                     </span>
                     <button
-                      onClick={constellation.resetForces}
+                      onClick={$forces.set({ ...DEFAULT_FORCES })}
                       className="text-[10px] px-2 py-0.5 rounded font-medium cursor-pointer"
                       style={{
                         background: theme === 'dark' ? 'rgba(107, 138, 255, 0.2)' : 'rgba(74, 108, 247, 0.12)',
@@ -237,33 +250,33 @@ export default function TopBar({ pathname = '/' }: { pathname?: string }) {
                   </div>
                   <Slider
                     label="Links"
-                    value={constellation.forces.linkStrength}
+                    value={forces.linkStrength}
                     min={0} max={2} step={0.1}
-                    onChange={(v) => constellation.setForces({ ...constellation.forces, linkStrength: v })}
+                    onChange={(v) => $forces.set({ ...forces, linkStrength: v })}
                   />
                   <Slider
                     label="Tags"
-                    value={constellation.forces.tagStrength}
+                    value={forces.tagStrength}
                     min={0} max={2} step={0.05}
-                    onChange={(v) => constellation.setForces({ ...constellation.forces, tagStrength: v })}
+                    onChange={(v) => $forces.set({ ...forces, tagStrength: v })}
                   />
                   <Slider
                     label="Repulsion"
-                    value={constellation.forces.repulsion}
+                    value={forces.repulsion}
                     min={0} max={3} step={0.1}
-                    onChange={(v) => constellation.setForces({ ...constellation.forces, repulsion: v })}
+                    onChange={(v) => $forces.set({ ...forces, repulsion: v })}
                   />
                   <Slider
                     label="Gravity"
-                    value={constellation.forces.gravity}
+                    value={forces.gravity}
                     min={0} max={0.5} step={0.01}
-                    onChange={(v) => constellation.setForces({ ...constellation.forces, gravity: v })}
+                    onChange={(v) => $forces.set({ ...forces, gravity: v })}
                   />
                   <Slider
                     label="Drift"
-                    value={constellation.forces.drift}
+                    value={forces.drift}
                     min={0} max={0.25} step={0.01}
-                    onChange={(v) => constellation.setForces({ ...constellation.forces, drift: v })}
+                    onChange={(v) => $forces.set({ ...forces, drift: v })}
                   />
                 </div>
 
