@@ -14,7 +14,7 @@ interface ManifestData {
 // Load ALL manifests at build time so Gallery works without fetch/useEffect.
 // This is critical for Astro SSR where useEffect doesn't fire server-side.
 const manifestModules = import.meta.glob<ManifestData>(
-  '/public/images/albums/**/manifest.json',
+  '/public/images/**/manifest.json',
   { eager: true, import: 'default' }
 );
 
