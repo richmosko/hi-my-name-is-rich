@@ -14,12 +14,14 @@ export const categoryConfig: Record<Category, CategoryConfig> = {
     description: 'Stories and photos from places near and far.',
     colors: 'bg-emerald-500/10 border-emerald-500/20',
     badgeColors: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+    heroImage: '/images/stock/profile-rich-travel-flight.jpg',
   },
   design: {
     label: 'Design',
     description: 'Thoughts on visual design, systems, and craft.',
     colors: 'bg-purple-500/10 border-purple-500/20',
     badgeColors: 'bg-purple-500/10 text-purple-700 dark:text-purple-400',
+    heroImage: '/images/stock/profile-rich-design.jpg',
   },
   finance: {
     label: 'Finance',
@@ -32,6 +34,7 @@ export const categoryConfig: Record<Category, CategoryConfig> = {
     description: "What I'm working on in my free time.",
     colors: 'bg-sky-500/10 border-sky-500/20',
     badgeColors: 'bg-sky-500/10 text-sky-700 dark:text-sky-400',
+    heroImage: '/images/stock/profile-rich-welding.jpg',
   },
   musings: {
     label: 'Musings',
@@ -44,12 +47,14 @@ export const categoryConfig: Record<Category, CategoryConfig> = {
     description: "Just cool shit I've seen lately.",
     colors: 'bg-orange-500/10 border-orange-500/20',
     badgeColors: 'bg-orange-500/10 text-orange-700 dark:text-orange-400',
+    heroImage: '/images/stock/4207345.jpg',
   },
   food: {
     label: 'Food',
     description: 'Tinkering with tastes.',
     colors: 'bg-lime-500/10 border-lime-500/20',
     badgeColors: 'bg-lime-500/10 text-lime-700 dark:text-lime-400',
+    heroImage: '/images/stock/profile-rich-cooking.jpg',
   },
 };
 
