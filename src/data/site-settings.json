@@ -9,7 +9,7 @@
   "ogImage": "/images/profiles/profile-rich-watercolor-bg.png",
   "footerText": "© {year} Rich",
   "adminLinks": [
-    { "name": "Keystatic CMS", "url": "https://edit.himynameisrich.com/keystatic", "description": "Create and edit posts & projects" },
+    { "name": "Keystatic CMS", "url": "https://himynameisrich.com/keystatic", "description": "Create and edit posts & projects" },
     { "name": "Vikunja Tasks", "url": "https://tasks.himynameisrich.com", "description": "Bug tracking, task management" },
     { "name": "Coolify Dashboard", "url": "https://coolify.himynameisrich.com", "description": "Deployments and services" },
     { "name": "Cloudflare Analytics", "url": "https://dash.cloudflare.com", "description": "Traffic and bandwidth" },
