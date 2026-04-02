@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import AutoImport from 'astro-auto-import';
 import react from '@astrojs/react';
 import mdx from '@astrojs/mdx';
+import markdoc from '@astrojs/markdoc';
 import node from '@astrojs/node';
 import sitemap from '@astrojs/sitemap';
 import keystatic from '@keystatic/astro';
@@ -43,7 +44,8 @@ export default defineConfig({
         './src/components/YouTube.tsx',
       ],
     }),
-    react(),
+    react({ include: ['**/*.tsx', '**/*.jsx', '**/*.js'] }),
+    markdoc(),
     mdx(),
     sitemap(),
     keystatic(),

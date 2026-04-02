@@ -20,6 +20,7 @@
     "help": "node scripts/help.mjs"
   },
   "dependencies": {
+    "@astrojs/markdoc": "^1.0.3",
     "@astrojs/mdx": "^5.0.3",
     "@astrojs/node": "^10.0.4",
     "@astrojs/react": "^5.0.2",
