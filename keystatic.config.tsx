@@ -252,24 +252,6 @@ export default config({
       },
     }),
 
-    categories: singleton({
-      label: 'Categories',
-      path: 'src/data/categories-config',
-      format: 'json',
-      schema: {
-        categories: fields.array(
-          fields.object({
-            id: fields.text({ label: 'Category ID (slug)', description: 'e.g., "travel", "cool-shit"' }),
-            label: fields.text({ label: 'Display Label' }),
-            description: fields.text({ label: 'Description', multiline: true }),
-            color: fields.text({ label: 'Tailwind Color', description: 'e.g., "emerald", "purple", "amber"' }),
-          }),
-          {
-            label: 'Categories',
-            itemLabel: (props) => props.fields.label.value || 'New category',
-          }
-        ),
-      },
-    }),
+    // Categories are managed directly in src/data/categories.ts (not via Keystatic)
   },
 });
