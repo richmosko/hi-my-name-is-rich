@@ -3,7 +3,8 @@ import { config, collection, singleton, fields } from '@keystatic/core';
 import { block, mark } from '@keystatic/core/content-components';
 
 // Author options for the multiselect field.
-// Keep in sync with src/data/authors.json (managed via the Authors singleton).
+// Source: src/data/authors.json (managed via Keystatic Authors singleton).
+// authors.ts imports this JSON automatically — no manual sync needed.
 const authorOptions = [
   { label: 'Rich Mosko', value: 'rich' },
   { label: 'Claude', value: 'claude' },
