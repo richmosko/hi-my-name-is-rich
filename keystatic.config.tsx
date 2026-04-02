@@ -10,11 +10,11 @@ const authorOptions = [
   { label: 'Keith Holleman', value: 'keith' },
 ];
 
-// Detect GitHub mode via environment variable.
-// In Astro, @keystatic/astro handles the API routes automatically.
+// Use GitHub mode in production, local mode in development.
+// The @keystatic/astro integration handles API routes automatically.
 const hasGitHubConfig =
   typeof process !== 'undefined' &&
-  !!(process.env?.KEYSTATIC_GITHUB_CLIENT_ID);
+  (process.env?.NODE_ENV === 'production' || !!(process.env?.KEYSTATIC_GITHUB_CLIENT_ID));
 
 export default config({
   storage: hasGitHubConfig
