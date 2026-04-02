@@ -11,10 +11,8 @@ const authorOptions = [
 ];
 
 // Use GitHub mode in production, local mode in development.
-// The @keystatic/astro integration handles API routes automatically.
-const hasGitHubConfig =
-  typeof process !== 'undefined' &&
-  (process.env?.NODE_ENV === 'production' || !!(process.env?.KEYSTATIC_GITHUB_CLIENT_ID));
+// import.meta.env.PROD is reliably set by Vite/Astro at build time.
+const hasGitHubConfig = import.meta.env?.PROD ?? false;
 
 export default config({
   storage: hasGitHubConfig
