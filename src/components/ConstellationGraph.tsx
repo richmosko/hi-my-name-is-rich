@@ -1,11 +1,9 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useStore } from '@nanostores/react';
 import graphData from '../lib/graph-index.json';
 import { useTheme } from '../hooks/useTheme';
 import {
-  $showWikilinks, $showTags, $zoom, $forces, $cameraResetCounter,
-  $constellationActive, $nodeCount, $edgeCount, $wikilinkCount, $tagCount,
-
+  useConstellationState, getConstellationState,
+  setZoom, setActive, setNodeCount, setEdgeCount, setWikilinkCount, setTagCount,
 } from '../stores/constellation';
 import {
   type GraphNode,
@@ -75,11 +73,12 @@ export default function ConstellationGraph({
   const containerRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const storeShowWikilinks = useStore($showWikilinks);
-  const storeShowTags = useStore($showTags);
-  const storeZoom = useStore($zoom);
-  const storeForces = useStore($forces);
-  const resetCounter = useStore($cameraResetCounter);
+  const cState = useConstellationState();
+  const storeShowWikilinks = cState.showWikilinks;
+  const storeShowTags = cState.showTags;
+  const storeZoom = cState.zoom;
+  const storeForces = cState.forces;
+  const resetCounter = cState.cameraResetCounter;
 
   // Graph data refs
   const nodesRef = useRef<GraphNode[]>([]);
@@ -137,12 +136,12 @@ export default function ConstellationGraph({
   // Set constellation stats when interactive (full page)
   useEffect(() => {
     if (!interactive) return;
-    $constellationActive.set(true);
-    $nodeCount.set(graphData.nodes.length);
-    $edgeCount.set(graphData.edges.length);
-    $wikilinkCount.set(graphData.edges.filter(e => e.type === 'wikilink').length);
-    $tagCount.set(graphData.edges.filter(e => e.type === 'tag').length);
-    return () => { $constellationActive.set(false); };
+    setActive(true);
+    setNodeCount(graphData.nodes.length);
+    setEdgeCount(graphData.edges.length);
+    setWikilinkCount(graphData.edges.filter(e => e.type === 'wikilink').length);
+    setTagCount(graphData.edges.filter(e => e.type === 'tag').length);
+    return () => { setActive(false); };
   }, [interactive]);
 
   const screenToWorld = useCallback((clientX: number, clientY: number) => {
@@ -226,7 +225,7 @@ export default function ConstellationGraph({
         const zoom = Math.min(rect.width / graphW, rect.height / graphH) * 0.8;
         // Camera at (0,0) since nodes are already centered on canvas
         cameraRef.current = { x: 0, y: 0, zoom };
-        $zoom.set(zoom);
+        setZoom(zoom);
       }
     };
 
@@ -304,7 +303,7 @@ export default function ConstellationGraph({
           cam.zoom = target.zoom;
           cameraTargetRef.current = null;
           // Sync final zoom to store when animation completes
-          $zoom.set(cam.zoom);
+          setZoom(cam.zoom);
         }
       } else {
         // Sync zoom from store (slider) → camera (no animation in progress)
@@ -560,7 +559,7 @@ export default function ConstellationGraph({
       const newZoom = Math.max(0.2, Math.min(6, cam.zoom * (e.deltaY > 0 ? 0.92 : 1.08)));
       cam.zoom = newZoom;
       // Sync to context so TopBar slider reflects wheel changes
-      $zoom.set(newZoom);
+      setZoom(newZoom);
     };
     canvas.addEventListener('wheel', onWheel, { passive: false });
     return () => canvas.removeEventListener('wheel', onWheel);
@@ -601,7 +600,7 @@ export default function ConstellationGraph({
       const newDist = Math.sqrt(dx * dx + dy * dy);
       const newZoom = Math.max(0.2, Math.min(6, cameraRef.current.zoom * (newDist / touchStartRef.current.dist)));
       cameraRef.current.zoom = newZoom;
-      $zoom.set(newZoom);
+      setZoom(newZoom);
       touchStartRef.current.dist = newDist;
     }
   }, [interactive, screenToWorld]);

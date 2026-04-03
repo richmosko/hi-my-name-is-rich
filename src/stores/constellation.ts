@@ -1,6 +1,11 @@
-import { atom, map } from 'nanostores';
+/**
+ * Constellation shared state using window + CustomEvents.
+ *
+ * Astro islands bundle separately, so nanostores creates duplicate
+ * instances per island. Using window.* ensures a single shared state
+ * across all islands on the same page.
+ */
 
-// Force settings defaults
 export const DEFAULT_FORCES = {
   linkStrength: 1.0,
   tagStrength: 0.3,
@@ -9,31 +14,84 @@ export const DEFAULT_FORCES = {
   drift: 0.05,
 };
 
-// Constellation state shared across React islands (TopBar + ConstellationGraph)
-export const $showWikilinks = atom(true);
-export const $showTags = atom(true);
-export const $zoom = atom(1.4);
-export const $forces = map({ ...DEFAULT_FORCES });
+export interface ForceSettings {
+  linkStrength: number;
+  tagStrength: number;
+  repulsion: number;
+  gravity: number;
+  drift: number;
+}
 
-// Whether the constellation page is active (controls visibility in TopBar)
-export const $constellationActive = atom(false);
+interface ConstellationState {
+  showWikilinks: boolean;
+  showTags: boolean;
+  zoom: number;
+  forces: ForceSettings;
+  active: boolean;
+  nodeCount: number;
+  edgeCount: number;
+  wikilinkCount: number;
+  tagCount: number;
+  cameraResetCounter: number;
+}
 
-// Stats (set by ConstellationGraph, read by TopBar)
-export const $nodeCount = atom(0);
-export const $edgeCount = atom(0);
-export const $wikilinkCount = atom(0);
-export const $tagCount = atom(0);
+const STATE_KEY = '__constellation__';
+const EVENT_NAME = 'constellation-state-change';
 
-// Camera reset trigger — increment to trigger a reset animation
-export const $cameraResetCounter = atom(0);
+function getState(): ConstellationState {
+  if (typeof window === 'undefined') {
+    return {
+      showWikilinks: true, showTags: true, zoom: 1.4,
+      forces: { ...DEFAULT_FORCES }, active: false,
+      nodeCount: 0, edgeCount: 0, wikilinkCount: 0, tagCount: 0,
+      cameraResetCounter: 0,
+    };
+  }
+  if (!(window as Record<string, unknown>)[STATE_KEY]) {
+    (window as Record<string, unknown>)[STATE_KEY] = {
+      showWikilinks: true, showTags: true, zoom: 1.4,
+      forces: { ...DEFAULT_FORCES }, active: false,
+      nodeCount: 0, edgeCount: 0, wikilinkCount: 0, tagCount: 0,
+      cameraResetCounter: 0,
+    };
+  }
+  return (window as Record<string, unknown>)[STATE_KEY] as ConstellationState;
+}
+
+function notify() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(EVENT_NAME));
+  }
+}
+
+// Getters
+export function getConstellationState(): ConstellationState { return getState(); }
+
+// Setters (each triggers a CustomEvent so subscribers update)
+export function setShowWikilinks(v: boolean) { getState().showWikilinks = v; notify(); }
+export function setShowTags(v: boolean) { getState().showTags = v; notify(); }
+export function setZoom(v: number) { getState().zoom = v; notify(); }
+export function setForces(f: ForceSettings) { getState().forces = { ...f }; notify(); }
+export function setActive(v: boolean) { getState().active = v; notify(); }
+export function setNodeCount(v: number) { getState().nodeCount = v; notify(); }
+export function setEdgeCount(v: number) { getState().edgeCount = v; notify(); }
+export function setWikilinkCount(v: number) { getState().wikilinkCount = v; notify(); }
+export function setTagCount(v: number) { getState().tagCount = v; notify(); }
 
 export function requestCameraReset() {
-  $cameraResetCounter.set($cameraResetCounter.get() + 1);
+  getState().cameraResetCounter++;
+  notify();
 }
 
 export function resetAll() {
-  $showWikilinks.set(true);
-  $showTags.set(true);
-  $forces.set({ ...DEFAULT_FORCES });
-  requestCameraReset();
+  const s = getState();
+  s.showWikilinks = true;
+  s.showTags = true;
+  s.forces = { ...DEFAULT_FORCES };
+  s.cameraResetCounter++;
+  notify();
 }
+
+// Re-export the hook from a separate file to avoid importing React in this module
+// (which may be loaded in non-React contexts during SSR)
+export { useConstellationState } from './useConstellationState';

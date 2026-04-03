@@ -1,8 +1,7 @@
-import { useStore } from '@nanostores/react';
 import { useTheme } from '../hooks/useTheme';
 import {
-  $showWikilinks, $showTags, $zoom, $forces,
-  $wikilinkCount, $tagCount,
+  useConstellationState,
+  setShowWikilinks, setShowTags, setZoom, setForces,
   DEFAULT_FORCES, resetAll,
 } from '../stores/constellation';
 
@@ -49,12 +48,8 @@ function Slider({ label, value, min, max, step, onChange }: {
  */
 export default function ConstellationDropdown() {
   const { theme } = useTheme();
-  const showWikilinks = useStore($showWikilinks);
-  const showTags = useStore($showTags);
-  const zoom = useStore($zoom);
-  const forces = useStore($forces);
-  const wikilinkCount = useStore($wikilinkCount);
-  const tagCount = useStore($tagCount);
+  const cState = useConstellationState();
+  const { showWikilinks, showTags, zoom, forces, wikilinkCount, tagCount } = cState;
 
   return (
     <div
@@ -88,12 +83,12 @@ export default function ConstellationDropdown() {
         Visibility
       </div>
       <label className="flex items-center gap-2 cursor-pointer">
-        <input type="checkbox" checked={showWikilinks} onChange={() => $showWikilinks.set(!showWikilinks)} />
+        <input type="checkbox" checked={showWikilinks} onChange={() => setShowWikilinks(!showWikilinks)} />
         <span className="inline-block w-6 border-t" style={{ borderColor: theme === 'dark' ? 'rgba(180,180,220,0.5)' : 'rgba(80,80,120,0.35)' }} />
         <span>Links ({wikilinkCount})</span>
       </label>
       <label className="flex items-center gap-2 cursor-pointer">
-        <input type="checkbox" checked={showTags} onChange={() => $showTags.set(!showTags)} />
+        <input type="checkbox" checked={showTags} onChange={() => setShowTags(!showTags)} />
         <span className="inline-block w-6 border-t" style={{ borderColor: theme === 'dark' ? 'rgba(150,150,180,0.35)' : 'rgba(100,100,140,0.25)' }} />
         <span>Shared Tags ({tagCount})</span>
       </label>
@@ -103,7 +98,7 @@ export default function ConstellationDropdown() {
         <div className="font-semibold mb-1" style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)' }}>
           Zoom
         </div>
-        <Slider label="Level" value={zoom} min={0.2} max={4} step={0.1} onChange={(v) => $zoom.set(v)} />
+        <Slider label="Level" value={zoom} min={0.2} max={4} step={0.1} onChange={(v) => setZoom(v)} />
       </div>
 
       {/* Forces */}
@@ -113,18 +108,18 @@ export default function ConstellationDropdown() {
             Forces
           </span>
           <button
-            onClick={() => $forces.set({ ...DEFAULT_FORCES })}
+            onClick={() => setForces({ ...DEFAULT_FORCES })}
             className="text-[10px] cursor-pointer"
             style={{ color: theme === 'dark' ? '#8da4ff' : '#4a6cf7' }}
           >
             Reset
           </button>
         </div>
-        <Slider label="Links" value={forces.linkStrength} min={0} max={2} step={0.1} onChange={(v) => $forces.set({ ...forces, linkStrength: v })} />
-        <Slider label="Tags" value={forces.tagStrength} min={0} max={2} step={0.05} onChange={(v) => $forces.set({ ...forces, tagStrength: v })} />
-        <Slider label="Repulsion" value={forces.repulsion} min={0} max={3} step={0.1} onChange={(v) => $forces.set({ ...forces, repulsion: v })} />
-        <Slider label="Gravity" value={forces.gravity} min={0} max={0.5} step={0.01} onChange={(v) => $forces.set({ ...forces, gravity: v })} />
-        <Slider label="Drift" value={forces.drift} min={0} max={0.25} step={0.01} onChange={(v) => $forces.set({ ...forces, drift: v })} />
+        <Slider label="Links" value={forces.linkStrength} min={0} max={2} step={0.1} onChange={(v) => setForces({ ...forces, linkStrength: v })} />
+        <Slider label="Tags" value={forces.tagStrength} min={0} max={2} step={0.05} onChange={(v) => setForces({ ...forces, tagStrength: v })} />
+        <Slider label="Repulsion" value={forces.repulsion} min={0} max={3} step={0.1} onChange={(v) => setForces({ ...forces, repulsion: v })} />
+        <Slider label="Gravity" value={forces.gravity} min={0} max={0.5} step={0.01} onChange={(v) => setForces({ ...forces, gravity: v })} />
+        <Slider label="Drift" value={forces.drift} min={0} max={0.25} step={0.01} onChange={(v) => setForces({ ...forces, drift: v })} />
       </div>
 
       {/* Categories */}

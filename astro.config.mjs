@@ -53,19 +53,6 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
-    build: {
-      rollupOptions: {
-        output: {
-          // Ensure nanostores are in a shared chunk so all islands
-          // share the same store instances (not duplicated per island)
-          manualChunks(id) {
-            if (id.includes('stores/constellation') || id.includes('nanostores')) {
-              return 'shared-stores';
-            }
-          },
-        },
-      },
-    },
   },
 
   markdown: {

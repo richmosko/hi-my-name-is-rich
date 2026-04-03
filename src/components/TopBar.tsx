@@ -1,9 +1,8 @@
 import { useState, useRef, useEffect, useSyncExternalStore } from 'react';
-import { useStore } from '@nanostores/react';
 import { useTheme } from '../hooks/useTheme';
 import ConstellationIcon from './ConstellationIcon';
 import ConstellationDropdown from './ConstellationDropdown';
-import { $constellationActive, $nodeCount, $edgeCount } from '../stores/constellation';
+import { useConstellationState, getConstellationState } from '../stores/constellation';
 
 const routeLabels: Record<string, string> = {
   '/': '',
@@ -21,13 +20,13 @@ const routeLabels: Record<string, string> = {
 export default function TopBar({ pathname = '/' }: { pathname?: string }) {
   const { theme, toggleTheme } = useTheme();
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
-  const constellationActive = useStore($constellationActive);
+  const cState = useConstellationState();
 
   const isPostDetail = pathname.startsWith('/post/');
   const isProjectDetail = pathname.startsWith('/project/');
   const currentLabel = isPostDetail ? 'Posts' : isProjectDetail ? 'Projects' : (routeLabels[pathname] ?? '');
 
-  const isConstellationPage = mounted && pathname === '/constellation' && constellationActive;
+  const isConstellationPage = mounted && pathname === '/constellation' && cState.active;
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -78,7 +77,7 @@ export default function TopBar({ pathname = '/' }: { pathname?: string }) {
         {/* Constellation stats — inline after breadcrumb */}
         {isConstellationPage && (
           <span className="text-xs text-content-muted leading-none mb-[1px] ml-1 hidden sm:inline">
-            ({$nodeCount.get()} posts · {$edgeCount.get()} connections)
+            ({cState.nodeCount} posts · {cState.edgeCount} connections)
           </span>
         )}
 
