@@ -1,6 +1,6 @@
 # Coolify Deployment Guide
 
-This guide covers deploying the blog frontend to Coolify with continuous deployment from GitHub. After completing this guide, every push to `main` will automatically build and deploy the site.
+This guide covers deploying the blog to Coolify with continuous deployment from GitHub. After completing this guide, every push to `main` will automatically build and deploy the site.
 
 ## Prerequisites
 
@@ -13,31 +13,35 @@ This guide covers deploying the blog frontend to Coolify with continuous deploym
 
 ```
 GitHub push to main
-        │
-        ▼
+        |
+        v
 Coolify webhook receives push event
-        │
-        ▼
+        |
+        v
 Coolify pulls latest code from GitHub
-        │
-        ▼
+        |
+        v
 Docker multi-stage build:
-  1. node:22-alpine → npm ci + npm run build
-  2. nginx:alpine → serves /dist as static files
-        │
-        ▼
-Traefik routes yourdomain.com → nginx container (port 80)
+  1. node:22-alpine -> npm ci + npm run build (Astro)
+  2. node:22-alpine -> runs Astro standalone server
+        |
+        v
+Traefik routes yourdomain.com -> Node.js container (port 4321)
 Traefik auto-provisions Let's Encrypt SSL
 ```
 
+The site runs as an **Astro 6 Node.js standalone server** (not a static nginx container). This is required for:
+- Keystatic CMS admin routes (`/keystatic`)
+- Vikunja API proxy (`/api/vikunja/...`)
+- Server-side rendered pages that opt out of pre-rendering
+
 ## Files in the Repo
 
-This guide relies on three files already in the repo root:
+This guide relies on two files already in the repo root:
 
 | File | Purpose |
 |------|---------|
-| `Dockerfile` | Multi-stage build: Node for building, nginx for serving |
-| `nginx.conf` | SPA routing, asset caching, gzip compression |
+| `Dockerfile` | Multi-stage build: Node for building, Node for running Astro server |
 | `.dockerignore` | Excludes node_modules, .git, etc. from Docker context |
 
 ## 1. Connect GitHub to Coolify
@@ -46,10 +50,10 @@ This guide relies on three files already in the repo root:
 
 1. In the Coolify dashboard, go to **Sources** (left sidebar)
 2. Click **Add** > **GitHub App**
-3. Click **Register a GitHub App** — this redirects to GitHub
+3. Click **Register a GitHub App** -- this redirects to GitHub
 4. On GitHub, name the app (e.g., `coolify-blog-deploy`) and click **Create GitHub App**
 5. GitHub redirects back to Coolify with the app credentials filled in
-6. Click **Install Repositories** — this redirects to GitHub again
+6. Click **Install Repositories** -- this redirects to GitHub again
 7. Select **Only select repositories** > choose `richmosko/hi-my-name-is-rich`
 8. Click **Install**
 9. Back in Coolify, verify the source shows as **Connected**
@@ -70,7 +74,7 @@ If you prefer not to create a GitHub App:
 ## 2. Create the Blog Resource in Coolify
 
 1. Go to **Projects** in Coolify
-2. Click **Add** to create a new project (e.g., `Personal Blog`) — or use an existing one
+2. Click **Add** to create a new project (e.g., `Personal Blog`) -- or use an existing one
 3. Click into the project, then click **Add Resource**
 4. Select **Public Repository** (if using deploy key) or **Private Repository (GitHub App)** (if using GitHub App)
 5. Select the `richmosko/hi-my-name-is-rich` repository
@@ -82,7 +86,7 @@ If you prefer not to create a GitHub App:
 8. In the resource settings, go to the **Build** section:
    - **Build Pack**: Docker
    - **Dockerfile Location**: `/Dockerfile` (should be auto-detected)
-   - **Port**: `80`
+   - **Port**: `4321`
 
 ### Configure Environment Variables
 
@@ -91,14 +95,23 @@ If you prefer not to create a GitHub App:
    | Variable | Value | Build / Runtime |
    |----------|-------|-----------------|
    | `VITE_REMARK42_HOST` | `https://remark42.yourdomain.com` | **Build** |
+   | `VITE_VIKUNJA_HOST` | `https://vikunja.yourdomain.com` | **Build** |
+   | `VITE_VIKUNJA_TOKEN` | Your Vikunja API token | **Build** |
+   | `PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | Your Keystatic GitHub App slug | **Build** |
+   | `KEYSTATIC_GITHUB_CLIENT_ID` | GitHub App Client ID | **Runtime** |
+   | `KEYSTATIC_GITHUB_CLIENT_SECRET` | GitHub App Client Secret | **Runtime** |
+   | `KEYSTATIC_SECRET` | Random hex string (`openssl rand -hex 32`) | **Runtime** |
 
-   **Important:** `VITE_REMARK42_HOST` must be set as a **Build** variable (not Runtime) because Vite inlines environment variables at build time. A runtime-only variable won't be available in the built JavaScript.
+   **How env vars work in Astro:**
+   - `VITE_*` and `PUBLIC_*` variables are inlined at **build time** (available in client-side code)
+   - The Dockerfile maps `VITE_*` build args to both `VITE_*` and `PUBLIC_*` env vars (Astro uses the `PUBLIC_` prefix for client-side env vars)
+   - `KEYSTATIC_*` variables are server-side only and needed at **runtime** for OAuth
 
 ### Configure Domain
 
 10. Go to the **Network** section:
     - **Domain**: `yourdomain.com`
-    - **Port**: `80`
+    - **Port**: `4321`
     - **HTTPS**: Enabled (Coolify provisions Let's Encrypt certificates automatically via Traefik)
 
     To also serve on `www`:
@@ -108,18 +121,17 @@ If you prefer not to create a GitHub App:
 
 11. In **Health Check** settings:
     - **Path**: `/`
-    - **Port**: `80`
+    - **Port**: `4321`
     - This lets Coolify verify the container is healthy after deployment
 
 ## 3. Initial Deployment
 
 1. Click **Deploy** in the Coolify dashboard
-2. Watch the build logs — you should see:
+2. Watch the build logs -- you should see:
    - Docker pulling `node:22-alpine`
    - `npm ci` installing dependencies
-   - `npm run build` (TypeScript check + Vite build)
-   - Docker pulling `nginx:alpine`
-   - Container starting on port 80
+   - `npm run build` (Astro build -- pre-renders pages + compiles server)
+   - Container starting Astro standalone server on port 4321
 3. Once the deployment finishes, verify the site loads at `https://yourdomain.com`
 
 ### Troubleshooting First Deploy
@@ -129,21 +141,22 @@ If you prefer not to create a GitHub App:
 - Verify the Dockerfile is in the repo root
 
 **Build fails at `npm run build`**
-- Usually a TypeScript or lint error — run `npm run build` locally to reproduce
+- Usually a TypeScript or lint error -- run `npm run build` locally to reproduce
 - Check that all source files are committed
 
-**Site loads but shows nginx 404**
-- Verify `nginx.conf` is in the repo root
-- Check the Dockerfile copies it to the right location
-
-**Site loads but routes return 404**
-- The `try_files $uri $uri/ /index.html` in nginx.conf handles SPA routing
-- Make sure you're using the `nginx.conf` from the repo, not nginx's default
+**Site loads but shows "Cannot GET /path"**
+- Astro pre-renders pages as static HTML at build time, so routes should just work
+- Check that the page exists in `src/pages/`
+- SSR routes (like `/keystatic` and `/api/vikunja`) require the Node adapter -- verify `astro.config.mjs` has `adapter: node({ mode: 'standalone' })`
 
 **HTTPS not working**
 - Coolify needs ports 80 and 443 open on the server
 - DNS must be pointing to the server for Let's Encrypt to issue a certificate
 - Check Traefik logs in Coolify for certificate errors
+
+**Keystatic shows blank page or OAuth errors**
+- Verify `KEYSTATIC_*` environment variables are set in Coolify
+- The Astro server rewrites request URLs using `X-Forwarded-Host` headers (see `src/pages/api/keystatic/[...params].ts`) -- this fixes OAuth redirect URLs when behind Traefik
 
 ## 4. Set Up Continuous Deployment
 
@@ -175,7 +188,7 @@ If you used a deploy key instead of a GitHub App:
    ```bash
    git push origin main
    ```
-3. In Coolify, go to **Deployments** — you should see a new deployment triggered automatically
+3. In Coolify, go to **Deployments** -- you should see a new deployment triggered automatically
 4. Once it finishes, verify the change is live on your site
 
 ## 5. GitHub Actions CI + Coolify CD Pipeline
@@ -184,10 +197,10 @@ Your existing CI workflow (`.github/workflows/ci.yml`) runs lint and build on ev
 
 ```
 Developer pushes to main (or merges PR)
-        │
-        ├──▶ GitHub Actions: lint + type-check + build (CI)
-        │
-        └──▶ Coolify webhook: pull + Docker build + deploy (CD)
+        |
+        +-->  GitHub Actions: lint + type-check + build (CI)
+        |
+        +-->  Coolify webhook: pull + Docker build + deploy (CD)
 ```
 
 Both run in parallel. If you want to gate deployments on CI passing, you can add a deployment workflow that only triggers after CI succeeds:
@@ -247,7 +260,7 @@ If you want a staging environment:
 
 ### In Coolify
 
-- **Logs**: view real-time container logs (nginx access/error logs)
+- **Logs**: view real-time container logs (Astro server request logs)
 - **Deployments**: history of all deployments with build logs
 - **Server**: CPU, RAM, and disk usage for the host
 
@@ -257,7 +270,7 @@ If you want a staging environment:
 # Check running containers
 docker ps
 
-# View nginx logs for the blog
+# View Astro server logs for the blog
 docker logs <blog-container-id> --tail 100
 
 # Check disk usage
@@ -273,9 +286,11 @@ free -h
 |------|-------|
 | Repo | `richmosko/hi-my-name-is-rich` |
 | Branch | `main` |
-| Build | Docker (multi-stage: node → nginx) |
-| Port | 80 (Traefik handles 443/SSL) |
-| Build var | `VITE_REMARK42_HOST=https://remark42.yourdomain.com` |
+| Build | Docker (multi-stage: node build + node serve) |
+| Server | Astro 6 Node.js standalone (`node dist/server/entry.mjs`) |
+| Port | 4321 (Traefik handles 443/SSL) |
+| Build vars | `VITE_REMARK42_HOST`, `VITE_VIKUNJA_HOST`, `VITE_VIKUNJA_TOKEN`, `PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` |
+| Runtime vars | `KEYSTATIC_GITHUB_CLIENT_ID`, `KEYSTATIC_GITHUB_CLIENT_SECRET`, `KEYSTATIC_SECRET` |
 | Deploy trigger | Push to `main` via webhook |
 | Rollback | Coolify dashboard > Deployments > Rollback |
 
@@ -283,3 +298,4 @@ free -h
 
 - Deploy Remark42: [REMARK42-SETUP.md](./REMARK42-SETUP.md)
 - Set up Cloudflare CDN: [CLOUDFLARE-CDN-SETUP.md](./CLOUDFLARE-CDN-SETUP.md)
+- Configure Keystatic CMS: [KEYSTATIC-SETUP.md](./KEYSTATIC-SETUP.md)
