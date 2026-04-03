@@ -189,10 +189,13 @@ export default function ConstellationGraph({
 
       const nodes = nodesRef.current;
       const edges = edgesRef.current;
-      // Settle in a 1000x1000 frame
-      initializePositions(nodes, 1000, 1000);
+      // Settle in a frame that matches the viewport aspect ratio
+      // so the graph naturally fills the screen on both portrait and landscape
+      const simW = rect.width;
+      const simH = rect.height;
+      initializePositions(nodes, simW, simH);
       let alpha = 1.0;
-      for (let i = 0; i < 300; i++) { tick(nodes, edges, 1000, 1000, alpha); alpha *= 0.98; }
+      for (let i = 0; i < 300; i++) { tick(nodes, edges, simW, simH, alpha); alpha *= 0.98; }
 
       if (autoFit) {
         // Shift all nodes so centroid = canvas center, then compute zoom
@@ -267,9 +270,8 @@ export default function ConstellationGraph({
       };
 
       const alpha = draggedNode ? 0.3 : 0.015;
-      // Use 1000x1000 sim frame — matches init, gravity + boundary at (500,500)
-      // Use canvas dimensions when autoFit shifted nodes to canvas center,
-      // otherwise use sim frame (1000x1000)
+      // autoFit: use canvas dimensions (init used viewport size)
+      // non-autoFit (home page mini): use 1000x1000 sim frame
       const tickW = autoFit ? w : 1000;
       const tickH = autoFit ? h : 1000;
       tick(nodes, edges, tickW, tickH, alpha, multipliers);
