@@ -1,4 +1,4 @@
-import { useState, type MutableRefObject } from 'react';
+import { useState } from 'react';
 import { useTheme } from '../hooks/useTheme';
 
 const DEFAULT_FORCES = {
@@ -35,10 +35,14 @@ function Slider({ label, value, min, max, step, onChange }: {
 interface Forces { linkStrength: number; tagStrength: number; repulsion: number; gravity: number; drift: number; }
 
 interface Props {
-  showWikilinksRef: MutableRefObject<boolean>;
-  showTagsRef: MutableRefObject<boolean>;
-  zoomRef: MutableRefObject<number>;
-  forcesRef: MutableRefObject<Forces>;
+  initialShowWikilinks: boolean;
+  initialShowTags: boolean;
+  initialZoom: number;
+  initialForces: Forces;
+  onShowWikilinksChange: (v: boolean) => void;
+  onShowTagsChange: (v: boolean) => void;
+  onZoomChange: (v: number) => void;
+  onForcesChange: (f: Forces) => void;
   onResetAll: () => void;
   nodeCount: number;
   edgeCount: number;
@@ -47,18 +51,25 @@ interface Props {
 }
 
 export default function ConstellationDropdown({
-  showWikilinksRef, showTagsRef, zoomRef, forcesRef, onResetAll,
+  initialShowWikilinks, initialShowTags, initialZoom, initialForces,
+  onShowWikilinksChange, onShowTagsChange, onZoomChange, onForcesChange, onResetAll,
   nodeCount, edgeCount, wikilinkCount, tagCount,
 }: Props) {
   const { theme } = useTheme();
-  // Local state to trigger re-renders when refs change
-  const [, forceUpdate] = useState(0);
-  const refresh = () => forceUpdate(n => n + 1);
+  const [showWikilinks, setShowWikilinks] = useState(initialShowWikilinks);
+  const [showTags, setShowTags] = useState(initialShowTags);
+  const [zoom, setZoom] = useState(initialZoom);
+  const [forces, setForces] = useState<Forces>(initialForces);
 
-  const showWikilinks = showWikilinksRef.current;
-  const showTags = showTagsRef.current;
-  const zoom = zoomRef.current;
-  const forces = forcesRef.current;
+  const toggleWikilinks = () => { const v = !showWikilinks; setShowWikilinks(v); onShowWikilinksChange(v); };
+  const toggleTags = () => { const v = !showTags; setShowTags(v); onShowTagsChange(v); };
+  const updateZoom = (v: number) => { setZoom(v); onZoomChange(v); };
+  const updateForces = (f: Forces) => { setForces(f); onForcesChange(f); };
+  const resetAll = () => {
+    setShowWikilinks(true); setShowTags(true);
+    setForces({ ...DEFAULT_FORCES });
+    onResetAll();
+  };
 
   return (
     <div className="absolute right-0 top-10 px-4 py-3 rounded-xl text-xs space-y-2 min-w-[280px] z-50"
@@ -79,41 +90,37 @@ export default function ConstellationDropdown({
         </span>
       </div>
 
-      <button onClick={() => { onResetAll(); refresh(); }}
+      <button onClick={resetAll}
         className="text-[10px] px-2 py-1 rounded font-medium cursor-pointer w-full"
         style={{ background: '#4a6cf7', color: '#fff' }}>Reset All</button>
 
-      {/* Visibility */}
       <div className="font-semibold mb-1 text-[11px]" style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)' }}>Visibility</div>
       <label className="flex items-center gap-2 cursor-pointer">
-        <input type="checkbox" checked={showWikilinks} onChange={() => { showWikilinksRef.current = !showWikilinks; refresh(); }} />
+        <input type="checkbox" checked={showWikilinks} onChange={toggleWikilinks} />
         <span>Links ({wikilinkCount})</span>
       </label>
       <label className="flex items-center gap-2 cursor-pointer">
-        <input type="checkbox" checked={showTags} onChange={() => { showTagsRef.current = !showTags; refresh(); }} />
+        <input type="checkbox" checked={showTags} onChange={toggleTags} />
         <span>Shared Tags ({tagCount})</span>
       </label>
 
-      {/* Zoom */}
       <div className="border-t pt-2 mt-2" style={{ borderColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }}>
-        <Slider label="Zoom" value={zoom} min={0.2} max={4} step={0.1} onChange={(v) => { zoomRef.current = v; refresh(); }} />
+        <Slider label="Zoom" value={zoom} min={0.2} max={4} step={0.1} onChange={updateZoom} />
       </div>
 
-      {/* Forces */}
       <div className="border-t pt-2 mt-1 space-y-1" style={{ borderColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }}>
         <div className="flex items-center justify-between">
           <span className="font-semibold" style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)' }}>Forces</span>
-          <button onClick={() => { forcesRef.current = { ...DEFAULT_FORCES }; refresh(); }}
+          <button onClick={() => updateForces({ ...DEFAULT_FORCES })}
             className="text-[10px] cursor-pointer" style={{ color: theme === 'dark' ? '#8da4ff' : '#4a6cf7' }}>Reset</button>
         </div>
-        <Slider label="Links" value={forces.linkStrength} min={0} max={2} step={0.1} onChange={(v) => { forcesRef.current = { ...forces, linkStrength: v }; refresh(); }} />
-        <Slider label="Tags" value={forces.tagStrength} min={0} max={2} step={0.05} onChange={(v) => { forcesRef.current = { ...forces, tagStrength: v }; refresh(); }} />
-        <Slider label="Repulsion" value={forces.repulsion} min={0} max={3} step={0.1} onChange={(v) => { forcesRef.current = { ...forces, repulsion: v }; refresh(); }} />
-        <Slider label="Gravity" value={forces.gravity} min={0} max={0.5} step={0.01} onChange={(v) => { forcesRef.current = { ...forces, gravity: v }; refresh(); }} />
-        <Slider label="Drift" value={forces.drift} min={0} max={0.25} step={0.01} onChange={(v) => { forcesRef.current = { ...forces, drift: v }; refresh(); }} />
+        <Slider label="Links" value={forces.linkStrength} min={0} max={2} step={0.1} onChange={(v) => updateForces({ ...forces, linkStrength: v })} />
+        <Slider label="Tags" value={forces.tagStrength} min={0} max={2} step={0.05} onChange={(v) => updateForces({ ...forces, tagStrength: v })} />
+        <Slider label="Repulsion" value={forces.repulsion} min={0} max={3} step={0.1} onChange={(v) => updateForces({ ...forces, repulsion: v })} />
+        <Slider label="Gravity" value={forces.gravity} min={0} max={0.5} step={0.01} onChange={(v) => updateForces({ ...forces, gravity: v })} />
+        <Slider label="Drift" value={forces.drift} min={0} max={0.25} step={0.01} onChange={(v) => updateForces({ ...forces, drift: v })} />
       </div>
 
-      {/* Categories */}
       <div className="border-t pt-2 mt-1" style={{ borderColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }}>
         <div className="font-semibold mb-1" style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)' }}>Categories</div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1">

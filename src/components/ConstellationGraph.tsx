@@ -102,7 +102,6 @@ export default function ConstellationGraph({
   const showTagsRef = useRef(showTags);
   const zoomRef = useRef(initialZoom);
   const forcesRef = useRef({ linkStrength: 1, tagStrength: 0.3, repulsion: 1, gravity: 0.1, drift: 0.05 });
-  const resetCounterRef = useRef(0);
 
   // Camera reset function — called by ConstellationDropdown's Reset All
   const handleResetAll = useCallback(() => {
@@ -639,10 +638,14 @@ export default function ConstellationGraph({
           </button>
           {dropdownOpen && (
             <ConstellationDropdown
-              showWikilinksRef={showWikilinksRef}
-              showTagsRef={showTagsRef}
-              zoomRef={zoomRef}
-              forcesRef={forcesRef}
+              initialShowWikilinks={showWikilinksRef.current}
+              initialShowTags={showTagsRef.current}
+              initialZoom={zoomRef.current}
+              initialForces={forcesRef.current}
+              onShowWikilinksChange={(v) => { showWikilinksRef.current = v; }}
+              onShowTagsChange={(v) => { showTagsRef.current = v; }}
+              onZoomChange={(v) => { zoomRef.current = v; }}
+              onForcesChange={(f) => { forcesRef.current = f; }}
               onResetAll={handleResetAll}
               nodeCount={graphData.nodes.length}
               edgeCount={graphData.edges.length}
