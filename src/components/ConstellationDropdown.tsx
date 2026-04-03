@@ -79,7 +79,12 @@ export default function ConstellationDropdown({
         backdropFilter: 'blur(12px)', color: theme === 'dark' ? '#aaa' : '#666',
         boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
       }}
-      onTouchStart={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+      onMouseUp={(e) => e.stopPropagation()}
+      onMouseMove={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
     >
       <div className="flex items-center justify-between mb-1">
         <span className="font-semibold" style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)' }}>
