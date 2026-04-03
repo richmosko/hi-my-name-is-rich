@@ -1,16 +1,20 @@
 # Hi, My Name Is Rich
 
-A personal blog built with React, TypeScript, Vite, and Tailwind CSS. Posts are authored as MDX files — standard markdown with the ability to embed React components directly in your writing.
+A personal blog built with **Astro 6**, TypeScript, and Tailwind CSS. Posts are authored as MDX files — standard markdown with the ability to embed React components directly in your writing. Static HTML pages with selective React islands for interactivity.
 
 ## Tech Stack
 
-- **React 19** + **TypeScript 5.9** + **Vite 7**
-- **Tailwind CSS 4** with a custom design token system
-- **MDX** via `@mdx-js/rollup` — `.mdx` files compiled at build time
-- **React Router 7** for client-side routing
+- **Astro 6** — static site generation with selective server-side rendering
+- **React 19** (islands) — interactive components hydrate on demand via `client:*` directives
+- **TypeScript 5.9** + **Tailwind CSS 4** with custom design token system
+- **MDX** via `@astrojs/mdx` — content collections with Zod schema validation
+- **Keystatic** CMS — integrated at `/keystatic` via `@keystatic/astro` (GitHub-backed editing)
+- **View Transitions** — SPA-like smooth navigation between static pages
 - **remark-gfm** for GitHub Flavored Markdown (tables, strikethrough, task lists)
 - **remark-wiki-link** for Obsidian-compatible `[[wikilink]]` syntax
 - **Montserrat** font (300–700, normal + italic) via Google Fonts
+- **Sitemap** auto-generated via `@astrojs/sitemap`
+- **SEO** — meta tags, Open Graph, Twitter cards, canonical URLs on every page
 
 ## Pages & Routes
 
@@ -60,7 +64,7 @@ Rebuild graph data after adding/editing posts: `npm run build-graph-index`
 
 - **Max width**: 1440px with 95px horizontal padding (matching Figma spec)
 - **TopBar**: Sticky header with glass morphism effect, home icon, site title, breadcrumb navigation, and fixed-position icons (constellation sparkle/gear, theme toggle, search)
-- **Sidebar** (left): Slide-out mobile navigation (264px wide) with hamburger trigger, backdrop overlay, Escape key to close, and auto-close on route change. Includes nav links, category sub-links (indented), and active projects with completion percentages and mini progress bars
+- **Sidebar** (left): Slide-out mobile navigation (264px wide) with hamburger trigger, backdrop overlay, Escape key to close, and auto-close on route change. Includes nav links, category sub-links (indented), and active project links
 - **Search Panel** (right): Slide-in search panel with full-text search, live results dropdown, and "View all results" link
 - **Footer**: Profile avatar, name, and social links (Instagram, GitHub, LinkedIn) with auto-updating copyright year
 - **Content width**: Posts and projects use centered 640px max-width for readability, with hero images at 1250px
@@ -164,7 +168,7 @@ Optional rich MDX body content here — supports markdown, React components, gal
 - **Vikunja integration** — when `vikunjaProjectId` is set, project pages fetch live task data from Vikunja, grouped by label with collapsible sections and colored progress bars
 - **Custom group order** — define `groupOrder` array in frontmatter to control display order (e.g., construction phases for a house build)
 - **Changelog** — `/changelog` page auto-generates a list of recently completed tasks from Vikunja, grouped by month and day
-- **Sidebar** shows only active projects with mini progress bars, linking to individual project pages
+- **Sidebar** shows active projects linking to individual project pages
 - **Hero images** display at 1250px width on project detail pages
 - **External URL** shown as "Visit Project" link when set (hidden if `"#"`)
 - **MDX body** renders on the detail page (supports all MDX components)
@@ -173,7 +177,7 @@ Optional rich MDX body content here — supports markdown, React components, gal
 
 Live task data from [Vikunja](https://vikunja.io/) (self-hosted) powers project tracking on the blog.
 
-- **Live progress** — project completion percentages and task counts fetched from Vikunja API via nginx proxy (avoids CORS)
+- **Live progress** — project completion percentages and task counts fetched from Vikunja API via Astro server route proxy (avoids CORS)
 - **Recursive sub-projects** — tasks from nested sub-projects are aggregated automatically
 - **Label-based grouping** — tasks grouped by Vikunja labels with colored progress bars and collapsible sections
 - **Custom group order** — `groupOrder` in MDX frontmatter controls display sequence (e.g., construction phases)
@@ -184,7 +188,7 @@ Live task data from [Vikunja](https://vikunja.io/) (self-hosted) powers project 
   - **Kanban** — bucket columns from Vikunja's Kanban view (1250px)
   - **Gantt** — timeline chart placeholder for tasks with dates (1250px)
 - **Changelog** — `/changelog` page auto-generates a list of recently completed tasks, grouped by month and day
-- **Fallback** — when `vikunjaProjectId` is not set or Vikunja is unavailable, falls back to static MDX task data
+- **Fallback** — when `vikunjaProjectId` is not set or Vikunja is unavailable, shows "N/A" (no stale MDX fallback)
 - See [`VIKUNJA-SETUP.md`](./docs/VIKUNJA-SETUP.md) for deployment and API integration details
 
 ## Dark Mode
@@ -233,55 +237,72 @@ src/
   components/
     Layout.tsx          # Main layout (1440px max, 95px padding, Outlet)
     TopBar.tsx          # Sticky header with breadcrumbs + glass morphism
-    Sidebar.tsx         # Slide-out nav with projects progress section
-    SearchOverlay.tsx   # Right slide-in search panel with live results
-    CategoryFilter.tsx  # Collapsible category pill filter with theme colors
-    TagFilter.tsx       # Collapsible tag pill filter
-    Footer.tsx          # Avatar + social links
-    PostCard.tsx        # Post thumbnail card (6:4 aspect, hover effects)
-    MdxComponents.tsx   # MDX overrides + custom component registration
-    LightboxImage.tsx   # Clickable image with lightbox overlay
-    YouTube.tsx         # YouTube embed component
-    Gallery.tsx         # Image carousel with aspectRatio and fullWidth props
+  layouts/
+    Layout.astro        # Base HTML layout (SEO meta, fonts, theme, View Transitions)
+    MainLayout.astro    # App layout (TopBar, Sidebar, SearchPanel, Footer, slot)
+  pages/
+    index.astro         # Home page (hero, featured posts, latest posts)
+    about.astro         # About Rich page
+    contributors.astro  # Author cards with avatar lightbox, bios, social links
+    constellation.astro # Full-screen interactive constellation graph
+    admin.astro         # Admin dashboard with comment activity
+    changelog.astro     # Auto-generated changelog from Vikunja
+    posts/index.astro   # All posts with sort, category filter, tag filter
+    post/[slug].astro   # Individual post with MDX content, prev/next nav, comments
+    project/[id].astro  # Individual project with MDX content, Vikunja tasks
+    projects/index.astro # Project list with Vikunja progress
+    travel.astro, design.astro, ... # Category-filtered post pages
+    keystatic/[...params].astro     # Keystatic CMS admin UI
+    api/vikunja/[...path].ts        # Vikunja API proxy (SSR route)
+    api/keystatic/[...params].ts    # Keystatic OAuth API handler
+  components/
+    TopBar.tsx          # Sticky header with breadcrumbs (React island)
+    Sidebar.tsx         # Slide-out nav with project links (React island)
+    SearchOverlay.tsx   # Right slide-in search panel (React island)
+    Footer.astro        # Avatar + social links (static Astro)
+    PostCard.tsx        # Post thumbnail card (server-rendered React)
+    PostsListIsland.tsx # Posts list with sort/filter (React island)
+    ConstellationGraph.tsx # Force-directed graph with built-in controls (React island)
+    ConstellationDropdown.tsx # Graph settings dropdown (inside graph island)
+    Gallery.tsx         # Image carousel with build-time manifest loading
     Video.tsx           # Video player with poster/seek-frame support
+    LightboxImage.tsx   # Clickable image with lightbox overlay
     Lightbox.tsx        # Full-screen image viewer
-    Comments.tsx        # Remark42 comment widget (env-driven)
-    ScrollToTop.tsx     # Resets scroll position on route change
-    ConstellationGraph.tsx  # Reusable force-directed graph canvas (used by Constellation page and Home)
-    ConstellationIcon.tsx   # Sparkle/stars SVG icon for constellation links
+    YouTube.tsx         # YouTube embed component
+    Comments.tsx        # Remark42 comment widget (React island)
+    MdxComponents.tsx   # MDX element overrides (headings, code, links, etc.)
+    HydrateMdx.astro    # Client-side hydration for Gallery/Video in MDX
+    AdminDashboard.tsx  # Comment activity feed (React island)
+    ProjectProgress.tsx # Live Vikunja progress bar (React island)
+    ProjectDetailIsland.tsx # Task views: Labels/Pending/Kanban/Gantt (React island)
+    ProjectProgressBar.tsx  # Compact progress bar for project header
+    KeystaticWrapper.tsx    # .tsx wrapper for Keystatic page (Astro 6 compat)
+    CategoryFilter.tsx  # Collapsible category pill filter
+    TagFilter.tsx       # Collapsible tag pill filter
+    ConstellationIcon.tsx # Sparkle/stars SVG icon
   content/
     posts/              # Blog posts as .mdx files
       .obsidian/        # Obsidian vault config for editing posts
     projects/           # Project definitions as .mdx files
+  content.config.ts     # Astro content collection schemas (Zod validation)
   data/
-    authors.ts          # Author profiles (id, name, avatar, bio, socials)
-    categories.ts       # Category definitions, labels, colors, descriptions
+    authors.json        # Author data (managed via Keystatic Authors singleton)
+    authors.ts          # TypeScript wrapper — imports authors.json
+    categories.ts       # Category definitions, labels, colors, hero images
+    site-settings.json  # Global settings (managed via Keystatic Site Settings singleton)
   hooks/
-    useTheme.tsx        # Dark/light theme context with localStorage persistence
+    useTheme.tsx        # Dark/light theme (useSyncExternalStore, cross-island)
     useVikunja.ts       # Vikunja API integration — recursive project/task fetching
-    useConstellationControls.tsx  # Shared state for constellation graph settings
   lib/
-    dateUtils.ts        # Local timezone date parsing to avoid UTC off-by-one bugs
-    posts.ts            # Data access layer — loads all post .mdx via import.meta.glob
-    projects.ts         # Data access layer — loads all project .mdx via import.meta.glob
-    search-index.json   # Full-text search index (generated by build-search-index script)
-    graph-index.json    # Post relationship graph data (generated by build-graph-index script)
-    forceLayout.ts      # Force-directed graph layout engine (zero dependencies)
-  pages/
-    Home.tsx            # Hero + Featured Posts (large left + 2 stacked right) + Constellation preview
-    About.tsx           # Bio, interests, category cards with lightbox
-    Contributors.tsx    # Author cards with avatar lightbox, bios, social links
-    Constellation.tsx   # Interactive star constellation graph of post relationships
-    Changelog.tsx       # Auto-generated changelog from Vikunja completed tasks
-    Admin.tsx           # Comment activity dashboard + moderation links
-    PostsList.tsx       # Category + tag filters, search-filtered post list (640px centered)
-    PostDetail.tsx      # Full post view with hero image, lightbox, MDX rendering, prev/next nav
-    ProjectsPage.tsx    # Project cards with expand/collapse (640px centered, 1250px hero)
-    ProjectDetail.tsx   # Individual project page with MDX content and tasks
+    dateUtils.ts        # Local timezone date parsing
+    posts.ts            # Data access layer — loads posts via import.meta.glob
+    projects.ts         # Data access layer — loads projects via import.meta.glob
+    search-index.json   # Full-text search index (generated by build script)
+    graph-index.json    # Post relationship graph (generated by build script)
+    forceLayout.ts      # Force-directed graph physics engine
   types/
     index.ts            # BlogPost, Author, Category, Project, ProjectTask interfaces
   index.css             # Tailwind @theme tokens + custom utilities
-  mdx.d.ts              # TypeScript declarations for .mdx imports
 public/
   images/
     stock/              # Stock/default hero images
@@ -303,8 +324,8 @@ scripts/
 ## Getting Started
 
 ```bash
-npm install
-npm run dev
+npm install --legacy-peer-deps
+npm run dev     # starts Astro dev server at http://localhost:4321
 npm run help    # see all available commands
 ```
 
@@ -464,8 +485,8 @@ Run `npm run help` to see all commands, or reference the table below:
 | Command | Description |
 |---------|-------------|
 | `npm run help` | Show all available commands |
-| `npm run dev` | Start dev server on port 5173 |
-| `npm run build` | Type-check and build for production |
+| `npm run dev` | Start Astro dev server on port 4321 |
+| `npm run build` | Astro production build |
 | `npm run preview` | Preview production build locally |
 | `npm run lint` | Run ESLint |
 | `npm run new-post -- "Title"` | Scaffold a new `.mdx` post |
@@ -480,10 +501,11 @@ Run `npm run help` to see all commands, or reference the table below:
 
 **CI**: GitHub Actions runs on pushes to `main` and on pull requests:
 - ESLint
-- TypeScript type-check + Vite production build
+- Astro production build
 
 **CD**: Coolify on a Hetzner ARM64 VPS auto-deploys on push to `main`:
-- **Blog frontend**: Multi-stage Docker build (Node → nginx), served via Traefik with auto SSL
+- **Blog**: Multi-stage Docker build (Node build → Node standalone server on port 4321), served via Traefik with auto SSL
+- **Keystatic CMS**: Built into the blog at `/keystatic` (no separate deployment)
 - **Remark42 comments**: Custom Docker image (stock Remark42 + CSS overrides), built directly by Coolify
 - **Cloudflare CDN**: Static assets cached at edge, `www` → apex redirect
 
@@ -496,11 +518,14 @@ See deployment guides:
 
 ## Architecture Notes
 
-- **Data access layers**: `src/lib/posts.ts` and `src/lib/projects.ts` are the single seams for all content loading. They use `import.meta.glob` to eagerly import `.mdx` files at build time. To migrate to a headless CMS later, only these files need to change — all consumers import from `lib/`.
-- **MDX component overrides**: All markdown element styling (headings, code blocks, lists, blockquotes, etc.) is centralized in `src/components/MdxComponents.tsx`. Custom components like `YouTube`, `Gallery`, and `Video` are also registered there — no imports needed in post files.
-- **Content as code**: Posts and projects live in the repo as `.mdx` files. Creating, editing, and publishing is just a git commit. The Obsidian vault config in `src/content/posts/.obsidian/` lets you use Obsidian as a WYSIWYG editor with live preview. Wikilinks work in both Obsidian and the blog (with or without `.mdx` extension).
-- **Full-text search**: A build-time script extracts plain text from all MDX posts into `search-index.json`. The search function uses word-boundary regex matching on the index to avoid substring false positives, plus substring matching on titles/excerpts/tags.
-- **Gallery manifests**: Since Vite can't list directory contents at runtime, each gallery uses a `manifest.json` that maps filenames to metadata. The `generate-galleries` script automates creation and preserves hand-edited alt text and captions.
-- **Project tracking**: Projects use MDX + frontmatter for static data and Vikunja for live task tracking. When `vikunjaProjectId` is set, `useVikunjaProject` recursively fetches tasks from sub-projects, groups by label, and computes progress — excluding issue-tracking labels (bug/enhancement/question). The nginx proxy (`/api/vikunja/`) forwards requests to the Vikunja server same-origin to avoid CORS.
-- **Dark mode**: Theme state managed via `useTheme` context with `localStorage` persistence. All design tokens have dark variants as CSS custom properties in `:root.dark`. The Remark42 comment widget receives theme changes via `window.REMARK42.changeTheme()`.
+- **Astro + React islands**: Pages are `.astro` files that render static HTML. Interactive components (search, constellation, comments, filters) are React islands with `client:load`, `client:visible`, or `client:idle` directives — zero JS shipped for non-interactive pages.
+- **Content collections**: Astro's Content Layer API with Zod schemas validates all MDX frontmatter at build time. `getCollection('posts')` and `getCollection('projects')` provide type-safe data access.
+- **MDX component overrides**: Markdown element styling (headings, code blocks, lists, etc.) is centralized in `MdxComponents.tsx`. Custom components (`Gallery`, `Video`, `YouTube`) are auto-imported into MDX files via `astro-auto-import`.
+- **Gallery hydration**: Galleries load manifest data at build time via `import.meta.glob` for server rendering. The `HydrateMdx.astro` script re-mounts Gallery/Video/LightboxImage components client-side for interactivity.
+- **Content as code**: Posts and projects live as `.mdx` files. Keystatic CMS at `/keystatic` provides a visual editor that commits to GitHub. The Obsidian vault config lets you edit locally with wikilink support.
+- **Full-text search**: Build-time script extracts text into `search-index.json`. The `PostsListIsland` React island handles search, sort, and filtering with URL param support (`?q=...&tag=...`).
+- **Vikunja integration**: Astro server route (`/api/vikunja/[...path].ts`) proxies requests to the Vikunja API, avoiding CORS. `useVikunjaProject` hook recursively fetches tasks from sub-projects and groups by label.
+- **Dark mode**: `useTheme` hook uses `useSyncExternalStore` — works across separate React islands without a provider. Theme persists via `localStorage` and re-applies after View Transitions via `astro:after-swap`.
+- **View Transitions**: Astro's `ClientRouter` provides SPA-like smooth navigation between static pages. Theme detection script runs on every swap to prevent flash.
+- **SEO**: Every page has `<title>`, `<meta description>`, Open Graph, and Twitter card tags set in `Layout.astro`. Sitemap auto-generated by `@astrojs/sitemap`.
 - **Pre-commit workflow**: `npm run precommit` ensures read times, search index, gallery manifests, graph index, frontmatter validation, and lint are all up to date before committing.
