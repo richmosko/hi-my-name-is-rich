@@ -1,10 +1,7 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import graphData from '../lib/graph-index.json';
 import { useTheme } from '../hooks/useTheme';
-import {
-  useConstellationState, getConstellationState,
-  setZoom, setActive, setNodeCount, setEdgeCount, setWikilinkCount, setTagCount,
-} from '../stores/constellation';
+import ConstellationDropdown from './ConstellationDropdown';
 import {
   type GraphNode,
   type GraphEdge,
@@ -73,12 +70,9 @@ export default function ConstellationGraph({
   const containerRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const cState = useConstellationState();
-  const storeShowWikilinks = cState.showWikilinks;
-  const storeShowTags = cState.showTags;
-  const storeZoom = cState.zoom;
-  const storeForces = cState.forces;
-  const resetCounter = cState.cameraResetCounter;
+  // All constellation controls are local state (no cross-island sharing needed)
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Graph data refs
   const nodesRef = useRef<GraphNode[]>([]);
@@ -103,46 +97,43 @@ export default function ConstellationGraph({
   const themeRef = useRef(isDark);
   themeRef.current = isDark;
 
-  // Sync store values to refs for render loop (render loop can't call useStore)
+  // Render loop reads from refs (updated by controls or interaction)
   const showWikilinksRef = useRef(showWikilinks);
-  showWikilinksRef.current = interactive ? storeShowWikilinks : showWikilinks;
   const showTagsRef = useRef(showTags);
-  showTagsRef.current = interactive ? storeShowTags : showTags;
-  const zoomRef = useRef(storeZoom);
-  zoomRef.current = storeZoom;
-  const forcesRef = useRef(storeForces);
-  forcesRef.current = storeForces;
+  const zoomRef = useRef(initialZoom);
+  const forcesRef = useRef({ linkStrength: 1, tagStrength: 0.3, repulsion: 1, gravity: 0.1, drift: 0.05 });
+  const resetCounterRef = useRef(0);
 
-  // Animated camera reset when store counter increments
-  const prevResetRef = useRef(resetCounter);
-  useEffect(() => {
-    if (resetCounter > prevResetRef.current) {
-      prevResetRef.current = resetCounter;
-      const nodes = nodesRef.current;
-      const { w, h } = sizeRef.current;
-      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-      for (const n of nodes) { minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x); minY = Math.min(minY, n.y); maxY = Math.max(maxY, n.y); }
-      const graphW = maxX - minX || 1;
-      const graphH = maxY - minY || 1;
-      const graphCx = (minX + maxX) / 2;
-      const graphCy = (minY + maxY) / 2;
-      const zoom = autoFit ? Math.min(w / graphW, h / graphH) * 0.85 : initialZoom;
-      const camX = autoFit ? w / 2 - graphCx : 0;
-      const camY = autoFit ? h / 2 - graphCy : 0;
-      cameraTargetRef.current = { x: camX, y: camY, zoom };
-    }
-  }, [resetCounter, autoFit, initialZoom]);
+  // Camera reset function — called by ConstellationDropdown's Reset All
+  const handleResetAll = useCallback(() => {
+    const nodes = nodesRef.current;
+    const { w, h } = sizeRef.current;
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const n of nodes) { minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x); minY = Math.min(minY, n.y); maxY = Math.max(maxY, n.y); }
+    const graphW = maxX - minX || 1;
+    const graphH = maxY - minY || 1;
+    const graphCx = (minX + maxX) / 2;
+    const graphCy = (minY + maxY) / 2;
+    const zoom = autoFit ? Math.min(w / graphW, h / graphH) * 0.85 : initialZoom;
+    const camX = autoFit ? w / 2 - graphCx : 0;
+    const camY = autoFit ? h / 2 - graphCy : 0;
+    cameraTargetRef.current = { x: camX, y: camY, zoom };
+    showWikilinksRef.current = true;
+    showTagsRef.current = true;
+    forcesRef.current = { linkStrength: 1, tagStrength: 0.3, repulsion: 1, gravity: 0.1, drift: 0.05 };
+  }, [autoFit, initialZoom]);
 
-  // Set constellation stats when interactive (full page)
+  // Close dropdown on outside click
   useEffect(() => {
-    if (!interactive) return;
-    setActive(true);
-    setNodeCount(graphData.nodes.length);
-    setEdgeCount(graphData.edges.length);
-    setWikilinkCount(graphData.edges.filter(e => e.type === 'wikilink').length);
-    setTagCount(graphData.edges.filter(e => e.type === 'tag').length);
-    return () => { setActive(false); };
-  }, [interactive]);
+    if (!dropdownOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [dropdownOpen]);
 
   const screenToWorld = useCallback((clientX: number, clientY: number) => {
     const canvas = canvasRef.current;
@@ -225,7 +216,7 @@ export default function ConstellationGraph({
         const zoom = Math.min(rect.width / graphW, rect.height / graphH) * 0.8;
         // Camera at (0,0) since nodes are already centered on canvas
         cameraRef.current = { x: 0, y: 0, zoom };
-        setZoom(zoom);
+        zoomRef.current = zoom;
       }
     };
 
@@ -303,7 +294,7 @@ export default function ConstellationGraph({
           cam.zoom = target.zoom;
           cameraTargetRef.current = null;
           // Sync final zoom to store when animation completes
-          setZoom(cam.zoom);
+          zoomRef.current = cam.zoom;
         }
       } else {
         // Sync zoom from store (slider) → camera (no animation in progress)
@@ -559,7 +550,7 @@ export default function ConstellationGraph({
       const newZoom = Math.max(0.2, Math.min(6, cam.zoom * (e.deltaY > 0 ? 0.92 : 1.08)));
       cam.zoom = newZoom;
       // Sync to context so TopBar slider reflects wheel changes
-      setZoom(newZoom);
+      zoomRef.current = newZoom;
     };
     canvas.addEventListener('wheel', onWheel, { passive: false });
     return () => canvas.removeEventListener('wheel', onWheel);
@@ -600,7 +591,7 @@ export default function ConstellationGraph({
       const newDist = Math.sqrt(dx * dx + dy * dy);
       const newZoom = Math.max(0.2, Math.min(6, cameraRef.current.zoom * (newDist / touchStartRef.current.dist)));
       cameraRef.current.zoom = newZoom;
-      setZoom(newZoom);
+      zoomRef.current = newZoom;
       touchStartRef.current.dist = newDist;
     }
   }, [interactive, screenToWorld]);
@@ -634,7 +625,33 @@ export default function ConstellationGraph({
         onTouchEnd={handleTouchEnd}
         style={{ cursor: interactive ? 'grab' : 'default', touchAction: interactive ? 'none' : 'auto' }}
       />
-      {/* Node titles are drawn directly on the canvas */}
+      {/* Gear icon + dropdown (inside the graph island, no cross-island state needed) */}
+      {interactive && (
+        <div ref={dropdownRef} className="absolute top-3 right-3 z-10">
+          <button
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="p-2 rounded-lg hover:bg-black/20 transition-colors cursor-pointer"
+            aria-label="Graph settings"
+          >
+            <svg className="w-5 h-5" style={{ color: isDark ? '#888' : '#666' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
+          </button>
+          {dropdownOpen && (
+            <ConstellationDropdown
+              showWikilinksRef={showWikilinksRef}
+              showTagsRef={showTagsRef}
+              zoomRef={zoomRef}
+              forcesRef={forcesRef}
+              onResetAll={handleResetAll}
+              nodeCount={graphData.nodes.length}
+              edgeCount={graphData.edges.length}
+              wikilinkCount={graphData.edges.filter(e => e.type === 'wikilink').length}
+              tagCount={graphData.edges.filter(e => e.type === 'tag').length}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }
