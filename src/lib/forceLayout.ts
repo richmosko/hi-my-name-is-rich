@@ -183,7 +183,7 @@ export function tick(
 
   // ─── Centering gravity + circular boundary ──────────────────
   // Linear gravity pulls nodes toward center.
-  // Beyond a maximum radius, a stronger restoring force keeps
+  // Beyond a maximum radius, a strong restoring force keeps
   // the cluster circular regardless of viewport aspect ratio.
   const centerStrength = 0.02 * alpha * gravMul;
   const maxRadius = Math.min(width, height) * 0.45; // circular boundary
@@ -193,12 +193,13 @@ export function tick(
     node.vx += (cx - node.x) * centerStrength;
     node.vy += (cy - node.y) * centerStrength;
     // Circular boundary: strong restoring force beyond maxRadius
+    // Force is NOT alpha-dependent so it always dominates over drift/repulsion
     const dx = node.x - cx;
     const dy = node.y - cy;
     const dist = Math.sqrt(dx * dx + dy * dy);
     if (dist > maxRadius) {
       const overflow = (dist - maxRadius) / dist;
-      const boundaryForce = overflow * 0.1 * alpha;
+      const boundaryForce = overflow * 0.15;
       node.vx -= dx * boundaryForce;
       node.vy -= dy * boundaryForce;
     }
@@ -237,12 +238,15 @@ export function tick(
     node.x += node.vx;
     node.y += node.vy;
 
-    // Soft boundary (gentle, not bouncy)
-    const pad = 40;
-    const pushBack = 0.05;
-    if (node.x < pad) node.vx += (pad - node.x) * pushBack;
-    if (node.x > width - pad) node.vx -= (node.x - (width - pad)) * pushBack;
-    if (node.y < pad) node.vy += (pad - node.y) * pushBack;
-    if (node.y > height - pad) node.vy -= (node.y - (height - pad)) * pushBack;
+    // Hard circular clamp — keep nodes within maxRadius of center
+    // (prevents escape from the circular boundary above)
+    const cdx = node.x - cx;
+    const cdy = node.y - cy;
+    const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
+    const hardLimit = maxRadius * 1.1;
+    if (cdist > hardLimit) {
+      node.x = cx + (cdx / cdist) * hardLimit;
+      node.y = cy + (cdy / cdist) * hardLimit;
+    }
   }
 }

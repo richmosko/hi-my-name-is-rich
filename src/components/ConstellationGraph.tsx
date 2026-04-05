@@ -189,23 +189,21 @@ export default function ConstellationGraph({
 
       const nodes = nodesRef.current;
       const edges = edgesRef.current;
-      // Settle in a frame that matches the viewport aspect ratio
-      // so the graph naturally fills the screen on both portrait and landscape
-      const simW = rect.width;
-      const simH = rect.height;
-      initializePositions(nodes, simW, simH);
+      // Use a square sim frame based on the smaller viewport dimension.
+      // This keeps the circular boundary and rectangular soft boundary
+      // consistent, so nodes form a true circle (not an oval on portrait).
+      const simSize = Math.min(rect.width, rect.height);
+      initializePositions(nodes, simSize, simSize);
       let alpha = 1.0;
-      for (let i = 0; i < 300; i++) { tick(nodes, edges, simW, simH, alpha); alpha *= 0.98; }
+      for (let i = 0; i < 300; i++) { tick(nodes, edges, simSize, simSize, alpha); alpha *= 0.98; }
 
       if (autoFit) {
-        // Shift all nodes so centroid = canvas center, then compute zoom
+        // Keep nodes in the square sim frame (gravity + boundaries stay consistent).
+        // Use camera offset to center the graph in the viewport instead.
         let sumX = 0, sumY = 0;
         for (const n of nodes) { sumX += n.x; sumY += n.y; }
-        const cx = sumX / nodes.length;
-        const cy = sumY / nodes.length;
-        const dx = rect.width / 2 - cx;
-        const dy = rect.height / 2 - cy;
-        for (const n of nodes) { n.x += dx; n.y += dy; }
+        const centX = sumX / nodes.length;
+        const centY = sumY / nodes.length;
 
         // Compute zoom from bounding box
         let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
@@ -216,8 +214,8 @@ export default function ConstellationGraph({
         const graphW = maxX - minX || 1;
         const graphH = maxY - minY || 1;
         const zoom = Math.min(rect.width / graphW, rect.height / graphH) * 0.8;
-        // Camera at (0,0) since nodes are already centered on canvas
-        cameraRef.current = { x: 0, y: 0, zoom };
+        // Camera offset so graph centroid appears at viewport center
+        cameraRef.current = { x: rect.width / 2 - centX, y: rect.height / 2 - centY, zoom };
         zoomRef.current = zoom;
       }
     };
@@ -270,11 +268,10 @@ export default function ConstellationGraph({
       };
 
       const alpha = draggedNode ? 0.3 : 0.015;
-      // autoFit: use canvas dimensions (init used viewport size)
-      // non-autoFit (home page mini): use 1000x1000 sim frame
-      const tickW = autoFit ? w : 1000;
-      const tickH = autoFit ? h : 1000;
-      tick(nodes, edges, tickW, tickH, alpha, multipliers);
+      // Square sim frame keeps circular boundary symmetric.
+      // autoFit: use min(viewport dims); non-autoFit (home mini): 1000x1000
+      const simSize = autoFit ? Math.min(w, h) : 1000;
+      tick(nodes, edges, simSize, simSize, alpha, multipliers);
       if (draggedNode) { draggedNode.vx = 0; draggedNode.vy = 0; }
 
       // Animated camera transition (for Reset All)
