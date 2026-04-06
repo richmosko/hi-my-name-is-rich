@@ -76,7 +76,7 @@ const aspectRatio = project.data.imageAspectRatio || '16/9';
       <!-- Progress bar (compact, in header) -->
       <ProjectProgressBar
         client:load
-        vikunjaProjectId={project.data.vikunjaProjectId ?? undefined}
+        linearProjectId={project.data.linearProjectId ?? undefined}
         status={project.data.status}
       />
 
@@ -110,10 +110,10 @@ const aspectRatio = project.data.imageAspectRatio || '16/9';
     <!-- Hydrate interactive MDX components -->
     <HydrateMdx />
 
-    <!-- Full task views from Vikunja (below content) -->
+    <!-- Full task views from Linear (below content) -->
     <ProjectDetailIsland
       client:load
-      vikunjaProjectId={project.data.vikunjaProjectId ?? undefined}
+      linearProjectId={project.data.linearProjectId ?? undefined}
       status={project.data.status}
       groupOrder={project.data.groupOrder}
     />

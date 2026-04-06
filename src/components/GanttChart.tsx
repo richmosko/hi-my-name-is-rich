@@ -1,9 +1,7 @@
-import type { VikunjaTask } from '../hooks/useVikunja';
-
-const ZERO_DATE = '0001-01-01T00:00:00Z';
+import type { ProjectTask } from '../hooks/useLinear';
 
 function hasValidDate(dateStr: string): boolean {
-  return !!dateStr && dateStr !== ZERO_DATE && !dateStr.startsWith('0001');
+  return !!dateStr && dateStr !== '0001-01-01T00:00:00Z' && !dateStr.startsWith('0001');
 }
 
 function formatDate(dateStr: string): string {
@@ -15,7 +13,7 @@ function daysBetween(a: Date, b: Date): number {
 }
 
 export default function GanttChart({ tasks, loading }: {
-  tasks: VikunjaTask[];
+  tasks: ProjectTask[];
   loading: boolean;
 }) {
   if (loading) {
@@ -32,11 +30,7 @@ export default function GanttChart({ tasks, loading }: {
       <div className="text-sm text-content-muted py-8 text-center">
         <p>No tasks have start/end dates yet.</p>
         <p className="mt-2">
-          Add dates to tasks in{' '}
-          <a href={`${import.meta.env.VITE_VIKUNJA_HOST || '#'}`} target="_blank" rel="noopener noreferrer" className="text-accent hover:text-accent-hover">
-            Vikunja
-          </a>{' '}
-          to see the Gantt chart.
+          Add due dates to issues in Linear to see the Gantt chart.
         </p>
       </div>
     );
@@ -61,8 +55,8 @@ export default function GanttChart({ tasks, loading }: {
   const totalDays = daysBetween(minDate, maxDate) || 1;
 
   // Group tasks by first label
-  const groups: { label: string; color: string; tasks: VikunjaTask[] }[] = [];
-  const groupMap = new Map<string, VikunjaTask[]>();
+  const groups: { label: string; color: string; tasks: ProjectTask[] }[] = [];
+  const groupMap = new Map<string, ProjectTask[]>();
 
   for (const task of datedTasks) {
     const label = task.labels?.[0]?.title || 'Ungrouped';

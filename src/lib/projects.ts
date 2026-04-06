@@ -17,7 +17,7 @@ interface ProjectMdxModule {
     startDate?: string;
     completedDate?: string;
     authorId?: string | string[];
-    vikunjaProjectId?: number;
+    linearProjectId?: string;
     groupOrder?: string[];
     tasks?: Array<{ title: string; completed: boolean; group?: string }>;
   };
@@ -55,7 +55,7 @@ function parseProject(filePath: string, mod: ProjectMdxModule): Project {
     status: frontmatter.status,
     startDate: frontmatter.startDate,
     completedDate: frontmatter.completedDate,
-    vikunjaProjectId: frontmatter.vikunjaProjectId,
+    linearProjectId: frontmatter.linearProjectId,
     groupOrder: frontmatter.groupOrder,
     tasks,
     content: Content,

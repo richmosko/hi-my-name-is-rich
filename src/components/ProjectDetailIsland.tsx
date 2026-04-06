@@ -1,20 +1,20 @@
 import { useState } from 'react';
-import { useVikunjaProject, useVikunjaKanban, type VikunjaTask } from '../hooks/useVikunja';
+import { useLinearProject, useLinearKanban, type ProjectTask } from '../hooks/useLinear';
 import KanbanBoard from './KanbanBoard';
 import GanttChart from './GanttChart';
 
 interface ProjectDetailIslandProps {
-  vikunjaProjectId?: number;
+  linearProjectId?: string;
   status: string;
   groupOrder?: string[];
 }
 
 type ViewMode = 'labels' | 'pending' | 'kanban' | 'gantt';
 
-function VikunjaTaskList({ tasks, groupOrder }: { tasks: VikunjaTask[]; groupOrder?: string[] }) {
+function TaskList({ tasks, groupOrder }: { tasks: ProjectTask[]; groupOrder?: string[] }) {
   const [collapsed, setCollapsed] = useState<Set<string> | null>(null);
 
-  const groups = new Map<string, { color: string; tasks: VikunjaTask[] }>();
+  const groups = new Map<string, { color: string; tasks: ProjectTask[] }>();
   for (const task of tasks) {
     const label = task.labels?.[0];
     const key = label?.title || 'Ungrouped';
@@ -100,12 +100,12 @@ function VikunjaTaskList({ tasks, groupOrder }: { tasks: VikunjaTask[]; groupOrd
   );
 }
 
-export default function ProjectDetailIsland({ vikunjaProjectId, groupOrder }: ProjectDetailIslandProps) {
-  const vikunja = useVikunjaProject(vikunjaProjectId);
-  const kanban = useVikunjaKanban(vikunjaProjectId);
+export default function ProjectDetailIsland({ linearProjectId, groupOrder }: ProjectDetailIslandProps) {
+  const project = useLinearProject(linearProjectId);
+  const kanban = useLinearKanban(linearProjectId);
   const [viewMode, setViewMode] = useState<ViewMode>('labels');
 
-  if (!vikunjaProjectId) {
+  if (!linearProjectId) {
     return (
       <div className="w-full max-w-[640px] text-center py-8">
         <p className="text-sm text-content-muted">No task tracking configured for this project.</p>
@@ -113,7 +113,7 @@ export default function ProjectDetailIsland({ vikunjaProjectId, groupOrder }: Pr
     );
   }
 
-  if (vikunja.loading) {
+  if (project.loading) {
     return (
       <div className="w-full max-w-[640px] text-center py-8">
         <p className="text-sm text-content-muted animate-pulse">Loading tasks...</p>
@@ -121,11 +121,11 @@ export default function ProjectDetailIsland({ vikunjaProjectId, groupOrder }: Pr
     );
   }
 
-  if (vikunja.error || vikunja.total === 0) {
+  if (project.error || project.total === 0) {
     return (
       <div className="w-full max-w-[640px] text-center py-8">
         <p className="text-sm text-content-muted">
-          {vikunja.error ? 'Task data unavailable' : 'No tasks found'}
+          {project.error ? 'Task data unavailable' : 'No tasks found'}
         </p>
       </div>
     );
@@ -154,17 +154,17 @@ export default function ProjectDetailIsland({ vikunjaProjectId, groupOrder }: Pr
 
       {/* Labels view */}
       {viewMode === 'labels' && (
-        <VikunjaTaskList tasks={vikunja.tasks} groupOrder={groupOrder} />
+        <TaskList tasks={project.tasks} groupOrder={groupOrder} />
       )}
 
       {/* Pending view */}
       {viewMode === 'pending' && (
         <div className="flex flex-col gap-2">
           <p className="text-xs font-semibold uppercase tracking-wider text-content-muted">
-            Pending · {vikunja.open}
+            Pending · {project.open}
           </p>
           <ul className="flex flex-col gap-1.5">
-            {vikunja.tasks.filter(t => !t.done).map(task => (
+            {project.tasks.filter(t => !t.done).map(task => (
               <li key={task.id} className="flex items-center gap-2.5">
                 <span className="shrink-0 w-4 h-4 rounded flex items-center justify-center border border-edge bg-surface-secondary" />
                 <span className="text-sm text-content">{task.title}</span>
@@ -177,7 +177,7 @@ export default function ProjectDetailIsland({ vikunjaProjectId, groupOrder }: Pr
               </li>
             ))}
           </ul>
-          {vikunja.open === 0 && <p className="text-sm text-content-muted py-4 text-center">All tasks complete!</p>}
+          {project.open === 0 && <p className="text-sm text-content-muted py-4 text-center">All tasks complete!</p>}
         </div>
       )}
 
@@ -188,7 +188,7 @@ export default function ProjectDetailIsland({ vikunjaProjectId, groupOrder }: Pr
 
       {/* Gantt view */}
       {viewMode === 'gantt' && (
-        <GanttChart tasks={vikunja.tasks} loading={vikunja.loading} />
+        <GanttChart tasks={project.tasks} loading={project.loading} />
       )}
     </div>
   );

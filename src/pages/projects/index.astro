@@ -33,7 +33,7 @@ const completedProjects = projects.filter(p => p.data.status === 'completed');
         {activeProjects.map(project => (
           <ProjectProgress
             client:load
-            vikunjaProjectId={project.data.vikunjaProjectId ?? undefined}
+            linearProjectId={project.data.linearProjectId ?? undefined}
             projectName={project.data.name}
             projectUrl={`/project/${project.id}`}
             description={project.data.description}
@@ -49,7 +49,7 @@ const completedProjects = projects.filter(p => p.data.status === 'completed');
         {completedProjects.map(project => (
           <ProjectProgress
             client:load
-            vikunjaProjectId={project.data.vikunjaProjectId ?? undefined}
+            linearProjectId={project.data.linearProjectId ?? undefined}
             projectName={project.data.name}
             projectUrl={`/project/${project.id}`}
             description={project.data.description}

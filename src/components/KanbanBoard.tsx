@@ -1,6 +1,6 @@
-import type { VikunjaBucket } from '../hooks/useVikunja';
+import type { KanbanBucket } from '../hooks/useLinear';
 
-function TaskCard({ task }: { task: VikunjaBucket['tasks'][0] }) {
+function TaskCard({ task }: { task: KanbanBucket['tasks'][0] }) {
   const labels = task.labels || [];
   return (
     <div className="rounded-lg border border-edge bg-surface p-3 flex flex-col gap-1.5">
@@ -38,7 +38,7 @@ function TaskCard({ task }: { task: VikunjaBucket['tasks'][0] }) {
   );
 }
 
-function Column({ bucket }: { bucket: VikunjaBucket }) {
+function Column({ bucket }: { bucket: KanbanBucket }) {
   const tasks = bucket.tasks || [];
   const doneCount = tasks.filter(t => t.done).length;
 
@@ -64,7 +64,7 @@ function Column({ bucket }: { bucket: VikunjaBucket }) {
 }
 
 export default function KanbanBoard({ buckets, loading, error }: {
-  buckets: VikunjaBucket[];
+  buckets: KanbanBucket[];
   loading: boolean;
   error: string | null;
 }) {
@@ -79,11 +79,7 @@ export default function KanbanBoard({ buckets, loading, error }: {
   if (buckets.length === 0) {
     return (
       <div className="text-sm text-content-muted py-8 text-center">
-        No Kanban buckets configured. Set up columns in{' '}
-        <a href={`${import.meta.env.VITE_VIKUNJA_HOST || '#'}`} target="_blank" rel="noopener noreferrer" className="text-accent hover:text-accent-hover">
-          Vikunja
-        </a>{' '}
-        to see the board here.
+        No workflow states found. Issues will appear here once they are assigned to workflow states in Linear.
       </div>
     );
   }

@@ -72,7 +72,7 @@ const projects = defineCollection({
     status: z.enum(['active', 'completed']),
     startDate: yamlDate,
     completedDate: yamlDate,
-    vikunjaProjectId: z.number().optional().nullable(),
+    linearProjectId: yamlString,
     groupOrder: z.array(z.string()).optional(),
     tasks: z.array(z.object({
       title: z.string(),

@@ -14,7 +14,7 @@ Personal blog at **himynameisrich.com** built with **Astro 6** and **React islan
 - **Content Collections** — Zod-validated schemas in `src/content.config.ts`
 - **View Transitions** — Astro `ClientRouter` with theme re-application on `astro:after-swap`
 - **Remark42** — self-hosted comments (custom Docker image with CSS overrides)
-- **Vikunja** — task management, proxied via Astro server route
+- **Linear** — project/issue tracking via GraphQL API, proxied via Astro server route
 
 ## Project Structure
 
@@ -85,8 +85,17 @@ Each React component rendered in an `.astro` page is an independent island with 
 - `KeystaticWrapper.tsx` re-exports Keystatic page component — **required** because Astro 6's React renderer doesn't match `.js` file extensions in production
 - Custom API route at `src/pages/api/keystatic/[...params].ts` rewrites request URLs using `X-Forwarded-Host` header to fix OAuth redirects behind Traefik/Docker
 
+### Linear Integration
+- Project tracking uses Linear's GraphQL API via `src/hooks/useLinear.ts`
+- API proxy at `src/pages/api/linear/graphql.ts` keeps `LINEAR_API_KEY` server-side
+- MDX frontmatter uses `linearProjectId: "uuid"` (string, not number)
+- `useLinearProject()` returns `ProjectStats` (same shape as old Vikunja interface)
+- `useLinearKanban()` groups issues by Linear workflow states into kanban buckets
+- Labels map `color` (with `#`) → `hex_color` (without `#`) for component compatibility
+- `project.progress` (0.0–1.0) from Linear is used for completion percentage
+
 ### API Routes (SSR)
-- Vikunja proxy: `src/pages/api/vikunja/[...path].ts` — must forward query parameters
+- Linear proxy: `src/pages/api/linear/graphql.ts` — forwards GraphQL queries with API key
 - Keystatic API: `src/pages/api/keystatic/[...params].ts`
 - All SSR routes use `export const prerender = false`
 
@@ -94,7 +103,7 @@ Each React component rendered in an `.astro` page is an independent island with 
 
 - Astro uses **`PUBLIC_*`** prefix for client-side env vars (not `VITE_*`)
 - Dockerfile maps both `VITE_*` and `PUBLIC_*` from Coolify build args for compatibility
-- Key vars: `PUBLIC_REMARK42_HOST`, `PUBLIC_REMARK42_SITE_ID`, `VIKUNJA_HOST`, `VIKUNJA_API_TOKEN`, `KEYSTATIC_GITHUB_CLIENT_ID`, `KEYSTATIC_GITHUB_CLIENT_SECRET`, `KEYSTATIC_SECRET`
+- Key vars: `PUBLIC_REMARK42_HOST`, `PUBLIC_REMARK42_SITE_ID`, `LINEAR_API_KEY` (server-side only), `KEYSTATIC_GITHUB_CLIENT_ID`, `KEYSTATIC_GITHUB_CLIENT_SECRET`, `KEYSTATIC_SECRET`
 
 ## Code Style
 

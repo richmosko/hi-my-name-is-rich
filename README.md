@@ -33,7 +33,7 @@ A personal blog built with **Astro 6**, TypeScript, and Tailwind CSS. Posts are 
 | `/cool-shit` | Cool Shit | Posts filtered by category |
 | `/food` | Food | Posts filtered by category |
 | `/post/:slug` | Post Detail | Full post content with hero image, metadata, tags, MDX body, and Previous/Next navigation |
-| `/changelog` | Changelog | Auto-generated list of recently completed tasks from Vikunja, grouped by month/day |
+| `/changelog` | Changelog | Auto-generated list of recently completed tasks from Linear, grouped by month/day |
 | `/admin` | Admin | Comment activity dashboard (Remark42), moderation links, Cloudflare analytics link |
 | `/constellation` | Constellation | Interactive star map showing how all posts relate through links, tags, and categories |
 
@@ -139,7 +139,7 @@ url: "https://github.com/user/project"
 status: active          # or 'completed'
 startDate: 2026-03-01
 completedDate: 2026-06-15  # only for completed projects
-vikunjaProjectId: 33    # optional — links to Vikunja for live task data
+linearProjectId: "7da7e253-..."    # optional — links to Linear for live task data
 groupOrder:             # optional — custom display order for task label groups
   - Design
   - Foundation
@@ -163,33 +163,33 @@ Optional rich MDX body content here — supports markdown, React components, gal
 
 - **Individual project pages** at `/project/:id` with full MDX content, hero image, and task list
 - **Projects list** (`/projects`) shows cards with expand/collapse for excerpt and tasks
-- **Completion %** is derived from Vikunja live data when `vikunjaProjectId` is set, otherwise from MDX `completed` fields
+- **Completion %** is derived from Linear live data when `linearProjectId` is set, otherwise from MDX `completed` fields
 - **Task groups** are optional — add `group:` to organize tasks under headings with per-group sub-counts
-- **Vikunja integration** — when `vikunjaProjectId` is set, project pages fetch live task data from Vikunja, grouped by label with collapsible sections and colored progress bars
+- **Linear integration** — when `linearProjectId` is set, project pages fetch live task data from Linear, grouped by label with collapsible sections and colored progress bars
 - **Custom group order** — define `groupOrder` array in frontmatter to control display order (e.g., construction phases for a house build)
-- **Changelog** — `/changelog` page auto-generates a list of recently completed tasks from Vikunja, grouped by month and day
+- **Changelog** — `/changelog` page auto-generates a list of recently completed tasks from Linear, grouped by month and day
 - **Sidebar** shows active projects linking to individual project pages
 - **Hero images** display at 1250px width on project detail pages
 - **External URL** shown as "Visit Project" link when set (hidden if `"#"`)
 - **MDX body** renders on the detail page (supports all MDX components)
 
-## Vikunja Task Manager Integration
+## Linear Task Manager Integration
 
-Live task data from [Vikunja](https://vikunja.io/) (self-hosted) powers project tracking on the blog.
+Live task data from [Linear](https://linear.app/) powers project tracking on the blog.
 
-- **Live progress** — project completion percentages and task counts fetched from Vikunja API via Astro server route proxy (avoids CORS)
+- **Live progress** — project completion percentages and task counts fetched from Linear API via Astro server route proxy (avoids CORS)
 - **Recursive sub-projects** — tasks from nested sub-projects are aggregated automatically
-- **Label-based grouping** — tasks grouped by Vikunja labels with colored progress bars and collapsible sections
+- **Label-based grouping** — tasks grouped by Linear labels with colored progress bars and collapsible sections
 - **Custom group order** — `groupOrder` in MDX frontmatter controls display sequence (e.g., construction phases)
 - **Issue badges** — tasks labeled `bug` (red), `enhancement` (blue), or `question` (purple) show as badges on project cards; excluded from progress calculations
 - **Four view modes** on project detail pages:
   - **Labels** — tasks grouped by label with collapsible sections and per-group progress (640px)
   - **Pending** — flat list of unfinished tasks only, with label pills (640px)
-  - **Kanban** — bucket columns from Vikunja's Kanban view (1250px)
+  - **Kanban** — bucket columns from Linear's Kanban view (1250px)
   - **Gantt** — timeline chart placeholder for tasks with dates (1250px)
 - **Changelog** — `/changelog` page auto-generates a list of recently completed tasks, grouped by month and day
-- **Fallback** — when `vikunjaProjectId` is not set or Vikunja is unavailable, shows "N/A" (no stale MDX fallback)
-- See [`VIKUNJA-SETUP.md`](./docs/VIKUNJA-SETUP.md) for deployment and API integration details
+- **Fallback** — when `linearProjectId` is not set or Linear is unavailable, shows "N/A" (no stale MDX fallback)
+- Linear is a hosted service — set `LINEAR_API_KEY` as a runtime env var in Coolify
 
 ## Dark Mode
 
@@ -246,14 +246,14 @@ src/
     contributors.astro  # Author cards with avatar lightbox, bios, social links
     constellation.astro # Full-screen interactive constellation graph
     admin.astro         # Admin dashboard with comment activity
-    changelog.astro     # Auto-generated changelog from Vikunja
+    changelog.astro     # Auto-generated changelog from Linear
     posts/index.astro   # All posts with sort, category filter, tag filter
     post/[slug].astro   # Individual post with MDX content, prev/next nav, comments
-    project/[id].astro  # Individual project with MDX content, Vikunja tasks
-    projects/index.astro # Project list with Vikunja progress
+    project/[id].astro  # Individual project with MDX content, Linear tasks
+    projects/index.astro # Project list with Linear progress
     travel.astro, design.astro, ... # Category-filtered post pages
     keystatic/[...params].astro     # Keystatic CMS admin UI
-    api/vikunja/[...path].ts        # Vikunja API proxy (SSR route)
+    api/linear/graphql.ts           # Linear GraphQL API proxy (SSR route)
     api/keystatic/[...params].ts    # Keystatic OAuth API handler
   components/
     TopBar.tsx          # Sticky header with breadcrumbs (React island)
@@ -273,7 +273,7 @@ src/
     MdxComponents.tsx   # MDX element overrides (headings, code, links, etc.)
     HydrateMdx.astro    # Client-side hydration for Gallery/Video in MDX
     AdminDashboard.tsx  # Comment activity feed (React island)
-    ProjectProgress.tsx # Live Vikunja progress bar (React island)
+    ProjectProgress.tsx # Live Linear progress bar (React island)
     ProjectDetailIsland.tsx # Task views: Labels/Pending/Kanban/Gantt (React island)
     ProjectProgressBar.tsx  # Compact progress bar for project header
     KeystaticWrapper.tsx    # .tsx wrapper for Keystatic page (Astro 6 compat)
@@ -292,7 +292,7 @@ src/
     site-settings.json  # Global settings (managed via Keystatic Site Settings singleton)
   hooks/
     useTheme.tsx        # Dark/light theme (useSyncExternalStore, cross-island)
-    useVikunja.ts       # Vikunja API integration — recursive project/task fetching
+    useLinear.ts       # Linear API integration — recursive project/task fetching
   lib/
     dateUtils.ts        # Local timezone date parsing
     posts.ts            # Data access layer — loads posts via import.meta.glob
@@ -514,7 +514,7 @@ See deployment guides:
 - [`REMARK42-SETUP.md`](./docs/REMARK42-SETUP.md) — Comment system
 - [`HETZNER-SERVER-SETUP.md`](./docs/HETZNER-SERVER-SETUP.md) — Server provisioning
 - [`CLOUDFLARE-CDN-SETUP.md`](./docs/CLOUDFLARE-CDN-SETUP.md) — CDN setup
-- [`VIKUNJA-SETUP.md`](./docs/VIKUNJA-SETUP.md) — Task manager setup and API integration
+- Linear project tracking is configured via `linearProjectId` in MDX frontmatter and `LINEAR_API_KEY` runtime env var
 
 ## Architecture Notes
 
@@ -524,7 +524,7 @@ See deployment guides:
 - **Gallery hydration**: Galleries load manifest data at build time via `import.meta.glob` for server rendering. The `HydrateMdx.astro` script re-mounts Gallery/Video/LightboxImage components client-side for interactivity.
 - **Content as code**: Posts and projects live as `.mdx` files. Keystatic CMS at `/keystatic` provides a visual editor that commits to GitHub. The Obsidian vault config lets you edit locally with wikilink support.
 - **Full-text search**: Build-time script extracts text into `search-index.json`. The `PostsListIsland` React island handles search, sort, and filtering with URL param support (`?q=...&tag=...`).
-- **Vikunja integration**: Astro server route (`/api/vikunja/[...path].ts`) proxies requests to the Vikunja API, avoiding CORS. `useVikunjaProject` hook recursively fetches tasks from sub-projects and groups by label.
+- **Linear integration**: Astro server route (`/api/linear/graphql.ts`) proxies GraphQL queries to Linear's API with the API key server-side. `useLinearProject` hook fetches project issues and maps them to the display components.
 - **Dark mode**: `useTheme` hook uses `useSyncExternalStore` — works across separate React islands without a provider. Theme persists via `localStorage` and re-applies after View Transitions via `astro:after-swap`.
 - **View Transitions**: Astro's `ClientRouter` provides SPA-like smooth navigation between static pages. Theme detection script runs on every swap to prevent flash.
 - **SEO**: Every page has `<title>`, `<meta description>`, Open Graph, and Twitter card tags set in `Layout.astro`. Sitemap auto-generated by `@astrojs/sitemap`.

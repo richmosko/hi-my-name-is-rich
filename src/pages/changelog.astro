@@ -6,14 +6,14 @@ import MainLayout from '../layouts/MainLayout.astro';
   <div class="max-w-[640px] mx-auto">
     <h1 class="text-2xl sm:text-3xl font-bold text-content mb-2">Changelog</h1>
     <p class="text-content-secondary text-sm mb-8">
-      Recent task activity across all projects, powered by Vikunja.
+      Recent task activity across all projects, powered by Linear.
     </p>
 
-    <!-- Changelog content will be a React island that fetches from Vikunja -->
+    <!-- Changelog content will be a React island that fetches from Linear -->
     <div id="changelog-content">
       <p class="text-sm text-content-muted py-8 text-center">
-        Changelog data is loaded from the Vikunja API.
-        Ensure <code>VITE_VIKUNJA_HOST</code> and <code>VITE_VIKUNJA_TOKEN</code> are configured.
+        Changelog data is loaded from the Linear API.
+        Ensure <code>LINEAR_API_KEY</code> is configured.
       </p>
     </div>
   </div>

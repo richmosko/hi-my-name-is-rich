@@ -1,7 +1,7 @@
-import { useVikunjaProject } from '../hooks/useVikunja';
+import { useLinearProject } from '../hooks/useLinear';
 
 interface Props {
-  vikunjaProjectId?: number;
+  linearProjectId?: string;
   status: string;
 }
 
@@ -9,12 +9,12 @@ interface Props {
  * Compact progress bar + status for project header.
  * Shows only status badge, percentage, and progress bar.
  */
-export default function ProjectProgressBar({ vikunjaProjectId, status }: Props) {
-  const vikunja = useVikunjaProject(vikunjaProjectId);
+export default function ProjectProgressBar({ linearProjectId, status }: Props) {
+  const project = useLinearProject(linearProjectId);
 
   const isCompleted = status === 'completed';
 
-  if (!vikunjaProjectId) {
+  if (!linearProjectId) {
     return (
       <div>
         <div className="flex items-center gap-3 mb-4">
@@ -27,7 +27,7 @@ export default function ProjectProgressBar({ vikunjaProjectId, status }: Props) 
     );
   }
 
-  if (vikunja.loading) {
+  if (project.loading) {
     return (
       <div>
         <div className="flex items-center gap-3 mb-4">
@@ -41,7 +41,7 @@ export default function ProjectProgressBar({ vikunjaProjectId, status }: Props) 
     );
   }
 
-  if (vikunja.error || vikunja.total === 0) {
+  if (project.error || project.total === 0) {
     return (
       <div>
         <div className="flex items-center gap-3 mb-4">
@@ -60,17 +60,17 @@ export default function ProjectProgressBar({ vikunjaProjectId, status }: Props) 
         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${isCompleted ? 'bg-emerald-500/10 text-emerald-700' : 'bg-accent/10 text-accent'}`}>
           {isCompleted ? 'Completed' : 'Active'}
         </span>
-        <span className={`text-sm font-semibold ${vikunja.percent === 100 ? 'text-emerald-600' : 'text-accent'}`}>
-          {vikunja.percent}%
+        <span className={`text-sm font-semibold ${project.percent === 100 ? 'text-emerald-600' : 'text-accent'}`}>
+          {project.percent}%
         </span>
         <span className="text-xs text-content-muted">
-          {vikunja.done}/{vikunja.total} tasks
+          {project.done}/{project.total} tasks
         </span>
       </div>
       <div className="w-full h-2 rounded-full bg-surface-secondary overflow-hidden">
         <div
-          className={`h-full rounded-full transition-all duration-500 ${vikunja.percent === 100 ? 'bg-emerald-500' : 'bg-accent'}`}
-          style={{ width: `${vikunja.percent}%` }}
+          className={`h-full rounded-full transition-all duration-500 ${project.percent === 100 ? 'bg-emerald-500' : 'bg-accent'}`}
+          style={{ width: `${project.percent}%` }}
         />
       </div>
     </div>

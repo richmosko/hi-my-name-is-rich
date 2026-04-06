@@ -11,15 +11,9 @@ COPY . .
 # Convert ARGs to ENVs so npm run build (Vite/Astro) can read them
 # Astro uses PUBLIC_ prefix for client-side env vars (not VITE_)
 ARG VITE_REMARK42_HOST
-ARG VITE_VIKUNJA_HOST
-ARG VITE_VIKUNJA_TOKEN
 ARG PUBLIC_KEYSTATIC_GITHUB_APP_SLUG
 ENV VITE_REMARK42_HOST=${VITE_REMARK42_HOST}
-ENV VITE_VIKUNJA_HOST=${VITE_VIKUNJA_HOST}
-ENV VITE_VIKUNJA_TOKEN=${VITE_VIKUNJA_TOKEN}
 ENV PUBLIC_REMARK42_HOST=${VITE_REMARK42_HOST}
-ENV PUBLIC_VIKUNJA_HOST=${VITE_VIKUNJA_HOST}
-ENV PUBLIC_VIKUNJA_TOKEN=${VITE_VIKUNJA_TOKEN}
 ENV PUBLIC_KEYSTATIC_GITHUB_APP_SLUG=${PUBLIC_KEYSTATIC_GITHUB_APP_SLUG}
 
 RUN npm run build
@@ -31,6 +25,9 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./
 COPY --from=build /app/keystatic.config.tsx ./
+
+# LINEAR_API_KEY is read at runtime via process.env (not baked into the build).
+# Set it as a runtime environment variable in Coolify, not a build arg.
 
 ENV HOST=0.0.0.0
 ENV PORT=4321

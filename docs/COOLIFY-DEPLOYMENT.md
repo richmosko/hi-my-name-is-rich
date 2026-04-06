@@ -32,7 +32,7 @@ Traefik auto-provisions Let's Encrypt SSL
 
 The site runs as an **Astro 6 Node.js standalone server** (not a static nginx container). This is required for:
 - Keystatic CMS admin routes (`/keystatic`)
-- Vikunja API proxy (`/api/vikunja/...`)
+- Linear API proxy (`/api/linear/graphql`)
 - Server-side rendered pages that opt out of pre-rendering
 
 ## Files in the Repo
@@ -95,9 +95,8 @@ If you prefer not to create a GitHub App:
    | Variable | Value | Build / Runtime |
    |----------|-------|-----------------|
    | `VITE_REMARK42_HOST` | `https://remark42.yourdomain.com` | **Build** |
-   | `VITE_VIKUNJA_HOST` | `https://vikunja.yourdomain.com` | **Build** |
-   | `VITE_VIKUNJA_TOKEN` | Your Vikunja API token | **Build** |
    | `PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | Your Keystatic GitHub App slug | **Build** |
+   | `LINEAR_API_KEY` | Linear Personal API key (`lin_api_...`) | **Runtime** |
    | `KEYSTATIC_GITHUB_CLIENT_ID` | GitHub App Client ID | **Runtime** |
    | `KEYSTATIC_GITHUB_CLIENT_SECRET` | GitHub App Client Secret | **Runtime** |
    | `KEYSTATIC_SECRET` | Random hex string (`openssl rand -hex 32`) | **Runtime** |
@@ -147,7 +146,7 @@ If you prefer not to create a GitHub App:
 **Site loads but shows "Cannot GET /path"**
 - Astro pre-renders pages as static HTML at build time, so routes should just work
 - Check that the page exists in `src/pages/`
-- SSR routes (like `/keystatic` and `/api/vikunja`) require the Node adapter -- verify `astro.config.mjs` has `adapter: node({ mode: 'standalone' })`
+- SSR routes (like `/keystatic` and `/api/linear/graphql`) require the Node adapter -- verify `astro.config.mjs` has `adapter: node({ mode: 'standalone' })`
 
 **HTTPS not working**
 - Coolify needs ports 80 and 443 open on the server
@@ -289,8 +288,8 @@ free -h
 | Build | Docker (multi-stage: node build + node serve) |
 | Server | Astro 6 Node.js standalone (`node dist/server/entry.mjs`) |
 | Port | 4321 (Traefik handles 443/SSL) |
-| Build vars | `VITE_REMARK42_HOST`, `VITE_VIKUNJA_HOST`, `VITE_VIKUNJA_TOKEN`, `PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` |
-| Runtime vars | `KEYSTATIC_GITHUB_CLIENT_ID`, `KEYSTATIC_GITHUB_CLIENT_SECRET`, `KEYSTATIC_SECRET` |
+| Build vars | `VITE_REMARK42_HOST`, `PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` |
+| Runtime vars | `LINEAR_API_KEY`, `KEYSTATIC_GITHUB_CLIENT_ID`, `KEYSTATIC_GITHUB_CLIENT_SECRET`, `KEYSTATIC_SECRET` |
 | Deploy trigger | Push to `main` via webhook |
 | Rollback | Coolify dashboard > Deployments > Rollback |
 
