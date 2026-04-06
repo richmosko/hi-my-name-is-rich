@@ -29,3 +29,6 @@ dist-ssr
 # AI working directories
 .claude
 .astro/
+
+# Other localized variables
+.env
