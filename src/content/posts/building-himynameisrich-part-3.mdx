@@ -1,0 +1,47 @@
+---
+title: 'Building HiMyNameIsRich: Design Considerations'
+categories:
+  - design
+  - projects
+featured: false
+imageAspectRatio: 16/9
+authorId:
+  - rich
+tags:
+  - AI
+  - hi-my-name-is-rich
+  - Figma
+---
+Getting an initial version of the site up and running was actually pretty straightforward. If you are willing to let the AI Coder or Agent make a lot of the decisions for you, you'll get something which looks pretty good… but maybe generic and not really personal. For this site, I wanted a couple of things to really test what the AI was capable of:
+
+* A reference UX design to template off of
+* A Constellation Graph similar to what Obsidian does
+* A Project Tracking and visualization system
+
+# Reference UX Templating
+
+I wanted to test the ability to mock up design look and feel ahead of implementation. This seems like it would be no necessary, since the AI is so good and just taking text commands and descriptions and executing… but my experience (at least so far) has been that getting the fine details exactly right can be maddening at times. I see this kind of thing all the time with Image generation in nano banana and gemini: You ask the LLM to alter a small detail and it makes a bunch of wholesale changes instead. With the web site, getting a lot of little things exactly right was going to be important. Things like whether the fonts and images lined up exactly from page to page would be really noticeable.&#x20;
+
+What I ended up using to mock up the design was Figma. Figma is a pretty mature and well used User eXperience and User Interface tool which allows groups of designers to collaborate on a design all in the same file and space. This wasn't so critical for me… but the tools were mature and easy to use. And Figma.com has a MCP Server which allows Claude to look at the design directly. I used a reference template that I found there and modified the style and colors to suit me. What I was going for was a more playful design with Anime stylized versions of me as visuals. Initially, a white background with subtle Grey and Tan Texting and Icons. And I wanted the color-keyed Category pills to stand out. What I got was something like this:\
+[https://www.figma.com/design/8uvq9tpP3kO9r4gWh6XXvQ/HiMyNameIsRich-Blog-Template?node-id=3104-2756\&m=dev](https://www.figma.com/design/8uvq9tpP3kO9r4gWh6XXvQ/HiMyNameIsRich-Blog-Template?node-id=3104-2756\&m=dev)
+
+Getting Claude Code to implement this was super easy. It just looked at the page templates and did it. Some hand holding was needed to remind Claude to adhere to some of the alignment and offset spacing… but overall it did a fantastic job. There were some limitations for completing the design loop in Figma.
+
+1. The Figma MCP server allows Claude to View a design, and upload a design to the workspace, but doesn't seem to allow it to update an existing design element. Kind of annoying.
+2. Getting the MCP server setup was not easy. It involved sleuthing online for walkthroughs and installing the MCP server connector through Claude CLI. I have been running Claude Code through the desktop app on my Mac so far… so setting up on the terminal through home-brew was not trivial.
+
+One other thing: As of the time of this writing, Anthropic just announced Claude Design, which kind of obviates some of the need for Figma. Would be worth checking out the capabilities of this soon.
+
+# Constellation Graph
+
+I wanted something unique to really showcase my design, and since I had all of these existing posts ported over from moskoliu-rtw, I thought that it would be cool to have the post relationships visualized through some sort of mind map. Initially I was thinking of like a 3D set of stars that one could navigate through, but that turned out to be kind of confusing to look at and pan through. While I was researching Markdown editing tools, I came across something called Obsidian… which is a tool for editing  wikipedia type personal graphs through md files. It has a visualization tool though that shows all of the backlink references between files as linked lines between nodes. This was exactly what I needed as an example, and I could even use the Categories and Tags that were already in place to show the relationships between the nodes.&#x20;
+
+I think that implementing this was the most difficult part of setting up the web site. I wanted the nodes to have a subtle drift and movement when dragged, so Claude had to implement a whole physics system. Yeah. But that wasn't really the difficult part. getting the look right and the framing correct for both desktop and mobile viewing was painstaking. It would have been easier if I could have mocked this up somehow. In any case, the results were pretty cool and I'm pretty happy with how things look.
+
+[https://himynameisrich.com/constellation](https://himynameisrich.com/constellation)
+
+
+
+# Project Visualization
+
+Part of the goal of this personal website is to chronicle the journey for other projects. But I wanted to be be able to visualize on a glance what the state of those projects were and to have a space to jot down thoughts and ideas on the process. Initially, we (Claude and I) just added tags and completion checklists in the frontmatter metadata of each mdx file.
