@@ -33,8 +33,15 @@ export default config({
       entryLayout: 'content',
       schema: {
         title: fields.slug({ name: { label: 'Title' } }),
-        excerpt: fields.text({ label: 'Excerpt', multiline: true }),
-        date: fields.datetime({ label: 'Publish Date' }),
+        excerpt: fields.text({
+          label: 'Excerpt',
+          multiline: true,
+          validation: { length: { min: 1 } },
+        }),
+        date: fields.datetime({
+          label: 'Publish Date',
+          defaultValue: { kind: 'now' },
+        }),
         readTime: fields.text({
           label: 'Read Time',
           description: 'Auto-calculated by precommit script. Leave empty.',
