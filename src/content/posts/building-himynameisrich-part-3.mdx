@@ -1,12 +1,16 @@
 ---
 title: 'Building HiMyNameIsRich: Design Considerations'
-excerpt: How I used Figma as a reference design, leaned on Claude Code to implement it, and pushed the AI to handle the fine details that make a site feel personal.
-date: 2026-04-20
+excerpt: >-
+  How I used Figma as a reference design, leaned on Claude Code to implement it,
+  and pushed the AI to handle the fine details that make a site feel personal.
+date: 2026-04-20T00:00:00.000Z
+readTime: 2 min
 categories:
   - design
   - projects
 featured: false
-imageAspectRatio: 16/9
+image: /images/profile-rich-design.jpg
+imageAspectRatio: 21/9
 authorId:
   - rich
 tags:
@@ -42,8 +46,12 @@ I think that implementing this was the most difficult part of setting up the web
 
 [https://himynameisrich.com/constellation](https://himynameisrich.com/constellation)
 
-
-
 # Project Visualization
 
-Part of the goal of this personal website is to chronicle the journey for other projects. But I wanted to be be able to visualize on a glance what the state of those projects were and to have a space to jot down thoughts and ideas on the process. Initially, we (Claude and I) just added tags and completion checklists in the frontmatter metadata of each mdx file.
+Part of the goal of this personal website is to chronicle the journey for other projects. But I wanted to be be able to visualize on a glance what the state of those projects were, and to have a space to jot down thoughts and ideas on the process. Initially, we (Claude and I) just added tags and completion checklists in the frontmatter metadata of each mdx file. This worked, but was tedious to maintain: Requiring a GitHub push every time I wanted to update progress.&#x20;
+
+
+
+# Other Odds and Ends
+
+There were other refinements along the way. I wasn't anticipating having a light and dark schema… but the dark schema really made the constellation graph pop with color so I added that option in. Pretty trivial for Claude to invert most of the light color settings. I also went back and forth with the 3-card lineup for featured posts… but in the end liked the large left card format that emphasized the most recent one more prominently. Claude was also able to show multiple authors with profile aviators at the top of posts, which was a nice touch.
