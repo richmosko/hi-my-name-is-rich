@@ -1,0 +1,70 @@
+---
+title: 'himynameisrich: How this process could improve'
+excerpt: >
+  So I asked Claude how we could have done a better job building this project
+  (himynameisrich.com) given what we know now… and It came up with some good
+  advice. Worth noting for future projects, and maybe good to synthesize with
+  lessons learned from the mosko-finance project.
+date: 2026-05-11T11:57:00.000Z
+categories:
+  - projects
+featured: false
+image: images/stock/technology-human-touch-background-modern-remake-creation-adam.jpg
+imageAspectRatio: 21/9
+authorId:
+  - rich
+tags:
+  - AI
+  - hi-my-name-is-rich
+---
+So I asked Claude how we could have done a better job building this project (himynameisrich.com) given what we know now… and It came up with some good advice. Worth noting for future projects, and maybe good to synthesize with lessons learned from the mosko-finance project. The Prompt:\
+
+
+> sidebar question: How would you have organized this project differently considering the newer features like claude design and claude Agent Teams?
+
+
+
+...and the response:
+
+> Good question — looking back, here's what I'd do differently:
+>
+> ### Design Workflow
+>
+> Skip the Figma → MCP loop entirely for greenfield UI. Use **Claude Design** to iterate on look/feel directly, then export to code. The Figma round-trip was helpful at the time but added friction (separate tool, MCP setup, can't write back to existing designs). Claude Design tightens the feedback loop:
+>
+> * Draft a wireframe → iterate in chat → generate components straight into the codebase
+> * For *brand-critical* design, Figma still wins for handoff/collaboration — but solo dev work doesn't need it
+>
+> ### Agent Teams Structure
+>
+> Instead of one Claude per session juggling everything, I'd split into 4–5 specialized agents:
+>
+> | Agent             | Owns                                                                       |
+> | ----------------- | -------------------------------------------------------------------------- |
+> | **Content**       | MDX posts, frontmatter validation, Keystatic config, search/graph indexes  |
+> | **UI/Frontend**   | React islands, Tailwind theming, MdxComponents, Gallery/Lightbox           |
+> | **Data Layer**    | Hooks (useLinear, useTheme), API proxy routes, content collections schemas |
+> | **Infra**         | Dockerfile, Coolify config, Cloudflare rules, deploy debugging             |
+> | **Visualization** | Constellation physics, force layout — it's its own little world            |
+>
+> Big wins:
+>
+> * **Parallel work**: The Vite→Astro migration would've been \~2× faster with one agent porting routes while another rewrote the data layer
+> * **Cleaner context**: Each agent only loads what's relevant to its domain (no constellation physics polluting the deployment context)
+> * **Specialized memory**: Each could keep its own running notes in agent-local CLAUDE.md files
+>
+> ### Code Organization
+>
+> A few patterns I'd lean into harder:
+>
+> 1. **Adapter pattern for integrations** — the Vikunja → Linear swap worked smoothly because I preserved the hook interface shape. I'd make that explicit: a `src/integrations/projects/` with a clear `ProjectAdapter` interface, and Linear/Vikunja/whatever as implementations. Swapping data sources becomes a one-line change.
+> 2. **Single source of truth for content schemas** — currently the Zod schema in `content.config.ts` and the Keystatic field definitions are duplicated and have to stay in sync (which is exactly how the missing `excerpt`/`date` slipped through). I'd generate one from the other.
+> 3. **Extract the constellation graph** — `forceLayout.ts` + `ConstellationGraph.tsx` is self-contained physics + rendering. Could be its own internal package with a clean `<ForceGraph nodes={} edges={} />` API. Easier to test, easier to reuse, doesn't bloat the main bundle for pages that don't use it.
+> 4. **Build manifests as part of the build, not pre-commit** — the search index, graph index, and gallery manifests are pre-commit scripts. If you forget to run them (or use Keystatic), they're stale. They should be Astro integrations that run during `astro build` so they can never drift.
+>
+> The biggest unforced error in retrospect: the `.env` file committed with the Linear key. With agent teams, the **infra** agent would've been the one setting that up and would've known never to track .env. Solo Claude doing everything is more likely to take shortcuts that bite later.
+
+
+
+Actually, pattern 4 was so compelling that I just had Claude Code implement it right away. This will be the first post to test it out. 🤞
+
