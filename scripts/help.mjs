@@ -13,7 +13,6 @@ const commands = [
   { cmd: 'npm run new-post -- "Title"', desc: 'Create a new blog post MDX file' },
   { cmd: 'npm run new-project -- "Name"', desc: 'Create a new project MDX file' },
   { cmd: 'npm run update-read-times', desc: 'Recalculate readTime for all posts' },
-  { cmd: 'npm run build-search-index', desc: 'Rebuild full-text search index' },
   { cmd: 'npm run generate-galleries', desc: 'Generate manifest.json for photo albums' },
   { cmd: 'npm run list-featured', desc: 'List all posts marked as featured' },
   { cmd: 'npm run build-graph-index', desc: 'Rebuild constellation graph data' },
