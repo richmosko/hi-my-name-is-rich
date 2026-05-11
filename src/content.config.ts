@@ -47,7 +47,6 @@ const posts = defineCollection({
         return `${y}-${m}-${day}`;
       }),
     ]),
-    readTime: yamlString.default('1 min read'),
     categories: yamlStringArray,
     featured: z.boolean().default(false),
     image: yamlString,

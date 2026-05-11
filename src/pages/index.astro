@@ -2,6 +2,7 @@
 import MainLayout from '../layouts/MainLayout.astro';
 import { getCollection } from 'astro:content';
 import { parseLocalDate } from '../lib/dateUtils';
+import { calculateReadTime } from '../lib/readTime';
 import { authors } from '../data/authors';
 import { categoryColors, categoryConfig } from '../data/categories';
 import PostCard from '../components/PostCard';
@@ -31,7 +32,7 @@ function toBlogPost(p: typeof sortedPosts[0]) {
     title: p.data.title,
     excerpt: p.data.excerpt,
     date: p.data.date,
-    readTime: p.data.readTime || '1 min read',
+    readTime: calculateReadTime(p.body),
     categories: p.data.categories as string[],
     featured: p.data.featured,
     image: p.data.image || p.data.imageUpload || undefined,

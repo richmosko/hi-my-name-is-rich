@@ -12,12 +12,11 @@ const commands = [
   { cmd: '--- Content ---', desc: '' },
   { cmd: 'npm run new-post -- "Title"', desc: 'Create a new blog post MDX file' },
   { cmd: 'npm run new-project -- "Name"', desc: 'Create a new project MDX file' },
-  { cmd: 'npm run update-read-times', desc: 'Recalculate readTime for all posts' },
   { cmd: 'npm run generate-galleries', desc: 'Generate manifest.json for photo albums' },
   { cmd: 'npm run list-featured', desc: 'List all posts marked as featured' },
   { cmd: '', desc: '' },
   { cmd: '--- Pre-commit ---', desc: '' },
-  { cmd: 'npm run precommit', desc: 'Run all pre-commit tasks (read times, search index, galleries, lint)' },
+  { cmd: 'npm run precommit', desc: 'Validate frontmatter, regenerate galleries, lint' },
 ];
 
 console.log('\n  📖 hi-my-name-is-rich — Available Commands\n');

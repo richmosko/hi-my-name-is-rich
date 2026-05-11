@@ -12,7 +12,6 @@
     "new-post": "node scripts/new-post.mjs",
     "new-project": "node scripts/new-project.mjs",
     "generate-galleries": "node scripts/generate-gallery-manifest.mjs",
-    "update-read-times": "node scripts/update-read-times.mjs",
     "precommit": "node scripts/precommit.mjs",
     "list-featured": "node scripts/list-featured.mjs",
     "help": "node scripts/help.mjs"

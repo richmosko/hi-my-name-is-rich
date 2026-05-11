@@ -1,5 +1,6 @@
 import type { BlogPost, Category } from '../types';
 import { parseLocalDate } from './dateUtils';
+import { calculateReadTime } from './readTime';
 
 // MDX module shape: each .mdx file exports frontmatter + a default React component
 interface MdxModule {
@@ -8,7 +9,6 @@ interface MdxModule {
     title: string;
     excerpt: string;
     date: string;
-    readTime?: string;
     categories: Category[];
     featured?: boolean;
     image?: string;
@@ -52,7 +52,7 @@ const searchData: Record<string, string> = Object.fromEntries(
   })
 );
 
-function parsePost(filePath: string, mod: MdxModule): BlogPost {
+function parsePost(filePath: string, mod: MdxModule, raw: string): BlogPost {
   const { frontmatter, default: Content } = mod;
 
   // Derive slug from filename: '../content/posts/digital-declutter.mdx' → 'digital-declutter'
@@ -64,7 +64,7 @@ function parsePost(filePath: string, mod: MdxModule): BlogPost {
     title: frontmatter.title,
     excerpt: frontmatter.excerpt,
     date: frontmatter.date,
-    readTime: frontmatter.readTime ?? '1 min read',
+    readTime: calculateReadTime(raw),
     categories: Array.isArray(frontmatter.categories)
       ? frontmatter.categories
       : frontmatter.categories
@@ -81,7 +81,7 @@ function parsePost(filePath: string, mod: MdxModule): BlogPost {
 
 // Parse all posts once, sorted newest-first
 const allPosts: BlogPost[] = Object.entries(postModules)
-  .map(([path, mod]) => parsePost(path, mod))
+  .map(([path, mod]) => parsePost(path, mod, rawModules[path] ?? ''))
   .sort((a, b) => parseLocalDate(b.date).getTime() - parseLocalDate(a.date).getTime());
 
 /** Get all posts, sorted newest-first */

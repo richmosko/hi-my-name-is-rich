@@ -2,6 +2,7 @@
 import MainLayout from '../../layouts/MainLayout.astro';
 import { getCollection, render } from 'astro:content';
 import { parseLocalDate } from '../../lib/dateUtils';
+import { calculateReadTime } from '../../lib/readTime';
 import { authors } from '../../data/authors';
 import { categoryConfig } from '../../data/categories';
 import LightboxImage from '../../components/LightboxImage';
@@ -92,7 +93,7 @@ const formattedDate = parseLocalDate(post.data.date).toLocaleDateString('en-US',
       <!-- Read time + categories + tags (grey background bar) -->
       <div class="flex items-center justify-between bg-surface-secondary rounded-xl px-3 py-2.5">
         <span class="text-sm font-medium text-content-muted">
-          {post.data.readTime}
+          {calculateReadTime(post.body)}
         </span>
         <div class="flex flex-wrap gap-2">
           {categories.map(cat => {

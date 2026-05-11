@@ -42,10 +42,6 @@ export default config({
           label: 'Publish Date',
           defaultValue: { kind: 'now' },
         }),
-        readTime: fields.text({
-          label: 'Read Time',
-          description: 'Auto-calculated by precommit script. Leave empty.',
-        }),
         categories: fields.multiselect({
           label: 'Categories',
           options: [

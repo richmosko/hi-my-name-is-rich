@@ -5,7 +5,8 @@ import { execSync } from 'child_process';
 
 const tasks = [
   { name: 'Validate frontmatter', cmd: 'node scripts/validate-frontmatter.mjs' },
-  { name: 'Update read times', cmd: 'node scripts/update-read-times.mjs' },
+  // Read times, search index, and graph index are now derived at build time
+  // from MDX files — no script needed. See src/lib/readTime.ts, posts.ts, graphData.ts.
   { name: 'Generate gallery manifests', cmd: 'node scripts/generate-gallery-manifest.mjs' },
   { name: 'Lint', cmd: 'npx eslint .' },
 ];

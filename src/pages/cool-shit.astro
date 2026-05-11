@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import { getCollection } from 'astro:content';
+import { calculateReadTime } from '../lib/readTime';
 import PostsListIsland from '../components/PostsListIsland';
 import { categoryConfig } from '../data/categories';
 
@@ -17,7 +18,7 @@ const blogPosts = filtered.map(p => ({
   title: p.data.title,
   excerpt: p.data.excerpt,
   date: p.data.date,
-  readTime: p.data.readTime || '1 min read',
+  readTime: calculateReadTime(p.body),
   categories: p.data.categories as string[],
   featured: p.data.featured,
   image: p.data.image || p.data.imageUpload || undefined,

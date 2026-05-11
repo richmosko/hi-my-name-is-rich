@@ -26,9 +26,9 @@ src/components/*.astro     — Astro components (static, server-rendered)
 src/content/posts/         — MDX blog posts
 src/content/projects/      — MDX project pages
 src/pages/api/             — Server-side API routes (SSR, prerender = false)
-src/lib/                   — Shared utilities, force layout, search/graph indices
+src/lib/                   — Shared utilities, force layout, derived search/graph data
 public/images/             — Static images with generated manifest.json files
-scripts/                   — Build scripts (new-post, search-index, galleries, etc.)
+scripts/                   — Helper scripts (new-post, generate-galleries, precommit, etc.)
 docs/                      — Deployment and setup documentation
 ```
 
@@ -64,6 +64,14 @@ Each React component rendered in an `.astro` page is an independent island with 
 - Schemas in `src/content.config.ts` use `loader: glob()` pattern
 - Custom `yamlString` and `yamlDate` helpers handle YAML edge cases (null values, Date objects)
 - **YAML bare dates** (e.g., `date: 2024-01-15`) are parsed as Date at UTC midnight. Always convert to `YYYY-MM-DD` string format in the schema to avoid timezone off-by-one errors.
+
+### Derived-at-Build-Time Data (Important for Keystatic Flow)
+- **Read times**, **search index**, and **constellation graph data** are all derived at build time from MDX content — **no pre-commit script needed**.
+- `src/lib/readTime.ts` — `calculateReadTime(body)` strips JSX/markdown and computes minutes from word count
+- `src/lib/posts.ts` — uses `import.meta.glob('...', { query: '?raw' })` to read raw MDX bodies and build the search index inline
+- `src/lib/graphData.ts` — same pattern: derives constellation nodes + edges from frontmatter and `[[wikilinks]]` extracted from raw MDX
+- **Why this matters**: Keystatic commits directly to GitHub via its admin UI, bypassing local pre-commit hooks. If any of these were pre-built JSON files, they'd be stale after a Keystatic save. Deriving at build time guarantees CI always builds fresh data, no matter how content was edited.
+- **Do NOT add `readTime: ...` to MDX frontmatter** — it's not part of the schema. Display components compute it via `calculateReadTime(p.body)`.
 
 ### MDX Rendering
 - Server-rendered via `<Content components={...}>` in Astro pages
