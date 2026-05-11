@@ -43,12 +43,23 @@
       const src = el.getAttribute('src') || '';
       const alt = el.getAttribute('alt') || '';
       const className = el.getAttribute('class') || '';
+      // Preserve inline styles (e.g., aspect-ratio on hero images).
+      // Convert CSS string → React style object so React accepts it.
+      const styleStr = el.getAttribute('style') || '';
+      const style: Record<string, string> = {};
+      for (const decl of styleStr.split(';')) {
+        const [prop, ...rest] = decl.split(':');
+        if (!prop || !rest.length) continue;
+        // CSS prop → camelCase for React
+        const key = prop.trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+        style[key] = rest.join(':').trim();
+      }
       const wrapper = document.createElement('span');
       wrapper.style.display = 'contents';
       el.parentNode?.insertBefore(wrapper, el);
       el.remove();
       const root = createRoot(wrapper);
-      root.render(createElement(LightboxImage, { src, alt, className }));
+      root.render(createElement(LightboxImage, { src, alt, className, style }));
     });
   }
 
