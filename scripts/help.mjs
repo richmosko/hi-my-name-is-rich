@@ -15,7 +15,6 @@ const commands = [
   { cmd: 'npm run update-read-times', desc: 'Recalculate readTime for all posts' },
   { cmd: 'npm run generate-galleries', desc: 'Generate manifest.json for photo albums' },
   { cmd: 'npm run list-featured', desc: 'List all posts marked as featured' },
-  { cmd: 'npm run build-graph-index', desc: 'Rebuild constellation graph data' },
   { cmd: '', desc: '' },
   { cmd: '--- Pre-commit ---', desc: '' },
   { cmd: 'npm run precommit', desc: 'Run all pre-commit tasks (read times, search index, galleries, lint)' },

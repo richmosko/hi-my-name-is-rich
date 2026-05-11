@@ -7,7 +7,6 @@ const tasks = [
   { name: 'Validate frontmatter', cmd: 'node scripts/validate-frontmatter.mjs' },
   { name: 'Update read times', cmd: 'node scripts/update-read-times.mjs' },
   { name: 'Generate gallery manifests', cmd: 'node scripts/generate-gallery-manifest.mjs' },
-  { name: 'Build graph index', cmd: 'node scripts/build-graph-index.mjs' },
   { name: 'Lint', cmd: 'npx eslint .' },
 ];
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import graphData from '../lib/graph-index.json';
+import { graphData } from '../lib/graphData';
 import { useTheme } from '../hooks/useTheme';
 import ConstellationDropdown from './ConstellationDropdown';
 import {
