@@ -1,0 +1,406 @@
+---
+title: 'mosko-fintech: Progress is Slow...'
+excerpt: >-
+  So the whole goal of starting this website was to explore AI: Discovering what
+  the state of the art was, and exploring what I could do with it. At least in
+  the Large Language Model (LLM) context...
+date: 2026-05-09T16:09:00.000Z
+categories:
+  - design
+  - projects
+  - finance
+featured: false
+image: /images/stock/profile-rich-coding-intense.jpg
+imageAspectRatio: 16/9
+authorId:
+  - rich
+tags:
+  - mosko-fintech
+  - pfin-dash
+  - Claude
+  - AI
+---
+# How Things are Going...
+
+I had a plan. A good one in fact. I would do extensive planning up front. I would treat this as a professionally run project: Trackable milestones… Atomic issues tracking… defined breakpoints for PRs and deliverables… Basically, I wanted to run this like I was running a project in a corporate setting. It felt like the right decision, but I think that I have been trying to force-fit a new tool into an old paradigm. I found that I kept feeling like what I was doing was WORK. And in the worst most onerous way. I was not designing or exploring or learning. I felt like I was merely grinding away.
+
+There seems to be too may friction points in my flow.&#x20;
+
+1. I have directed Claude to present me with three different options whenever there was a pivot point for a decision. This seemed reasonable when I was putting together the workflow. I wanted to remain in the decision loop!
+2. I also labeled my role as Founder / CTO, and this brought implications for Claude that I really wanted to get my hands dirty for every step along the way.
+3. I explicitly told Claude in the Claude.md file that I wanted this project to be run like a mini-corporate project. But this caused it to go way overboard with listed ADRs, Changelist.md tracking, Corporate jargon and process checkpoints and reviews...
+
+Basically, I have set up all of the WORST parts of corporate project planning and handicapped all of the strengths of LLM agents. I have been micro-managing! Ugh. I feel like such a terrible boss / overlord 😂.
+
+I am pretty far through the mosko-fintech meta project right now… but I'm leary to redefine my workflow wholesale through this process. Ideally, I'd redefine a few things such that a gave Claude much more agency to decide details on design as well as implementation. After all, It's kind of trivial to tell an LLM agent at the end of a checkpoint that you don't like X/Y/Z about the design and have it perform a redesign or refinement loop. This would be a better granularity for human review and decision making. So what I have done instead is go down two different paths:
+
+* ***Refine the mosko-fintech repo***: \
+  I've cleaned up as much as I can without totally confusing Claude in it's current development flow. I've set the decision permissions to "auto-mode" so that I don't have to approve every little thing. I've defined milestones that are atomic that map to major decision points and match Project tracking concepts like Linear Issues. This helps automate things. I basically always go with the default recommendation now, and only really review the final results at milestone boundaries. Not perfect… but a little less hands on.
+* ***Create a New project-template repo***: \
+  This is a meta project template for how I would do things if i were to start from scratch. It's clean. It's more organized. It gives Claude more agency and only asks for input and approval at milestone boundaries. Pull Requests are approved by human review, but this is also an automated skill. Milestones are tracked professionally in Linear, so a human can see the workflow progress at a glance on a phone app. Also, this (in theory) allows massive parallelization of agents on sub-tasks since the issues / milestones are atomic in scope. And agents can comment on and close issues (and assign each other issues!) without human intervention.\
+  Most importantly though, whenever I have seen a pain point in the mosko-finance process, I have added the finding to the directives in the project-template repo. I feel like it's a pretty solid reference and starting point. It also seems to be at the state of the art, with support for team-agents and /goals workflow support. Documentation is native in HTML, so documents can support more dynamic content. Common skills with GitHub and other MCPs are pre-defined.
+
+# Mosko Fintech Development State
+
+PRD is defined. The baseline task for V1.x is to replicate my existing financial tracking (in Google Sheets / Docs) as an online dashboard with a supabase - postgres backend. Data acquisition will be though Plaid… which will cost some money at first. There is hope that a new open standard in US finance will be mandated in a year or 3… but for now, Plaid simply works for obtaining financial records. This is in HTML.\
+
+
+ARCH document is also defined. This is in HTML as well, which is beautiful when locally rendered. But it does not show at all in GitHub except as raw HTML text. Will need a better viewing methodology from GitHub.&#x20;
+
+
+
+Process workflow has been dry-run and seems to have the MCP connections and agent calls and delegation working well. Actual backend implementation and deployment is under way.
+
+
+
+# \[project-teplate] Repo
+
+The README.md gives a fairly good idea of how the refined workflow works. The repo reference is here:\
+[https://github.com/richmosko/project\_template](https://github.com/richmosko/project_template)\
+\
+
+
+## README.md
+
+> # project\_template
+>
+> > A reusable Claude Code starter for running new projects with an AGILE-grounded workflow, a team of specialist Agents, and consistent artifacts — from PRD through release.
+>
+> ## What this is
+>
+> This repo is a **meta-template**, not a product. Clone it (or use it as a GitHub template) to seed a new project with:
+>
+> * a four-phase workflow (**Research → Plan → Implement ⇄ Validate**),
+> * nine specialist team-Agents (PM, UX, Architect, SecEng, two implementation leads + a generalist, QA, DevOps),
+> * doc-generation skills for PRD / Architecture / Security / Design,
+> * workflow skills for branching, PR + Linear integration, releases,
+> * HTML doc templates with embedded Mermaid diagrams,
+> * a state ledger (`process/MILESTONES.md`), a separate append-only decision log (`process/DECISIONS.md`), and a backlog overflow queue (`process/BACKLOG.md`),
+> * **AGILE issue / milestone / sprint tracking via [Linear](https://linear.app)** — our project / milestone / sprint / feature hierarchy maps to Linear's Initiative / Linear-Project / Cycle / Issue primitives,
+> * session-management heuristics tuned for asynchronous solo development.
+>
+> The goal: every new project starts with the same shape, so async hand-offs and context-window management are predictable.
+>
+> ## Workflow at a glance
+>
+> ```mermaid
+> flowchart LR
+>   R[Research] --> P[Plan]
+>   P --> I[Implement]
+>   I --> V[Validate]
+>   V -->|feature passed,<br/>next feature| I
+>   V -->|milestone complete,<br/>plan next milestone| P
+>   V -->|findings invalidate PRD| R
+>   V -->|project complete| done([Ship / Wind-down])
+> ```
+>
+> Implement ⇄ Validate is the inner loop at three scales: **feature → milestone → project**. Sprints (Linear cycles) are a team-wide cadence wrapper, not a loop scale. Full details in [`process/WORKFLOW.md`](process/WORKFLOW.md).
+>
+> ## What you get
+>
+> **Workflow Agents** (`.claude/agents/`):
+>
+> | Agent                 | Owns                                 | Drives                           |
+> | --------------------- | ------------------------------------ | -------------------------------- |
+> | `product-manager`     | PRD                                  | Research                         |
+> | `ux-designer`         | wireframes, interaction design       | late Research, Implement consult |
+> | `architect`           | ARCH doc, system design              | Plan                             |
+> | `seceng`              | SECURITY doc, threat model, gating   | Plan + Validate                  |
+> | `frontend-lead`       | UI implementation                    | Implement                        |
+> | `backend-lead`        | API / service implementation         | Implement                        |
+> | `implementation-lead` | generalist (CLI / lib / ML / data)   | Implement (non-web projects)     |
+> | `qa-engineer`         | tests, acceptance, release readiness | Validate (TDD entry-point)       |
+> | `devops-engineer`     | CI/CD, deploy, observability         | Plan + Validate                  |
+>
+> **Skills** (`.claude/skills/`):
+>
+> *Doc generation & review:*
+>
+> * `/generate-prd [source]` — interview-driven PRD generation (chatprd.ai-grounded). Accepts optional path to an existing PRD artifact (markdown / HTML / PDF / Google Doc) for **import mode**: analyzes the legacy content, maps it to the AGILE framework, ports what fits, flags what doesn't.
+> * `/generate-archdoc [source]` — Architecture doc with Mermaid diagrams. Same import-mode support as `generate-prd` for legacy ARCH artifacts.
+> * `/generate-secdoc` — STRIDE-based threat model + controls
+> * `/generate-designdoc` — Design System & UX doc (`docs/DESIGN/`): principles, tokens (`tokens.css`), component styles (`screen.css`), `design-system-spec.md`, flows, wireframes, styled screens. Driven by `ux-designer`; cross-phase; pairs with Figma.
+> * `/refine-doc <PRD|ARCH|SECURITY|DESIGN>` — walks `docs/<DOC>/comments.md` (gitignored review sidecar), addresses each `## §<section-id>` comment in the matching HTML section, removes addressed comments as it goes. Composable with `/start-doc-update` → `/finish-doc-update` → `/merge-pr`. See process/WORKFLOW\.md → Doc review loop.
+> * `/serve-docs [PRD|ARCH|SECURITY|DESIGN|stop|status]` — starts `scripts/serve-docs.sh` in the background under the Claude session (no separate terminal needed) so the inline comment widget activates in the HTML docs. Pass a doc name to also open it in the browser. Server is cleaned up automatically on `/exit`.
+> * `/open-doc` — open HTML/Markdown docs in default viewer
+>
+> *Workflow & operations:*
+>
+> * `/start-feature` — branch + Linear issue + budget check + Implement team spawn (also promotes from `process/BACKLOG.md` on demand)
+> * `/finish-feature` — commit, push, PR, link Linear, hand off to Validate
+> * `/drive [issue|milestone]` — aims a hands-off goal-driven loop at the next feature (or whole milestone), per the project's delivery-autonomy setting (`stop-at-merge` default / `self-merge-within-milestone`). Constructs the condition for the native `/goal` command and surfaces it for you to paste — the loop then runs the I↔V cycle until done. Needs Claude Code ≥ v2.1.139 (for `/goal`). See process/WORKFLOW\.md → Goal-driven loop
+> * `/start-doc-update <slug>` — kicks off a `phase/<phase>-<slug>` branch for non-feature doc edits (PRD/ARCH/SECURITY/WORKFLOW/etc.); no Linear issue, no implementation team
+> * `/finish-doc-update` — commit + push + open PR for a doc-update branch; no QA handshake (lead reviews directly)
+> * `/merge-pr` — gated team-lead merge after QA sign-off (features) or lead review (doc updates); squash-merges, archives, updates state. Alternative to human-review-and-merge via GitHub UI
+> * `/setup-linear-team` — wire Linear into a new project (one-time): links the shared team, creates this project's Initiative via MCP, seeds agent labels, seeds first-milestone stories to Linear and rest to `process/BACKLOG.md`
+> * `/setup-claude-deploy-key` — generate a per-repo passphrase-less SSH deploy key so Claude can push to GitHub without TTY-unlockable passphrases (one-time per repo)
+> * `/sync-backlog [count|milestone]` — promote items from `process/BACKLOG.md` to Linear in milestone-FIFO order. Called at sprint-cycle boundaries, on demand, or implicitly by `/start-feature` when a queued feature is requested
+> * `/cleanup-linear [filter]` — bulk-archive Done Linear issues to free space under the 250-active-issue free-tier cap; use when sync-backlog warns near cap or at milestone close
+> * `/spin-off-component <path>` — extract a substantial, reusable component out of the monorepo into its own repo (a fresh template instance + Linear Initiative), preserving git history, cutting `v0.1.0`, and recording the parent↔child linkage. Mechanizes the git extraction; hands off the child bootstrap and the parent-side dependency swap. See process/WORKFLOW\.md → Shared / reusable components
+>
+> **Scripts** (`scripts/`):
+>
+> * `scripts/serve-docs.sh` — local Python server (stdlib only) at `http://localhost:8765` that activates an **inline comment widget** in the HTML docs. Click `+ Comment` next to any section heading, type, save — the widget POSTs to the server which appends to `docs/<DOC>/comments.md`. Same format as hand-edited comments; both feed `/refine-doc`. See process/WORKFLOW\.md → Doc review loop → Inline-authoring mode.
+> * `scripts/vendor-mermaid.sh` — downloads Mermaid to `docs/_assets/vendor/` for projects that can't rely on CDN access at doc-view time (see Mermaid loading section above).
+>
+> **Artifacts** (top level + `docs/`):
+>
+> * `CLAUDE.md` — session-bootstrap context (loaded automatically)
+> * `process/WORKFLOW.md` — phases, roles, gates, team coordination
+> * `process/MILESTONES.md` — live state ledger (compact; auto-loaded)
+> * `process/DECISIONS.md` — append-only decision log (not auto-loaded; pulled in when historical context is needed)
+> * `process/BACKLOG.md` — overflow queue for Linear (items waiting to be promoted)
+> * `docs/PRD/index.html` — Product Requirements (HTML + Mermaid)
+> * `docs/ARCH/index.html` — Architecture + Infrastructure
+> * `docs/SECURITY/index.html` — Security + Compliance
+> * `docs/DESIGN/index.html` — Design System & UX (tokens.css, screen.css, spec, flows, wireframes, styled-screens)
+> * `docs/archive/` — stashed originals of imported PRD/ARCH artifacts
+> * `docs/_assets/` — shared CSS + Mermaid loader
+>
+> ## Roles
+>
+> * **Principal** (you) — sets vision, makes gate decisions, authorizes Agents.
+> * **Team Lead** — the main Claude Code session. Coordinates teams, delegates, summarizes specialist output into executive language.
+> * **Agents** — nine specialists spawned per phase as Claude team-agents.
+>
+> ## Common project-specific extensions
+>
+> The nine-Agent roster is the **floor, not the ceiling**. Some domains benefit from additional specialists. Spin up a new agent file in `.claude/agents/` (copying an existing one as a starting template) and document the addition in your project's `process/DECISIONS.md`. Examples that have come up in practice:
+>
+> | Extension                | When to add                                                                                                                                         | What it owns                                                                                                                                                         |
+> | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+> | **`visual-designer`**    | Trust-driven UI (fintech, healthcare, regulated builds) where visual polish is functional, not decorative. Distinct from the generic `ux-designer`. | Design tokens, typography, color, spacing. Palette-and-typography lock with the Principal. Flags missing components back to UX rather than designing around the gap. |
+> | **`compliance-officer`** | Regulated builds (HIPAA, SOC 2, PCI-DSS, FedRAMP) where compliance evidence isn't a side-effect of security work.                                   | Compliance evidence trails, audit prep, control mapping, attestation packages. Distinct from the generic `seceng`.                                                   |
+> | **`data-pipeline-lead`** | ML / ETL / analytics projects with substantial data-engineering surface.                                                                            | Ingestion, transformation, lineage, data quality. Distinct from the generic `implementation-lead`.                                                                   |
+>
+> These are **suggestions, not bundled assets** — the template doesn't ship the agent files for them. Adopt the role pattern; write the file when your project actually exercises the work.
+>
+> ## Customizing doc preview
+>
+> The `/open-doc` skill routes by extension: `.html` → browser (Chrome → Safari fallback on macOS), `.md` → One Markdown app (if installed) with editor fallback. This works for most macOS users but can be swapped:
+>
+> * **Why Chrome → Safari (not the system default)?** On macOS, LaunchServices can route `.html` files through MacVim, VS Code, or any other app the user accidentally set as default. Using `open -a "Google Chrome"` (with Safari as fallback) bypasses that and ensures HTML docs always render in a real browser.
+> * **Use a different default browser** (Firefox, Arc, Brave, etc.) → edit the `.html` route in `.claude/skills/open-doc/SKILL.md` step 2: change `"Google Chrome"` to `"Firefox"` / `"Arc"` / `"Brave Browser"` etc. Keep Safari as the fallback (it's always present on macOS).
+> * **Use a different Markdown viewer** (Bear, IDE preview, `mdcat`, `glow`) → edit the same SKILL.md and replace the `open-one-markdown` route with your tool of choice.
+> * **Headless / SSH session** → replace the `open -a` calls with a terminal-friendly viewer (`w3m -dump`, `lynx`, etc.) or a network-share path.
+> * **Project-specific viewer skill** → if your project needs a non-default workflow (e.g. opening every artifact through a specific tool chain), add a project-local skill alongside `/open-doc`. The template won't fight you.
+>
+> ## Quick start
+>
+> ### Use as a GitHub template
+>
+> 1. Click **Use this template** on GitHub → **Create a new repository**.
+> 2. Clone your new repo locally and `cd` in.
+> 3. Start a Claude Code session — `CLAUDE.md` will load automatically and walk through the [First-run / bootstrap checklist](CLAUDE.md#first-run--bootstrap).
+>
+> ### Or clone manually
+>
+> ```bash
+> gh repo create my-new-project --template richmosko/project_template --private --clone
+> cd my-new-project
+> claude
+> ```
+>
+> ### First-run checklist (abridged — see [`CLAUDE.md`](CLAUDE.md))
+>
+> 1. `gh auth status` — confirm GitHub auth.
+> 2. **`/setup-claude-deploy-key`** — generate a passphrase-less SSH key scoped to this repo, add it to GitHub as a deploy key with write access, and pin the repo's git to use it. Without this, Claude's `git push` will fail when your main SSH key is passphrase-protected.
+> 3. **Enable GitHub branch protection on `main`** — Settings → Branches → Add rule → ✅ Require pull request before merging, ✅ Do not allow bypassing. This is the hard enforcement layer behind the workflow's "no direct pushes" rule.
+> 4. Replace the project description placeholders in `CLAUDE.md`.
+> 5. `/setup-linear-team` — link to your shared Linear team and create this project's Initiative.
+> 6. Verify `teammateMode` in `.claude/settings.json` (default: `tmux` for split-pane).
+> 7. Spawn the Research team: *"Create an agent team for the Research phase."*
+> 8. `/generate-prd` — start the discovery interview.
+>
+> ## Session startup
+>
+> Every session starts minimal. Only the files needed to re-orient are auto-loaded; everything else is read lazily as the work demands. The `SessionStart` hook in `.claude/settings.json` runs an `awk` extractor over `process/MILESTONES.md` so the auto-loaded slice stays compact even as the Roadmap table grows.
+>
+> ```mermaid
+> flowchart TD
+>   S0([New Claude Code session])
+>
+>   S0 --> A["Auto-loaded — every session"]
+>
+>   A --> A1["<b>CLAUDE.md</b> — full<br/><i>session bootstrap + first-run checklist</i>"]
+>   A --> A2["<b>memory/MEMORY.md</b> — full<br/><i>auto-memory index only;<br/>individual memory files load lazily</i>"]
+>   A --> A3["<b>process/MILESTONES.md</b> — partial<br/><i>SessionStart hook runs awk;<br/>top → just before</i> <code>## Roadmap</code>"]
+>   A --> A4["<b>System reminders</b><br/><i>date · skills list · MCP instructions ·<br/>deferred tool names (no schemas)</i>"]
+>
+>   A1 --> Q{"Cold resume<br/>or fresh task?"}
+>   A2 --> Q
+>   A3 --> Q
+>   A4 --> Q
+>
+>   Q -->|resume — continue work| RB["Resume runbook<br/><i>CLAUDE.md → Session management</i>"]
+>
+>   RB --> R1["<b>process/MILESTONES.md</b> — full re-read<br/><i>past the auto-loaded head</i>"]
+>   RB --> R2["<code>git status · branch · log --oneline -10</code>"]
+>   RB --> R3["<code>gh pr list --state open</code>"]
+>   RB --> BR{"Branch type?"}
+>
+>   BR -->|feature/*| R5["Linear issue via MCP +<br/><code>git diff --stat main...HEAD</code>"]
+>   BR -->|phase/*| R6["<code>git diff main</code><br/><i>pending doc edits</i>"]
+>   BR -->|main clean| R7["MILESTONES Roadmap section<br/><i>for next move</i>"]
+>
+>   R1 --> CONF["Surface pickup point;<br/>wait for user confirmation"]
+>   R2 --> CONF
+>   R3 --> CONF
+>   R5 --> CONF
+>   R6 --> CONF
+>   R7 --> CONF
+>
+>   Q -->|fresh task| W["Proceed"]
+>   CONF --> W
+>
+>   W --> LZ["On-demand reads<br/><i>pulled only when relevant</i>"]
+>
+>   LZ --> L1["<b>process/WORKFLOW.md</b><br/><i>gates · roster · process detail</i>"]
+>   LZ --> L2["<b>process/DECISIONS.md</b><br/><i>historical decisions</i>"]
+>   LZ --> L3["<b>.claude/skills/&lt;name&gt;/SKILL.md</b><br/><i>on skill invocation</i>"]
+>   LZ --> L4["<b>.claude/agents/&lt;role&gt;.md</b><br/><i>on teammate spawn</i>"]
+>   LZ --> L5["<b>memory/&lt;entry&gt;.md</b><br/><i>individual memory files; when relevant</i>"]
+>   LZ --> L6["Repo source · <code>docs/PRD</code> · <code>docs/ARCH</code> · ...<br/><i>via Read tool, on demand</i>"]
+> ```
+>
+> The **Resume runbook** (in `CLAUDE.md` → Session management) only fires when the lead is re-entering in-flight work — a "let's continue" cold start. Fresh tasks skip it. Either way, the bulk of the repo — `process/WORKFLOW.md`, `process/DECISIONS.md`, individual skill / agent / memory files, docs, source — is pulled only when the work in front of you needs it, keeping the context window honest.
+>
+> ## The 4-tier hierarchy (Linear mapping)
+>
+> | Concept                             | Linear primitive |
+> | ----------------------------------- | ---------------- |
+> | Project (overall effort, this repo) | **Initiative**   |
+> | Milestone                           | Linear Project   |
+> | Sprint (team-wide cadence)          | Linear Cycle     |
+> | Feature (one PR, one I↔V loop)      | Linear Issue     |
+>
+> One Linear team is shared across **all** your projects (free-tier-friendly). Each project gets its own Initiative. Agent attribution rides on `agent:<role>` issue labels (v1 mechanism; OAuth agent actors are an upgrade path documented in `process/WORKFLOW.md`).
+>
+> Because the team is shared, a **reusable component** that graduates to its own repo (via `/spin-off-component`) is just another Initiative in the same team — same machinery, no new infra. See process/WORKFLOW\.md → Shared / reusable components.
+>
+> ## Layout
+>
+> ```
+> .
+> ├── CLAUDE.md                    auto-loaded session context
+> ├── README.md                    this file
+> ├── LICENSE
+> ├── process/                     workflow definition + live project state
+> │   ├── WORKFLOW.md              phases, roles, gates, coordination
+> │   ├── MILESTONES.md            live state + decision ledger
+> │   ├── DECISIONS.md             append-only project decisions (seed; you keep this)
+> │   ├── BACKLOG.md               Linear overflow queue (seed; you keep this)
+> │   └── TEMPLATE_DECISIONS.md    decisions about the template itself — DELETE on bootstrap
+> ├── docs/
+> │   ├── PRD/index.html           product requirements (Research)
+> │   ├── ARCH/index.html          architecture (Plan)
+> │   ├── SECURITY/index.html      security (Plan + Validate)
+> │   ├── DESIGN/                  design system & UX (cross-phase; ux-designer)
+> │   ├── starting-prompt.md       original design notes (kept for posterity)
+> │   └── _assets/                 shared CSS + Mermaid loader
+> │   (each doc lives in its own subdir — add per-doc images / diagrams /
+> │    sub-pages alongside the index.html as the doc grows)
+> ├── scripts/                     repo-level helpers (vendor-mermaid.sh, serve-docs.sh, …)
+> └── .claude/
+>     ├── settings.json            hooks, env, permissions, teammateMode
+>     ├── agents/                  9 specialist definitions
+>     └── skills/                  workflow + doc-gen skills
+> ```
+>
+> ## Requirements
+>
+> ### Tooling
+>
+> * **Claude Code v2.1.32 or later** — required for the experimental team-agents feature. Check with `claude --version`.
+> * **macOS or Linux shell** — workflow skills assume POSIX + standard CLI tools (`bash`/`zsh`, `git`, `gh`, `open`/`xdg-open`).
+> * **GitHub CLI** (`gh`) — authenticated to the account that will host your new project (`gh auth status` should succeed; `gh auth login` if not).
+> * **Git** — modern enough to support worktrees and standard branching.
+> * *(Optional)* **tmux or iTerm2** — required only for split-pane teammate mode (the default). Without one of these, switch `teammateMode` to `"in-process"` in `.claude/settings.json`.
+> * *(Optional)* **One Markdown** macOS app — nicer rendered viewing of `.md` files via the `open-one-markdown` skill. Falls back to your `$EDITOR` if not installed.
+>
+> ### Recommended (quality-of-life)
+>
+> Not required, but strongly improve visibility while working alongside Claude Code:
+>
+> * [**Oh My Zsh**](https://ohmyz.sh/) — Zsh framework with themes that surface **git branch + dirty/clean status** in your shell prompt. Makes it obvious at a glance whether you're on `main` vs a `feature/...` branch, and whether you have uncommitted changes. Install with the one-line curl on their site; pick a theme like `agnoster` or `robbyrussell` that shows git state.
+> * **Custom Claude Code statusline** — Claude Code can render a customizable bottom status line showing the model in use, context usage, session cost, and git status, driven by a script you provide (e.g. `~/.claude/statusline-command.sh`). See the [official walkthrough](https://code.claude.com/docs/en/statusline.md). **Easiest setup:** run `/statusline` inside Claude Code, describe what you want in natural language, and the setup agent generates the script and wires up `~/.claude/settings.json` for you.
+> * **Async notifications when Agents wait on you** — Critical when work is asynchronous and you've stepped away. Claude Code fires a `Notification` hook on permission prompts, idle waits, and gate decisions; wire it in `~/.claude/settings.json` to route the alert wherever. The hook receives JSON on stdin (`message`, `notification_type`, etc.) — scope it via the `matcher` field (e.g. `permission_prompt`, `idle_prompt`). Practical destinations:
+>
+>   * **iTerm2 + macOS banner** — wire the hook to `osascript -e 'display notification "$msg" with title "Claude Code"'`. macOS Notification Center shows the banner whether or not iTerm2 has focus; respects Focus Mode. Enable iTerm2 → Settings → Profiles → Terminal → "Silence bell" off if you also want terminal-level signals. iTerm2's [Triggers](https://iterm2.com/documentation-triggers.html) feature can fire on output patterns independent of the hook.
+>   * [**`terminal-notifier`**](https://github.com/julienXX/terminal-notifier) (`brew install terminal-notifier`) — richer macOS notification UI than `osascript`; supports icons, sounds, click-through actions. Drop-in replacement in the hook command.
+>   * [**ntfy.sh**](https://ntfy.sh/)**&#x20;/ [Pushover](https://pushover.net/)** — HTTP push to your phone for true away-from-desk async alerts. Hook becomes a `curl` POST to their endpoint; no app/account setup beyond their free tiers.
+>   * **Slack or Discord webhook** — for team visibility or an audit trail of human-decision points. HTTP POST from the hook to an incoming-webhook URL.
+>
+>   Reference: [Claude Code hooks docs](https://code.claude.com/docs/en/hooks.md). The `Notification` event is observability-only (no decision control), so the hook can't block Claude — it just alerts you.
+>
+> ### Claude Code configuration
+>
+> The template **pre-sets** project-level config in `.claude/settings.json`:
+>
+> | Setting                                    | Value                         | Purpose                                                                                      |
+> | ------------------------------------------ | ----------------------------- | -------------------------------------------------------------------------------------------- |
+> | `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` | `"1"`                         | Enables team-agents (mailbox, shared task list, peer SendMessage).                           |
+> | `teammateMode`                             | `"tmux"`                      | Split-pane teammates; survives `/resume` (see [`CLAUDE.md`](CLAUDE.md) for mode trade-offs). |
+> | `hooks.SessionStart`                       | reads `process/MILESTONES.md` | Auto-surfaces current project state at session start.                                        |
+> | `permissions.allow`                        | common read/git commands      | Reduces permission prompts for routine ops.                                                  |
+>
+> **Verify in your user-level config (`~/.claude/settings.json`):**
+>
+> * That you haven't overridden `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` to `"0"`. If you have, the project-level setting will be honored, but expect surprise if you switch projects.
+> * That `teammateMode` aligns with your terminal — `"tmux"` requires tmux *or* iTerm2 with `it2` CLI; otherwise use `"in-process"`.
+>
+> If you prefer to override anything per-project without committing, drop it in `.claude/settings.local.json` (gitignored).
+>
+> ### External integrations
+>
+> * **Linear MCP** — connected at the workspace level (claude.ai → Settings → MCP → Linear, or equivalent). Required for `/setup-linear-team`, ticket sync, and Initiative/Project creation. **Free tier is fully supported.**
+>   * On first project, you'll be asked to create a shared Linear team and per-project Initiative manually in Linear's UI (these aren't exposed by the current MCP). The skill walks you through it.
+>   * Watch the **250-active-issues** free-tier cap — archive features aggressively at sprint boundaries.
+> * **Anthropic API access** — implicit via Claude Code itself; no additional config.
+>
+> ### Mermaid loading: CDN vs vendored
+>
+> The HTML doc templates (`docs/PRD/index.html`, `docs/ARCH/index.html`, `docs/SECURITY/index.html`) load Mermaid via `docs/_assets/mermaid-init.js`. The template ships with the **CDN variant** — fetches Mermaid from `cdn.jsdelivr.net` at doc-view time. Works out of the box; requires internet access to render diagrams.
+>
+> For projects that can't rely on CDN access — **regulated builds (fintech, healthcare), offline / air-gapped workflows, security-conscious postures** — swap to the vendored variant:
+>
+> ```bash
+> ./scripts/vendor-mermaid.sh
+> ```
+>
+> The script:
+>
+> * Downloads the Mermaid UMD bundle to `docs/_assets/vendor/mermaid.min.js` (defaults to pinned major version; override with `MERMAID_VERSION=11.4.0` etc.)
+> * Rewrites `docs/_assets/mermaid-init.js` to load from the local bundle instead of the CDN
+> * Uses the UMD build (not ESM) so `file://` URLs work — you can still double-click the HTML docs from Finder
+>
+> The vendor directory is **gitignored by default** at the template level so the template itself doesn't carry the bundle. Downstream projects can either:
+>
+> * Leave it gitignored and document `./scripts/vendor-mermaid.sh` as a setup step (the script is idempotent), or
+> * Un-ignore `docs/_assets/vendor/` in their own `.gitignore` to commit the bundle into their repo.
+>
+> Revert to CDN at any time: `git checkout docs/_assets/mermaid-init.js && rm -rf docs/_assets/vendor/`.
+>
+> ### Optional for richer artifacts
+>
+> * **Figma MCP** + **Figma plugin** — required only if the `ux-designer` Agent will produce wireframes / Code Connect mappings (skills under `figma:*`).
+> * **Modern browser** — for viewing the generated HTML docs (`docs/PRD/index.html` etc.). They're self-contained; default-CDN variant needs internet on first open, vendored variant works offline.
+>
+> ## Where to read next
+>
+> * [`CLAUDE.md`](CLAUDE.md) — session bootstrap, first-run checklist, session-management heuristics.
+> * [`process/WORKFLOW.md`](process/WORKFLOW.md) — phases, roles, Linear mapping, team coordination, decision logging.
+> * [`process/MILESTONES.md`](process/MILESTONES.md) — live state-ledger structure.
+> * [`process/DECISIONS.md`](process/DECISIONS.md) — append-only decision log; conventions in process/WORKFLOW\.md → Decision logging.
+> * [`process/BACKLOG.md`](process/BACKLOG.md) — Linear-overflow queue and FIFO promotion mechanism.
+> * [`docs/starting-prompt.md`](docs/starting-prompt.md) — the original design brief that shaped this template.
+>
+> ## License
+>
+> MIT — see [`LICENSE`](LICENSE).
+>
+> Projects instantiated from this template can adopt whatever license suits them; the template itself is MIT-licensed so you can fork, modify, and reuse without friction.
+>
+> ## Contributing
+>
+> This is a living template. Improvements made inside any project derived from it can be ported back here so future projects benefit. Open a PR or fork freely.
